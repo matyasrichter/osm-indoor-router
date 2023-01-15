@@ -1,0 +1,57 @@
+---
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
+      when: never
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_COMMIT_BRANCH == "develop"
+
+stages:
+  - build
+  - test
+  - docker
+  - deploy
+  - management
+
+.dotnet:
+  image: mcr.microsoft.com/dotnet/sdk:7.0
+  variables:
+    # 1) Name of directory where restore and build objects are stored.
+    OBJECTS_DIRECTORY: 'obj'
+    # 2) Name of directory used for keeping restored dependencies.
+    NUGET_PACKAGES_DIRECTORY: '.nuget'
+  cache:
+    # Per-stage and per-branch caching.
+    key: "$CI_JOB_STAGE-$CI_COMMIT_REF_SLUG"
+    paths:
+      # Specify three paths that should be cached:
+      #
+      # 1) Main JSON file holding information about package dependency tree, packages versions,
+      # frameworks etc. It also holds information where to the dependencies were restored.
+      - '$OBJECTS_DIRECTORY/project.assets.json'
+      # 2) Other NuGet and MSBuild related files. Also needed.
+      - '$OBJECTS_DIRECTORY/*.csproj.nuget.*'
+      # 3) Path to the directory where restored dependencies are kept.
+      - '$NUGET_PACKAGES_DIRECTORY'
+  before_script:
+    - 'dotnet restore --packages $NUGET_PACKAGES_DIRECTORY'
+
+dotnet-format:
+  extends: .dotnet
+  stage: build
+  script:
+    - dotnet format --no-restore --verbosity normal --verify-no-changes
+
+build:
+  extends: .dotnet
+  stage: build
+  script:
+    - dotnet build --no-restore
+
+test:
+  extends: .dotnet
+  stage: test
+  script:
+    - dotnet test --no-restore
+
