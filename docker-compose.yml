@@ -1,0 +1,19 @@
+---
+version: "3.8"
+name: indoorrouter
+services:
+  db:
+    image: "postgis/postgis:15-3.3-alpine"
+    environment:
+      POSTGRES_USER: indoorrouter
+      POSTGRES_PASSWORD: indoorrouter
+      POSTGRES_DATABASE: indoorrouter
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5432:5432"
+
+
+volumes:
+  db_data:
+    driver: local
