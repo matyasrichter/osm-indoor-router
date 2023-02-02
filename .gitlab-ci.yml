@@ -63,7 +63,7 @@ db-test:
       # explicitly disable tls to avoid docker startup interruption
       command: ["--tls=false"]
   variables:
-    TESTCONTAINERS_HOST_OVERRIDE: "host.docker.internal"
+    TESTCONTAINERS_HOST_OVERRIDE: "tcp://docker:2375"
     # Instruct Testcontainers to use the daemon of DinD, use port 2735 for non-tls connections.
     DOCKER_HOST: "tcp://docker:2375"
     # Instruct Docker not to start over TLS.
