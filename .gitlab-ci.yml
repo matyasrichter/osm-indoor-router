@@ -53,5 +53,15 @@ test:
   extends: .dotnet
   stage: test
   script:
-    - dotnet test --no-restore
+    - dotnet test --no-restore --filter "Category!=DB"
+
+db-test:
+  extends: .dotnet
+  stage: test
+  services:
+    - docker:dind
+  variables:
+    FF_NETWORK_PER_BUILD: "true"
+  script:
+    - dotnet test --no-restore --filter "Category=DB"
 

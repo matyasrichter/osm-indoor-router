@@ -5,26 +5,35 @@ using DotNet.Testcontainers.Configurations;
 using DotNet.Testcontainers.Containers;
 using Microsoft.EntityFrameworkCore;
 
-[Trait("Category", "TestContainer")]
-public class DatabaseTest : IAsyncLifetime
+public sealed class DatabaseFixture : IAsyncLifetime, IDisposable
 {
-    protected MapDbContext DbContext { get; private set; } = null!;
+    private readonly PostgreSqlTestcontainerConfiguration conf = new()
+    {
+        Database = "db",
+        Username = "postgres",
+        Password = "postgres"
+    };
 
-    // https://github.com/testcontainers/testcontainers-dotnet/issues/750
-    private readonly TestcontainerDatabase postgresqlContainer = new ContainerBuilder<PostgreSqlTestcontainer>()
-        .WithDatabase(new PostgreSqlTestcontainerConfiguration
-        {
-            Database = "db",
-            Username = "postgres",
-            Password = "postgres"
-        })
-        .Build();
+    private TestcontainerDatabase postgresqlContainer = null!;
+    public MapDbContext DbContext { get; private set; } = null!;
+
 
     public async Task InitializeAsync()
     {
+        // https://github.com/testcontainers/testcontainers-dotnet/issues/750
+        postgresqlContainer = new ContainerBuilder<PostgreSqlTestcontainer>()
+            .WithDatabase(conf)
+            .Build();
         await postgresqlContainer.StartAsync();
         DbContext = new(new DbContextOptionsBuilder().UseNpgsql(postgresqlContainer.ConnectionString).Options);
     }
 
     public Task DisposeAsync() => postgresqlContainer.DisposeAsync().AsTask();
+
+    public void Dispose() => conf.Dispose();
+}
+
+[CollectionDefinition("DB")]
+public class DatabaseCollectionFixture : ICollectionFixture<DatabaseFixture>
+{
 }
