@@ -60,10 +60,11 @@ db-test:
   stage: test
   services:
     - name: $CI_REGISTRY_IMAGE/docker-dind
+      alias: docker
       # explicitly disable tls to avoid docker startup interruption
       command: ["--tls=false"]
   variables:
-    # Instruct Testcontainers to use the daemon of DinD, use port 2735 for non-tls connections.
+      # Instruct Testcontainers to use the daemon of DinD, use port 2735 for non-tls connections.
     DOCKER_HOST: "tcp://docker:2375"
     # Instruct Docker not to start over TLS.
     DOCKER_TLS_CERTDIR: ""
