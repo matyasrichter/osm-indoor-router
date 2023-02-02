@@ -8,6 +8,7 @@ workflow:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_COMMIT_BRANCH == "develop"
 
 stages:
+  - lint
   - build
   - test
   - docker
@@ -39,25 +40,29 @@ stages:
 
 dotnet-format:
   extends: .dotnet
-  stage: build
+  stage: lint
+  needs: []
   script:
     - dotnet format --no-restore --verbosity normal --verify-no-changes
 
 build:
   extends: .dotnet
   stage: build
+  needs: []
   script:
     - dotnet build --no-restore
 
 test:
   extends: .dotnet
   stage: test
+  needs: []
   script:
     - dotnet test --no-restore --filter "Category!=DB"
 
 db-test:
   extends: .dotnet
   stage: test
+  needs: []
   services:
     - name: $CI_REGISTRY_IMAGE/docker-dind
       alias: docker
