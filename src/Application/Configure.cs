@@ -11,7 +11,7 @@ public static class Configure
         services
             .AddSingleton(r =>
             {
-                var settings = new Settings();
+                var settings = new Settings() { DbConnectionString = "" };
                 r.GetRequiredService<IConfiguration>().GetSection("Settings").Bind(settings);
                 return settings;
             })
