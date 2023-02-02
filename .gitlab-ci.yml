@@ -59,7 +59,7 @@ db-test:
   extends: .dotnet
   stage: test
   services:
-    - name: docker:dind
+    - name: $CI_REGISTRY_IMAGE/docker-dind
       # explicitly disable tls to avoid docker startup interruption
       command: ["--tls=false"]
   variables:
