@@ -1,15 +1,26 @@
 namespace Persistence.Entities;
 
 using System.ComponentModel.DataAnnotations;
+using Graph;
 using NetTopologySuite.Geometries;
 
 public class MapNode
 {
-    [Key]
-    public int Id { get; init; }
+    [Key] public Guid Id { get; init; }
 
-    public required Guid Version { get; init; }
-    public required Point Coordinates { get; init; }
-    public required int Level { get; init; }
+    public Guid Version { get; init; }
+    public Point Coordinates { get; init; } = default!;
+    public int Level { get; init; }
     public string? SourceId { get; init; }
+
+    public static MapNode FromDomain(Node node, Guid version) => new()
+    {
+        Id = node.Id,
+        Version = version,
+        Coordinates = node.Coordinates,
+        Level = node.Level,
+        SourceId = node.SourceId
+    };
+
+    public Node ToDomain() => new() { Id = Id, Coordinates = Coordinates, Level = Level, SourceId = SourceId };
 }

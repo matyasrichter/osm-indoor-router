@@ -1,13 +1,11 @@
 #nullable disable
 
 namespace Persistence.Migrations;
-
 using Microsoft.EntityFrameworkCore.Migrations;
 using NetTopologySuite.Geometries;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 /// <inheritdoc />
-public partial class Initial : Migration
+public partial class AddMapNodeAddMapEdge : Migration
 {
     /// <inheritdoc />
     protected override void Up(MigrationBuilder migrationBuilder)
@@ -19,8 +17,7 @@ public partial class Initial : Migration
             name: "MapNodes",
             columns: table => new
             {
-                Id = table.Column<int>(type: "integer", nullable: false)
-                    .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                Id = table.Column<Guid>(type: "uuid", nullable: false),
                 Version = table.Column<Guid>(type: "uuid", nullable: false),
                 Coordinates = table.Column<Point>(type: "geometry", nullable: false),
                 Level = table.Column<int>(type: "integer", nullable: false),
@@ -32,11 +29,10 @@ public partial class Initial : Migration
             name: "MapEdges",
             columns: table => new
             {
-                Id = table.Column<int>(type: "integer", nullable: false)
-                    .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                Id = table.Column<Guid>(type: "uuid", nullable: false),
                 Version = table.Column<Guid>(type: "uuid", nullable: false),
-                FromId = table.Column<int>(type: "integer", nullable: false),
-                ToId = table.Column<int>(type: "integer", nullable: false),
+                FromId = table.Column<Guid>(type: "uuid", nullable: false),
+                ToId = table.Column<Guid>(type: "uuid", nullable: false),
                 SourceId = table.Column<string>(type: "text", nullable: true)
             },
             constraints: table =>

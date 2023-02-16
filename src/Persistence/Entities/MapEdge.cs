@@ -1,14 +1,28 @@
 namespace Persistence.Entities;
 
 using System.ComponentModel.DataAnnotations;
+using Graph;
 
 public class MapEdge
 {
-    [Key]
-    public int Id { get; init; }
+    [Key] public Guid Id { get; init; }
 
-    public required Guid Version { get; init; }
-    public required MapNode From { get; init; }
-    public required MapNode To { get; init; }
+    public Guid Version { get; init; }
+
+    public Guid FromId { get; init; }
+    public MapNode From { get; init; } = default!;
+    public Guid ToId { get; init; }
+    public MapNode To { get; init; } = default!;
     public string? SourceId { get; init; }
+
+    public static MapEdge FromDomain(Edge edge, Guid version) => new()
+    {
+        Id = edge.Id,
+        Version = version,
+        FromId = edge.FromId,
+        ToId = edge.ToId,
+        SourceId = edge.SourceId
+    };
+
+    public Edge ToDomain() => new() { Id = Id, FromId = FromId, ToId = ToId, SourceId = SourceId };
 }

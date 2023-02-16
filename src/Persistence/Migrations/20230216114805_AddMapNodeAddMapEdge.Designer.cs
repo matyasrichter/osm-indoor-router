@@ -13,15 +13,15 @@ using Persistence;
 namespace Persistence.Migrations
 {
     [DbContext(typeof(MapDbContext))]
-    [Migration("20230202112437_Initial")]
-    partial class Initial
+    [Migration("20230216114805_AddMapNodeAddMapEdge")]
+    partial class AddMapNodeAddMapEdge
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.2")
+                .HasAnnotation("ProductVersion", "7.0.1")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "postgis");
@@ -29,20 +29,18 @@ namespace Persistence.Migrations
 
             modelBuilder.Entity("Persistence.Entities.MapEdge", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("uuid");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("FromId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("FromId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("SourceId")
                         .HasColumnType("text");
 
-                    b.Property<int>("ToId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("ToId")
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("Version")
                         .HasColumnType("uuid");
@@ -58,11 +56,9 @@ namespace Persistence.Migrations
 
             modelBuilder.Entity("Persistence.Entities.MapNode", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                        .HasColumnType("uuid");
 
                     b.Property<Point>("Coordinates")
                         .IsRequired()
