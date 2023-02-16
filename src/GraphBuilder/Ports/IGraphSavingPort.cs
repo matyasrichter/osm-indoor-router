@@ -1,10 +1,10 @@
 namespace GraphBuilder.Ports;
 
-using NetTopologySuite.Geometries;
+using Graph;
 
 public interface IGraphSavingPort
 {
-    Task SavePoints(IEnumerable<Point> points, Guid version);
-    Task SaveEdges(IEnumerable<(Point, Point)> edges, Guid version);
+    Task SaveNodes(IEnumerable<Node> nodes, Guid version);
+    Task SaveEdges(IEnumerable<Edge> edges, Guid version);
     Task SaveCurrentVersion(Guid version);
 }

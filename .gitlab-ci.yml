@@ -8,6 +8,7 @@ workflow:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_COMMIT_BRANCH == "develop"
 
 stages:
+  - prereq
   - lint
   - build
   - test
@@ -16,12 +17,15 @@ stages:
   - management
 
 .dotnet:
-  image: mcr.microsoft.com/dotnet/sdk:7.0
+  image: $CI_REGISTRY_IMAGE/dotnet
   variables:
     # 1) Name of directory where restore and build objects are stored.
     OBJECTS_DIRECTORY: 'obj'
     # 2) Name of directory used for keeping restored dependencies.
     NUGET_PACKAGES_DIRECTORY: '.nuget'
+  needs:
+    - job: push_dotnet
+      optional: true
   cache:
     # Per-stage and per-branch caching.
     key: "$CI_JOB_STAGE-$CI_COMMIT_REF_SLUG"
@@ -41,40 +45,101 @@ stages:
 dotnet-format:
   extends: .dotnet
   stage: lint
-  needs: []
   script:
     - dotnet format --no-restore --verbosity normal --verify-no-changes
 
 build:
   extends: .dotnet
   stage: build
-  needs: []
   script:
     - dotnet build --no-restore
 
 test:
   extends: .dotnet
   stage: test
-  needs: []
   script:
     - dotnet test --no-restore --filter "Category!=DB"
 
 db-test:
   extends: .dotnet
+  image: $CI_REGISTRY_IMAGE/dotnet-dockercli
   stage: test
-  needs: []
+  needs:
+    - job: push_dotnet_dockercli
+      optional: true
   services:
     - name: $CI_REGISTRY_IMAGE/docker-dind
       alias: docker
       # explicitly disable tls to avoid docker startup interruption
-      command: ["--tls=false"]
+      command: [ "--tls=false" ]
   variables:
-      # Instruct Testcontainers to use the daemon of DinD, use port 2735 for non-tls connections.
+    # Instruct Testcontainers to use the daemon of DinD, use port 2735 for non-tls connections.
     DOCKER_HOST: "tcp://docker:2375"
     # Instruct Docker not to start over TLS.
     DOCKER_TLS_CERTDIR: ""
     DOCKER_DRIVER: overlay2
     FF_NETWORK_PER_BUILD: "true"
+    TEST_DB_IMAGE_NAME: "gitlab.fit.cvut.cz:5000/richtm12/bp-code/postgis"
+    TESTCONTAINERS_RYUK_CONTAINER_IMAGE: "gitlab.fit.cvut.cz:5000/richtm12/bp-code/testcontainers/ryuk"
   script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - dotnet test --no-restore --filter "Category=DB"
 
+
+
+# --------------------------------
+# The following jobs are used to push images to our GitLab registry
+# so that we don't have to pull them from Docker Hub.
+# --------------------------------
+
+.build_and_push_image:
+  image: $CI_REGISTRY/ict/images/buildah:v1
+  stage: prereq
+  script:
+    - buildah build -t $CI_REGISTRY_IMAGE/$PUSHED_IMAGE_NAME:latest -f $DOCKERFILE .
+    - buildah push $CI_REGISTRY_IMAGE/$PUSHED_IMAGE_NAME:latest
+
+push_dind:
+  extends: .build_and_push_image
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes: [ "ci-images/dind.Dockerfile" ]
+  variables:
+    PUSHED_IMAGE_NAME: "docker-dind"
+    DOCKERFILE: "ci-images/dind.Dockerfile"
+
+push_dotnet:
+  extends: .build_and_push_image
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes: [ "ci-images/dotnet.Dockerfile" ]
+  variables:
+    PUSHED_IMAGE_NAME: "dotnet"
+    DOCKERFILE: "ci-images/dotnet.Dockerfile"
+
+push_dotnet_dockercli:
+  extends: .build_and_push_image
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes: [ "ci-images/dotnet-dockercli.Dockerfile" ]
+  variables:
+    PUSHED_IMAGE_NAME: "dotnet-dockercli"
+    DOCKERFILE: "ci-images/dotnet-dockercli.Dockerfile"
+
+push_postgis:
+  extends: .build_and_push_image
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes: [ "ci-images/postgis.Dockerfile" ]
+  variables:
+    PUSHED_IMAGE_NAME: "postgis"
+    DOCKERFILE: "ci-images/postgis.Dockerfile"
+
+push_ryuk:
+  extends: .build_and_push_image
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes: [ "ci-images/ryuk.Dockerfile" ]
+  variables:
+    PUSHED_IMAGE_NAME: "testcontainers/ryuk"
+    DOCKERFILE: "ci-images/ryuk.Dockerfile"
