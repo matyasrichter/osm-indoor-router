@@ -21,7 +21,7 @@ public sealed class DatabaseFixture : IAsyncLifetime, IDisposable
         // https://github.com/testcontainers/testcontainers-dotnet/issues/750
         PostgresContainer = new ContainerBuilder<PostgreSqlTestcontainer>()
             .WithDatabase(conf)
-            .WithImage("postgis/postgis:15-3.3-alpine")
+            .WithImage(Environment.GetEnvironmentVariable("TEST_DB_IMAGE_NAME") ?? "postgis/postgis:15-3.3-alpine")
             .Build();
 
     public async Task InitializeAsync()
