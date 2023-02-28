@@ -35,7 +35,6 @@ public partial class GraphUpdatingBackgroundService : BackgroundService
         }
     }
 
-
     [LoggerMessage(Level = LogLevel.Information, Message = "Starting GraphUpdater")]
     private partial void LogGraphUpdaterStarting();
 

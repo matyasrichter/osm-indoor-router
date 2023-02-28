@@ -4,9 +4,16 @@ This repository contains the sources for an indoor navigation solution based on 
 
 ## Development
 - Install the .NET SDK from https://dotnet.microsoft.com/en-us/download
-- To automatically run formatters before commiting, use the provided pre-commit script:
+- To automatically run formatters before commiting, install [pre-commit](https://pre-commit.com/) and register the required hooks:
 ```shell
-ln -s "$PWD/pre-commit.sh" "`git rev-parse --git-dir`/hooks/pre-commit"
+# register a git pre-commit hook
+pre-commit install
+
+# run hooks without commiting
+pre-commit run
+
+# run hooks on all (staged+unstaged) files
+pre-commit run --all-files
 ```
 
 ## Running tests

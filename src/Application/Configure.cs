@@ -9,13 +9,13 @@ public static class Configure
 {
     public static void AddServices(this IServiceCollection services, IConfiguration configuration)
     {
-        services
-            .AddOptions<Settings>()
+        _ = services
+            .AddOptions<AppSettings>()
             .BindConfiguration("Settings")
             .ValidateDataAnnotations()
             .ValidateOnStart();
-        services
-            .AddSingleton(x => x.GetRequiredService<IOptions<Settings>>().Value)
+        _ = services
+            .AddSingleton(x => x.GetRequiredService<IOptions<AppSettings>>().Value)
             .AddHttpClient()
             .ConfigurePersistenceServices(configuration)
             .ConfigureGraphBuildingServices();

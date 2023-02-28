@@ -11,9 +11,10 @@ public static class Configure
     public static IServiceCollection ConfigurePersistenceServices(
         this IServiceCollection services,
         IConfiguration configuration
-    ) => services
-        .AddDbContext<MapDbContext>(
-            options => options.UseNpgsql(configuration.GetConnectionString("postgres"))
-        )
-        .AddTransient<IGraphSavingPort, MapRepository>();
+    ) =>
+        services
+            .AddDbContext<MapDbContext>(
+                options => options.UseNpgsql(configuration.GetConnectionString("postgres"))
+            )
+            .AddTransient<IGraphSavingPort, MapRepository>();
 }

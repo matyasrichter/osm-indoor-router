@@ -1,8 +1,12 @@
 namespace Graph;
 
-public class Graph : IGraph
+public class DictionaryGraph : IGraph
 {
-    public Graph(Dictionary<Guid, Node> nodes, Dictionary<Guid, List<Edge>> edges, Guid version)
+    public DictionaryGraph(
+        Dictionary<Guid, Node> nodes,
+        Dictionary<Guid, List<Edge>> edges,
+        Guid version
+    )
     {
         this.nodes = nodes;
         this.edges = edges;
@@ -13,6 +17,7 @@ public class Graph : IGraph
     private readonly Dictionary<Guid, Node> nodes;
     private readonly Dictionary<Guid, List<Edge>> edges;
     public IReadOnlyCollection<Node> Nodes => nodes.Values;
+
     public Node? GetNode(Guid id) => nodes.TryGetValue(id, out var value) ? value : null;
 
     public IEnumerable<Edge> GetEdgesFromNode(Node node)

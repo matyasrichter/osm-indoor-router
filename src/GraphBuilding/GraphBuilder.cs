@@ -8,9 +8,11 @@ public class GraphBuilder
     private readonly Dictionary<Guid, Node> nodes = new();
     private readonly Dictionary<long, Guid> sourceIdToId = new();
     private readonly Dictionary<Guid, List<Edge>> edges = new();
+
     public GraphBuilder(Guid version) => this.version = version;
 
     public bool HasNode(Guid id) => nodes.ContainsKey(id);
+
     public Node? GetNode(Guid id) => nodes.GetValueOrDefault(id);
 
     public Node? GetNodeBySourceId(long sourceId)
@@ -47,5 +49,5 @@ public class GraphBuilder
         return this;
     }
 
-    public IGraph Build() => new Graph(nodes, edges, version);
+    public IGraph Build() => new DictionaryGraph(nodes, edges, version);
 }

@@ -28,12 +28,23 @@ public partial class LevelParser
     private IEnumerable<decimal> ParseWithoutSemicolons(string str)
     {
         var rangeMatch = rangeRegex.Match(str);
-        if (rangeMatch.Success && rangeMatch.Groups["LowerBound"].Success && rangeMatch.Groups["UpperBound"].Success)
+        if (
+            rangeMatch.Success
+            && rangeMatch.Groups["LowerBound"].Success
+            && rangeMatch.Groups["UpperBound"].Success
+        )
         {
             return ParseRange(str, rangeMatch);
         }
 
-        if (!decimal.TryParse(str, NumberStyles.Number, CultureInfo.InvariantCulture, out var result))
+        if (
+            !decimal.TryParse(
+                str,
+                NumberStyles.Number,
+                CultureInfo.InvariantCulture,
+                out var result
+            )
+        )
         {
             LogSingleValueParseFailure(str);
             return new[] { 0m };
@@ -45,15 +56,27 @@ public partial class LevelParser
     private IEnumerable<decimal> ParseRange(string str, Match rangeMatch)
     {
         // we're dealing with a range
-        if (!decimal.TryParse(rangeMatch.Groups["LowerBound"].Value,
-                NumberStyles.Number, CultureInfo.InvariantCulture, out var lowerBound))
+        if (
+            !decimal.TryParse(
+                rangeMatch.Groups["LowerBound"].Value,
+                NumberStyles.Number,
+                CultureInfo.InvariantCulture,
+                out var lowerBound
+            )
+        )
         {
             LogLowerBoundParseFailure(str);
             return new[] { 0m };
         }
 
-        if (!decimal.TryParse(rangeMatch.Groups["UpperBound"].Value,
-                NumberStyles.Number, CultureInfo.InvariantCulture, out var upperBound))
+        if (
+            !decimal.TryParse(
+                rangeMatch.Groups["UpperBound"].Value,
+                NumberStyles.Number,
+                CultureInfo.InvariantCulture,
+                out var upperBound
+            )
+        )
         {
             LogUpperBoundParseFailure(str);
             return new[] { 0m };
@@ -81,7 +104,10 @@ public partial class LevelParser
     [LoggerMessage(Level = LogLevel.Debug, Message = "Failed to parse upper bound from {Input}")]
     private partial void LogUpperBoundParseFailure(string input);
 
-    [LoggerMessage(Level = LogLevel.Debug, Message = "Failed to parse bounds: lower>upper from {Input}")]
+    [LoggerMessage(
+        Level = LogLevel.Debug,
+        Message = "Failed to parse bounds: lower>upper from {Input}"
+    )]
     private partial void LogLowerBoundHigher(string input);
 
     [LoggerMessage(Level = LogLevel.Debug, Message = "Failed to parse single value from {Input}")]

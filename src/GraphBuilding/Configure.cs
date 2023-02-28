@@ -6,9 +6,9 @@ public static class Configure
 {
     public static IServiceCollection ConfigureGraphBuildingServices(
         this IServiceCollection services
-    ) => services
-        .AddHostedService<GraphUpdatingBackgroundService>()
-        .AddTransient<GraphUpdater>()
-        .AddTransient<OverpassLoader>()
-        .AddTransient<OsmStreamProcessor>();
+    ) =>
+        services
+            .AddHostedService<GraphUpdatingBackgroundService>()
+            .AddTransient<GraphUpdater>()
+            .AddTransient<OverpassLoader>();
 }

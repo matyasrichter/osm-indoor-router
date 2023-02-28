@@ -5,18 +5,31 @@ public class GraphTests
     [Fact]
     public void CanCreateEmptyGraph()
     {
-        var graph = new Graph(new(), new(), Guid.NewGuid());
+        var graph = new DictionaryGraph(new(), new(), Guid.NewGuid());
         graph.Nodes.Should().BeEmpty();
     }
 
     [Fact]
     public void CanCreateGraphWithoutEdges()
     {
-        var node1 = new Node() { Id = Guid.NewGuid(), Coordinates = new(0, 1), Level = 0, SourceId = 12345 };
-        var node2 = new Node() { Id = Guid.NewGuid(), Coordinates = new(1, 2), Level = 0, SourceId = 12346 };
-        var graph = new Graph(
+        var node1 = new Node()
+        {
+            Id = Guid.NewGuid(),
+            Coordinates = new(0, 1),
+            Level = 0,
+            SourceId = 12345
+        };
+        var node2 = new Node()
+        {
+            Id = Guid.NewGuid(),
+            Coordinates = new(1, 2),
+            Level = 0,
+            SourceId = 12346
+        };
+        var graph = new DictionaryGraph(
             new() { { node1.Id, node1 }, { node2.Id, node2 } },
-            new(), Guid.NewGuid()
+            new(),
+            Guid.NewGuid()
         );
 
         graph.Nodes.Should().BeEquivalentTo(new List<Node>() { node1, node2 });
@@ -29,13 +42,47 @@ public class GraphTests
     [Fact]
     public void CanCreateGraphWithEdges()
     {
-        var node1 = new Node() { Id = Guid.NewGuid(), Coordinates = new(0, 1), Level = 0, SourceId = 12345 };
-        var node2 = new Node() { Id = Guid.NewGuid(), Coordinates = new(1, 2), Level = 0, SourceId = 12346 };
-        var edge1 = new Edge() { Id = Guid.NewGuid(), FromId = node1.Id, ToId = node2.Id, SourceId = 12345 };
-        var edge2 = new Edge() { Id = Guid.NewGuid(), FromId = node2.Id, ToId = node1.Id, SourceId = 12346 };
-        var graph = new Graph(
+        var node1 = new Node()
+        {
+            Id = Guid.NewGuid(),
+            Coordinates = new(0, 1),
+            Level = 0,
+            SourceId = 12345
+        };
+        var node2 = new Node()
+        {
+            Id = Guid.NewGuid(),
+            Coordinates = new(1, 2),
+            Level = 0,
+            SourceId = 12346
+        };
+        var edge1 = new Edge()
+        {
+            Id = Guid.NewGuid(),
+            FromId = node1.Id,
+            ToId = node2.Id,
+            SourceId = 12345
+        };
+        var edge2 = new Edge()
+        {
+            Id = Guid.NewGuid(),
+            FromId = node2.Id,
+            ToId = node1.Id,
+            SourceId = 12346
+        };
+        var graph = new DictionaryGraph(
             new() { { node1.Id, node1 }, { node2.Id, node2 } },
-            new() { { node1.Id, new() { edge1 } }, { node2.Id, new() { edge2 } } },
+            new()
+            {
+                {
+                    node1.Id,
+                    new() { edge1 }
+                },
+                {
+                    node2.Id,
+                    new() { edge2 }
+                }
+            },
             Guid.NewGuid()
         );
 

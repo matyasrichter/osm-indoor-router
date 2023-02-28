@@ -8,23 +8,28 @@ public class GraphUpdater
 {
     private readonly IGraphSavingPort savingPort;
     private readonly OverpassLoader overpassLoader;
-    private readonly Settings settings;
+    private readonly AppSettings appSettings;
 
-    public GraphUpdater(IGraphSavingPort savingPort, OverpassLoader overpassLoader, Settings settings)
+    public GraphUpdater(
+        IGraphSavingPort savingPort,
+        OverpassLoader overpassLoader,
+        AppSettings appSettings
+    )
     {
         this.savingPort = savingPort;
         this.overpassLoader = overpassLoader;
-        this.settings = settings;
+        this.appSettings = appSettings;
     }
 
     public async Task UpdateGraph(CancellationToken ct)
     {
         IGraph graph;
-        using (var source =
-               await overpassLoader.LoadInBBox(
-                   settings.Bbox.SouthWest.AsPoint(),
-                   settings.Bbox.NorthEast.AsPoint()
-               ))
+        using (
+            var source = await overpassLoader.LoadInBBox(
+                appSettings.Bbox.SouthWest.AsPoint(),
+                appSettings.Bbox.NorthEast.AsPoint()
+            )
+        )
         {
             if (ct.IsCancellationRequested)
             {

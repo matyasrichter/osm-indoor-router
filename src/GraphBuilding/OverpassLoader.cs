@@ -21,7 +21,9 @@ public class OverpassLoader
         var result = await httpClient.GetAsync(uriBuilder.Uri);
         if (!result.IsSuccessStatusCode)
         {
-            throw new InvalidOperationException($"Could not load data from overpass api: status {result.StatusCode}");
+            throw new InvalidOperationException(
+                $"Could not load data from overpass api: status {result.StatusCode}"
+            );
         }
 
         return new(await result.Content.ReadAsStreamAsync());

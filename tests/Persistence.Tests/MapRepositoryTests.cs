@@ -16,9 +16,27 @@ public sealed class MapRepositoryTests : DbTestClass
         var version = Guid.NewGuid();
         var points = new HashSet<Node>()
         {
-            new() { Id = Guid.NewGuid(), Coordinates = new(1, 2), Level = 0, SourceId = null },
-            new() { Id = Guid.NewGuid(), Coordinates = new(2, 3), Level = 0, SourceId = null },
-            new() { Id = Guid.NewGuid(), Coordinates = new(3, 4), Level = 0, SourceId = null }
+            new()
+            {
+                Id = Guid.NewGuid(),
+                Coordinates = new(1, 2),
+                Level = 0,
+                SourceId = null
+            },
+            new()
+            {
+                Id = Guid.NewGuid(),
+                Coordinates = new(2, 3),
+                Level = 0,
+                SourceId = null
+            },
+            new()
+            {
+                Id = Guid.NewGuid(),
+                Coordinates = new(3, 4),
+                Level = 0,
+                SourceId = null
+            }
         };
 
         var graph = await repo.GetAllByVersion(version);
@@ -38,11 +56,29 @@ public sealed class MapRepositoryTests : DbTestClass
         var version = Guid.NewGuid();
         var graph = await repo.GetAllByVersion(version);
         graph.Nodes.Should().BeEmpty();
-        var node = new MapNode() { Id = Guid.NewGuid(), Coordinates = new(1, 2), Level = 0, SourceId = null };
+        var node = new MapNode()
+        {
+            Id = Guid.NewGuid(),
+            Coordinates = new(1, 2),
+            Level = 0,
+            SourceId = null
+        };
         var edges = new HashSet<Edge>()
         {
-            new() { Id = Guid.NewGuid(), FromId = node.Id, ToId = node.Id, SourceId = null },
-            new() { Id = Guid.NewGuid(), FromId = node.Id, ToId = node.Id, SourceId = null }
+            new()
+            {
+                Id = Guid.NewGuid(),
+                FromId = node.Id,
+                ToId = node.Id,
+                SourceId = null
+            },
+            new()
+            {
+                Id = Guid.NewGuid(),
+                FromId = node.Id,
+                ToId = node.Id,
+                SourceId = null
+            }
         };
 
         var saving = async () => await repo.SaveEdges(edges, version);
@@ -60,15 +96,51 @@ public sealed class MapRepositoryTests : DbTestClass
         var version = Guid.NewGuid();
         var points = new List<Node>()
         {
-            new() { Id = Guid.NewGuid(), Coordinates = new(1, 2), Level = 0, SourceId = null },
-            new() { Id = Guid.NewGuid(), Coordinates = new(2, 3), Level = 0, SourceId = null },
-            new() { Id = Guid.NewGuid(), Coordinates = new(3, 4), Level = 0, SourceId = null }
+            new()
+            {
+                Id = Guid.NewGuid(),
+                Coordinates = new(1, 2),
+                Level = 0,
+                SourceId = null
+            },
+            new()
+            {
+                Id = Guid.NewGuid(),
+                Coordinates = new(2, 3),
+                Level = 0,
+                SourceId = null
+            },
+            new()
+            {
+                Id = Guid.NewGuid(),
+                Coordinates = new(3, 4),
+                Level = 0,
+                SourceId = null
+            }
         };
         var edges = new HashSet<Edge>()
         {
-            new() { Id = Guid.NewGuid(), FromId = points[0].Id, ToId = points[1].Id, SourceId = null },
-            new() { Id = Guid.NewGuid(), FromId = points[2].Id, ToId = points[1].Id, SourceId = null },
-            new() { Id = Guid.NewGuid(), FromId = points[0].Id, ToId = points[2].Id, SourceId = null }
+            new()
+            {
+                Id = Guid.NewGuid(),
+                FromId = points[0].Id,
+                ToId = points[1].Id,
+                SourceId = null
+            },
+            new()
+            {
+                Id = Guid.NewGuid(),
+                FromId = points[2].Id,
+                ToId = points[1].Id,
+                SourceId = null
+            },
+            new()
+            {
+                Id = Guid.NewGuid(),
+                FromId = points[0].Id,
+                ToId = points[2].Id,
+                SourceId = null
+            }
         };
 
         await repo.SaveNodes(points, version);
@@ -82,7 +154,6 @@ public sealed class MapRepositoryTests : DbTestClass
         result.GetEdgesFromNode(points[1]).Should().BeEmpty();
     }
 
-    public MapRepositoryTests(DatabaseFixture dbFixture) : base(dbFixture)
-    {
-    }
+    public MapRepositoryTests(DatabaseFixture dbFixture)
+        : base(dbFixture) { }
 }

@@ -1,5 +1,6 @@
 namespace Persistence.Tests;
 
+using System.Diagnostics.Contracts;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Configurations;
 using DotNet.Testcontainers.Containers;
@@ -8,12 +9,13 @@ using Microsoft.EntityFrameworkCore;
 // ReSharper disable once ClassNeverInstantiated.Global
 public sealed class DatabaseFixture : IAsyncLifetime, IDisposable
 {
-    private readonly PostgreSqlTestcontainerConfiguration conf = new()
-    {
-        Database = "db",
-        Username = "postgres",
-        Password = "postgres"
-    };
+    private readonly PostgreSqlTestcontainerConfiguration conf =
+        new()
+        {
+            Database = "db",
+            Username = "postgres",
+            Password = "postgres"
+        };
 
     public TestcontainerDatabase PostgresContainer { get; }
 
@@ -23,13 +25,16 @@ public sealed class DatabaseFixture : IAsyncLifetime, IDisposable
         PostgresContainer = new ContainerBuilder<PostgreSqlTestcontainer>()
 #pragma warning restore CS0618
             .WithDatabase(conf)
-            .WithImage(Environment.GetEnvironmentVariable("TEST_DB_IMAGE_NAME") ?? "postgis/postgis:15-3.3-alpine")
+            .WithImage(
+                Environment.GetEnvironmentVariable("TEST_DB_IMAGE_NAME")
+                    ?? "postgis/postgis:15-3.3-alpine"
+            )
             .Build();
 
     public async Task InitializeAsync()
     {
         await PostgresContainer.StartAsync();
-        var dbContext = new MapDbContext(
+        await using var dbContext = new MapDbContext(
             new DbContextOptionsBuilder()
                 .UseNpgsql(PostgresContainer.ConnectionString + ";Include Error Detail=true")
                 .EnableSensitiveDataLogging()
@@ -45,36 +50,34 @@ public sealed class DatabaseFixture : IAsyncLifetime, IDisposable
 }
 
 [CollectionDefinition("DB", DisableParallelization = true)]
-public class DatabaseCollectionFixture : ICollectionFixture<DatabaseFixture>
-{
-}
+public class DatabaseCollectionFixture : ICollectionFixture<DatabaseFixture> { }
 
-public class DbTestClass : IAsyncLifetime, IDisposable
+public class DbTestClass : IAsyncLifetime
 {
     private readonly string connectionString;
     protected MapDbContext DbContext { get; private set; } = null!;
 
-    protected DbTestClass(DatabaseFixture dbFixture) => connectionString = dbFixture.PostgresContainer.ConnectionString;
-
-    public Task InitializeAsync() =>
-        Task.FromResult(DbContext = new(
-            new DbContextOptionsBuilder()
-                .UseNpgsql(connectionString + ";Include Error Detail=true")
-                .EnableSensitiveDataLogging()
-                .EnableDetailedErrors()
-                .Options
-        ));
-
-    async Task IAsyncLifetime.DisposeAsync()
+    protected DbTestClass(DatabaseFixture dbFixture)
     {
-        // delete everything in the database before the next test
-        await DbContext.MapNodes.ExecuteDeleteAsync();
-        await DbContext.MapEdges.ExecuteDeleteAsync();
+        Contract.Requires(dbFixture != null);
+        connectionString = dbFixture!.PostgresContainer.ConnectionString;
     }
 
-    public void Dispose()
+    public Task InitializeAsync() =>
+        Task.FromResult(
+            DbContext = new(
+                new DbContextOptionsBuilder()
+                    .UseNpgsql(connectionString + ";Include Error Detail=true")
+                    .EnableSensitiveDataLogging()
+                    .EnableDetailedErrors()
+                    .Options
+            )
+        );
+
+    public async Task DisposeAsync()
     {
-        DbContext.Dispose();
-        GC.SuppressFinalize(this);
+        // delete everything in the database before the next test
+        _ = await DbContext.MapNodes.ExecuteDeleteAsync();
+        _ = await DbContext.MapEdges.ExecuteDeleteAsync();
     }
 }
