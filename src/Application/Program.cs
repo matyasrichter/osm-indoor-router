@@ -1,8 +1,27 @@
 using Application;
-using Microsoft.Extensions.Hosting;
 
-var builder = Host
-    .CreateDefaultBuilder()
-    .ConfigureServices((context, services) => services.AddServices(context.Configuration));
-var host = builder.Build();
-await host.StartAsync();
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+builder.Services.AddServices(builder.Configuration);
+builder.Services.AddControllers();
+
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    _ = app.UseSwagger().UseSwaggerUI();
+}
+
+app.UseHttpsRedirection();
+
+app.UseAuthorization();
+
+app.MapControllers();
+
+app.Run();

@@ -42,11 +42,12 @@ stages:
   before_script:
     - 'dotnet restore --packages $NUGET_PACKAGES_DIRECTORY'
 
-dotnet-format:
+csharpier:
   extends: .dotnet
   stage: lint
   script:
-    - dotnet format --no-restore --verbosity normal --verify-no-changes
+    - dotnet tool restore
+    - dotnet csharpier --check .
 
 build:
   extends: .dotnet

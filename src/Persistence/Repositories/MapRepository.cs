@@ -2,7 +2,7 @@ namespace Persistence.Repositories;
 
 using Entities;
 using Graph;
-using GraphBuilder.Ports;
+using GraphBuilding.Ports;
 using Microsoft.EntityFrameworkCore;
 
 public class MapRepository : IGraphSavingPort
@@ -21,25 +21,23 @@ public class MapRepository : IGraphSavingPort
             .AsNoTracking()
             .Where(x => x.Version == version)
             .GroupBy(x => x.FromId)
-            .ToDictionaryAsync(
-                x => x.Key,
-                x => x.Select(y => y.ToDomain()).ToList());
-        return new Graph(nodes, edges, version);
+            .ToDictionaryAsync(x => x.Key, x => x.Select(y => y.ToDomain()).ToList());
+        return new DictionaryGraph(nodes, edges, version);
     }
 
     public async Task SaveNodes(IEnumerable<Node> nodes, Guid version)
     {
         var mapNodes = nodes.Select(x => MapNode.FromDomain(x, version));
         await dbContext.MapNodes.AddRangeAsync(mapNodes);
-        await dbContext.SaveChangesAsync();
+        _ = await dbContext.SaveChangesAsync();
     }
 
     public async Task SaveEdges(IEnumerable<Edge> edges, Guid version)
     {
         var mapEdges = edges.Select(x => MapEdge.FromDomain(x, version));
         await dbContext.MapEdges.AddRangeAsync(mapEdges);
-        await dbContext.SaveChangesAsync();
+        _ = await dbContext.SaveChangesAsync();
     }
 
-    public Task SaveCurrentVersion(Guid version) => throw new NotImplementedException();
+    public Task SaveCurrentVersion(Guid version) => Task.CompletedTask;
 }
