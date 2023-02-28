@@ -20,8 +20,8 @@ public partial class AddMapNodeAddMapEdge : Migration
                 Id = table.Column<Guid>(type: "uuid", nullable: false),
                 Version = table.Column<Guid>(type: "uuid", nullable: false),
                 Coordinates = table.Column<Point>(type: "geometry", nullable: false),
-                Level = table.Column<int>(type: "integer", nullable: false),
-                SourceId = table.Column<string>(type: "text", nullable: true)
+                Level = table.Column<decimal>(type: "numeric", nullable: false),
+                SourceId = table.Column<long>(type: "bigint", nullable: true)
             },
             constraints: table => table.PrimaryKey("PK_MapNodes", x => x.Id));
 
@@ -33,7 +33,7 @@ public partial class AddMapNodeAddMapEdge : Migration
                 Version = table.Column<Guid>(type: "uuid", nullable: false),
                 FromId = table.Column<Guid>(type: "uuid", nullable: false),
                 ToId = table.Column<Guid>(type: "uuid", nullable: false),
-                SourceId = table.Column<string>(type: "text", nullable: true)
+                SourceId = table.Column<long>(type: "bigint", nullable: true)
             },
             constraints: table =>
             {

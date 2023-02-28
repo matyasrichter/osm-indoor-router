@@ -15,9 +15,11 @@ public class Graph : IGraph
     public IReadOnlyCollection<Node> Nodes => nodes.Values;
     public Node? GetNode(Guid id) => nodes.TryGetValue(id, out var value) ? value : null;
 
-    public IEnumerable<Edge> GetEdges(Node node)
+    public IEnumerable<Edge> GetEdgesFromNode(Node node)
     {
         var found = edges.TryGetValue(node.Id, out var value);
         return !found || value == null ? Enumerable.Empty<Edge>() : value;
     }
+
+    public IEnumerable<Edge> GetEdges() => edges.SelectMany(x => x.Value);
 }

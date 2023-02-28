@@ -77,9 +77,9 @@ public sealed class MapRepositoryTests : DbTestClass
         var result = await repo.GetAllByVersion(version);
 
         result.Nodes.Should().BeEquivalentTo(points);
-        result.GetEdges(points[0]).Should().HaveCount(2);
-        result.GetEdges(points[2]).Should().HaveCount(1);
-        result.GetEdges(points[1]).Should().BeEmpty();
+        result.GetEdgesFromNode(points[0]).Should().HaveCount(2);
+        result.GetEdgesFromNode(points[2]).Should().HaveCount(1);
+        result.GetEdgesFromNode(points[1]).Should().BeEmpty();
     }
 
     public MapRepositoryTests(DatabaseFixture dbFixture) : base(dbFixture)

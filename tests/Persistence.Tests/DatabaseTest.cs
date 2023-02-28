@@ -19,7 +19,9 @@ public sealed class DatabaseFixture : IAsyncLifetime, IDisposable
 
     public DatabaseFixture() =>
         // https://github.com/testcontainers/testcontainers-dotnet/issues/750
+#pragma warning disable CS0618
         PostgresContainer = new ContainerBuilder<PostgreSqlTestcontainer>()
+#pragma warning restore CS0618
             .WithDatabase(conf)
             .WithImage(Environment.GetEnvironmentVariable("TEST_DB_IMAGE_NAME") ?? "postgis/postgis:15-3.3-alpine")
             .Build();

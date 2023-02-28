@@ -33,8 +33,8 @@ namespace Persistence.Migrations
                     b.Property<Guid>("FromId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("SourceId")
-                        .HasColumnType("text");
+                    b.Property<long?>("SourceId")
+                        .HasColumnType("bigint");
 
                     b.Property<Guid>("ToId")
                         .HasColumnType("uuid");
@@ -61,11 +61,11 @@ namespace Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("geometry");
 
-                    b.Property<int>("Level")
-                        .HasColumnType("integer");
+                    b.Property<decimal>("Level")
+                        .HasColumnType("numeric");
 
-                    b.Property<string>("SourceId")
-                        .HasColumnType("text");
+                    b.Property<long?>("SourceId")
+                        .HasColumnType("bigint");
 
                     b.Property<Guid>("Version")
                         .HasColumnType("uuid");

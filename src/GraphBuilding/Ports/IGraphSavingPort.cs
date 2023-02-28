@@ -1,4 +1,4 @@
-namespace GraphBuilder.Ports;
+namespace GraphBuilding.Ports;
 
 using Graph;
 

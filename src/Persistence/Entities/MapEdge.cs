@@ -13,7 +13,7 @@ public class MapEdge
     public MapNode From { get; init; } = default!;
     public Guid ToId { get; init; }
     public MapNode To { get; init; } = default!;
-    public string? SourceId { get; init; }
+    public long? SourceId { get; init; }
 
     public static MapEdge FromDomain(Edge edge, Guid version) => new()
     {

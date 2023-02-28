@@ -2,7 +2,7 @@ namespace Persistence.Repositories;
 
 using Entities;
 using Graph;
-using GraphBuilder.Ports;
+using GraphBuilding.Ports;
 using Microsoft.EntityFrameworkCore;
 
 public class MapRepository : IGraphSavingPort
@@ -41,5 +41,5 @@ public class MapRepository : IGraphSavingPort
         await dbContext.SaveChangesAsync();
     }
 
-    public Task SaveCurrentVersion(Guid version) => throw new NotImplementedException();
+    public Task SaveCurrentVersion(Guid version) => Task.CompletedTask;
 }
