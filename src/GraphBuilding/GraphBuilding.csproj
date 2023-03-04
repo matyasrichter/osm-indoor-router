@@ -6,25 +6,23 @@
     <Nullable>enable</Nullable>
     <AssemblyName>GraphBuilding</AssemblyName>
     <RootNamespace>GraphBuilding</RootNamespace>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="FSharp.Core" Version="7.0.200" />
-    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="7.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0" />
-    <PackageReference Include="NetTopologySuite" Version="2.5.0" />
-    <PackageReference Include="OsmSharp" Version="6.2.0" />
+    <PackageReference Include="FSharp.Core" Version="7.0.200"/>
+    <PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0"/>
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0"/>
+    <PackageReference Include="NetTopologySuite" Version="2.5.0"/>
+    <PackageReference Include="OsmSharp" Version="6.2.0"/>
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Graph\Graph.csproj" />
-    <ProjectReference Include="..\Settings\Settings.csproj" />
+    <ProjectReference Include="..\Graph\Graph.csproj"/>
+    <ProjectReference Include="..\Settings\Settings.csproj"/>
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.Hosting.Abstractions">
-      <HintPath>..\..\..\..\..\..\.nuget\packages\microsoft.extensions.hosting.abstractions\7.0.0\lib\net7.0\Microsoft.Extensions.Hosting.Abstractions.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.Extensions.Logging.Abstractions">
       <HintPath>..\..\..\..\..\..\.nuget\packages\microsoft.extensions.logging.abstractions\7.0.0\lib\net7.0\Microsoft.Extensions.Logging.Abstractions.dll</HintPath>
     </Reference>

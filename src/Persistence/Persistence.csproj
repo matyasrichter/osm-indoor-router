@@ -24,7 +24,6 @@
   <ItemGroup>
     <ProjectReference Include="..\GraphBuilding\GraphBuilding.csproj" />
     <ProjectReference Include="..\Graph\Graph.csproj" />
-    <ProjectReference Include="..\Settings\Settings.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -18,7 +18,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Graph.Tests", "tests\Graph.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GraphBuilding.Tests", "tests\GraphBuilding.Tests\GraphBuilding.Tests.csproj", "{95CEEA1C-E161-4217-BC95-D197A891DF12}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application", "src\Application\Application.csproj", "{49FB3CE7-D89A-41B1-A768-22A7B8179067}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "API", "src\API\API.csproj", "{49FB3CE7-D89A-41B1-A768-22A7B8179067}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GraphUpdater", "src\GraphUpdater\GraphUpdater.csproj", "{DF4FB37B-078B-493E-8C80-412798C4B597}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -34,6 +36,7 @@ Global
 		{F62F3906-A9B1-4598-B72D-737FA9B0B93A} = {6837E04C-BF92-4A8C-8C73-859ABBD60D9E}
 		{95CEEA1C-E161-4217-BC95-D197A891DF12} = {6837E04C-BF92-4A8C-8C73-859ABBD60D9E}
 		{49FB3CE7-D89A-41B1-A768-22A7B8179067} = {F4BE090C-3A78-42FB-812E-25009BA81499}
+		{DF4FB37B-078B-493E-8C80-412798C4B597} = {F4BE090C-3A78-42FB-812E-25009BA81499}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{B4BEB7E3-4073-4C0E-B635-14362A96E7FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -68,5 +71,9 @@ Global
 		{49FB3CE7-D89A-41B1-A768-22A7B8179067}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{49FB3CE7-D89A-41B1-A768-22A7B8179067}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{49FB3CE7-D89A-41B1-A768-22A7B8179067}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DF4FB37B-078B-493E-8C80-412798C4B597}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DF4FB37B-078B-493E-8C80-412798C4B597}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DF4FB37B-078B-493E-8C80-412798C4B597}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DF4FB37B-078B-493E-8C80-412798C4B597}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

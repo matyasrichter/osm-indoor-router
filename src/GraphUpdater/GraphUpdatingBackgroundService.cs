@@ -1,5 +1,6 @@
-namespace GraphBuilding;
+namespace GraphUpdater;
 
+using GraphBuilding;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -8,31 +9,31 @@ public partial class GraphUpdatingBackgroundService : BackgroundService
 {
     private readonly ILogger<GraphUpdatingBackgroundService> logger;
     private readonly IServiceProvider serviceProvider;
+    private readonly IHostApplicationLifetime applicationLifetime;
 
     public GraphUpdatingBackgroundService(
         ILogger<GraphUpdatingBackgroundService> logger,
-        IServiceProvider serviceProvider
+        IServiceProvider serviceProvider,
+        IHostApplicationLifetime applicationLifetime
     )
     {
         this.logger = logger;
         this.serviceProvider = serviceProvider;
+        this.applicationLifetime = applicationLifetime;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        while (!stoppingToken.IsCancellationRequested)
+        LogGraphUpdaterStarting();
+        using (var scope = serviceProvider.CreateScope())
         {
-            LogGraphUpdaterStarting();
-            using (var scope = serviceProvider.CreateScope())
-            {
-                var updater = scope.ServiceProvider.GetRequiredService<GraphUpdater>();
-                await updater.UpdateGraph(stoppingToken);
-            }
-
-            LogGraphUpdaterFinished();
-
-            await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
+            var updater = scope.ServiceProvider.GetRequiredService<GraphUpdater>();
+            await updater.UpdateGraph(stoppingToken);
         }
+
+        LogGraphUpdaterFinished();
+
+        applicationLifetime.StopApplication();
     }
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Starting GraphUpdater")]
