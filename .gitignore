@@ -11,3 +11,4 @@ artifacts/
 *.sln.ide
 .idea
 tests/*/TestResults/
+CoverageReports/

@@ -41,12 +41,12 @@ stages:
       - '$NUGET_PACKAGES_DIRECTORY'
   before_script:
     - 'dotnet restore --packages $NUGET_PACKAGES_DIRECTORY'
+    - 'dotnet tool restore'
 
 csharpier:
   extends: .dotnet
   stage: lint
   script:
-    - dotnet tool restore
     - dotnet csharpier --check .
 
 build:
@@ -56,12 +56,6 @@ build:
     - dotnet build --no-restore
 
 test:
-  extends: .dotnet
-  stage: test
-  script:
-    - dotnet test --no-restore --filter "Category!=DB"
-
-db-test:
   extends: .dotnet
   image: $CI_REGISTRY_IMAGE/dotnet-dockercli
   stage: test
@@ -80,12 +74,28 @@ db-test:
     DOCKER_TLS_CERTDIR: ""
     DOCKER_DRIVER: overlay2
     FF_NETWORK_PER_BUILD: "true"
-    TEST_DB_IMAGE_NAME: "gitlab.fit.cvut.cz:5000/richtm12/bp-code/postgis"
-    TESTCONTAINERS_RYUK_CONTAINER_IMAGE: "gitlab.fit.cvut.cz:5000/richtm12/bp-code/testcontainers/ryuk"
+    TEST_DB_IMAGE_NAME: "$CI_REGISTRY_IMAGE/postgis"
+    TESTCONTAINERS_RYUK_CONTAINER_IMAGE: "$CI_REGISTRY_IMAGE/testcontainers/ryuk"
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - dotnet test --no-restore --filter "Category=DB"
-
+    - >
+      dotnet test --no-restore
+      --collect:"XPlat Code Coverage"
+      --test-adapter-path:.
+      --logger:"junit;LogFilePath=../../artifacts/{assembly}-test-result.xml;MethodFormat=Class;FailureBodyFormat=Verbose"
+    - dotnet reportgenerator -reports:'**/**/coverage.cobertura.xml' -targetdir:'artifacts/coverage' -reporttypes:'TextSummary'
+    - cat artifacts/coverage/Summary.txt
+  coverage: /Line coverage[\s\S].+%/
+  artifacts:
+    when: always
+    paths:
+      - ./artifacts/*test-result.xml
+      - ./artifacts/coverage/Cobertura.xml
+    reports:
+      junit: ./artifacts/*test-result.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: ./**/**/coverage.cobertura.xml
 
 
 # --------------------------------
