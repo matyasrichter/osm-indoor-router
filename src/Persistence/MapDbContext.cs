@@ -8,6 +8,8 @@ public class MapDbContext : DbContext
     public DbSet<MapNode> MapNodes => Set<MapNode>();
     public DbSet<MapEdge> MapEdges => Set<MapEdge>();
 
+    public DbSet<MapVersion> MapVersions => Set<MapVersion>();
+
     public MapDbContext(DbContextOptions options)
         : base(options) { }
 

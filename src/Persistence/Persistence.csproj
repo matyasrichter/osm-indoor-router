@@ -22,8 +22,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Core\Core.csproj" />
     <ProjectReference Include="..\GraphBuilding\GraphBuilding.csproj" />
     <ProjectReference Include="..\Graph\Graph.csproj" />
+    <ProjectReference Include="..\Routing\Routing.csproj" />
   </ItemGroup>
 
   <ItemGroup>

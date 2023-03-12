@@ -6,19 +6,14 @@ using Ports;
 
 public partial class GraphHolder
 {
-    private readonly IGraphLoadingPort graphLoadingPort;
     private readonly ILogger<GraphHolder> logger;
 
     private Guid? currentVersion;
     public IGraph? Graph { get; private set; }
 
-    public GraphHolder(IGraphLoadingPort graphLoadingPort, ILogger<GraphHolder> logger)
-    {
-        this.graphLoadingPort = graphLoadingPort;
-        this.logger = logger;
-    }
+    public GraphHolder(ILogger<GraphHolder> logger) => this.logger = logger;
 
-    public async Task LoadGraph()
+    public async Task LoadGraph(IGraphLoadingPort graphLoadingPort)
     {
         var newVersion = await graphLoadingPort.GetCurrentGraphVersion();
         if (newVersion is null)

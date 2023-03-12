@@ -30,6 +30,9 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Reference Include="Microsoft.Extensions.Hosting.Abstractions">
+        <HintPath>..\..\..\..\..\..\.nuget\packages\microsoft.extensions.hosting.abstractions\7.0.0\lib\net7.0\Microsoft.Extensions.Hosting.Abstractions.dll</HintPath>
+      </Reference>
       <Reference Include="Moq">
         <HintPath>..\..\..\..\..\..\.nuget\packages\moq\4.18.4\lib\net6.0\Moq.dll</HintPath>
       </Reference>

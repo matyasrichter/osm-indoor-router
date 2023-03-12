@@ -43,22 +43,19 @@ public class GraphHolderTests
     )
     {
         var loadingPortMock = new Mock<IGraphLoadingPort>();
-        var holder = new GraphHolder(
-            loadingPortMock.Object,
-            new Mock<ILogger<GraphHolder>>().Object
-        );
+        var holder = new GraphHolder(new Mock<ILogger<GraphHolder>>().Object);
 
         // load initial graph
         loadingPortMock.Setup(x => x.GetCurrentGraphVersion()).ReturnsAsync(initialVersion);
         loadingPortMock.Setup(x => x.GetGraph(It.IsAny<Guid>())).ReturnsAsync(initialGraph);
-        await holder.LoadGraph();
+        await holder.LoadGraph(loadingPortMock.Object);
 
         // load new graph
         loadingPortMock
             .Setup(x => x.GetCurrentGraphVersion())
             .ReturnsAsync(returnedCurrentVersion);
         loadingPortMock.Setup(x => x.GetGraph(It.IsAny<Guid>())).ReturnsAsync(returnedGraph);
-        await holder.LoadGraph();
+        await holder.LoadGraph(loadingPortMock.Object);
 
         holder.Graph.Should().Be(finalGraph);
     }
@@ -74,19 +71,16 @@ public class GraphHolderTests
     public async Task TestLoadingWithoutChange(Guid? initialVersion, IGraph? initialGraph)
     {
         var loadingPortMock = new Mock<IGraphLoadingPort>();
-        var holder = new GraphHolder(
-            loadingPortMock.Object,
-            new Mock<ILogger<GraphHolder>>().Object
-        );
+        var holder = new GraphHolder(new Mock<ILogger<GraphHolder>>().Object);
 
         // load initial graph
         loadingPortMock.Setup(x => x.GetCurrentGraphVersion()).ReturnsAsync(initialVersion);
         loadingPortMock.Setup(x => x.GetGraph(It.IsAny<Guid>())).ReturnsAsync(initialGraph);
-        await holder.LoadGraph();
+        await holder.LoadGraph(loadingPortMock.Object);
 
         // load new graph
         loadingPortMock.Invocations.Clear();
-        await holder.LoadGraph();
+        await holder.LoadGraph(loadingPortMock.Object);
         loadingPortMock.Verify(x => x.GetCurrentGraphVersion());
         loadingPortMock.VerifyNoOtherCalls();
 
