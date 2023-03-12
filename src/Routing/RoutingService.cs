@@ -39,7 +39,7 @@ public partial class RoutingService
         var distance = SeqModule
             .Windowed(2, route)
             .Aggregate(0d, (agg, pair) => agg + pair[0].Coordinates.Distance(pair[1].Coordinates));
-        return new(distance, route);
+        return new(distance * 100, route);
     }
 
     private static List<Node> AStar(IGraph graph, Guid from, Guid to)
