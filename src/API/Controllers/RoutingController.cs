@@ -15,7 +15,7 @@ public class RoutingController
     [HttpGet("route")]
     [ProducesResponseType(typeof(RoutingResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public Results<Ok<RoutingResult>, NotFound> GetRoute([FromQuery] Guid from, [FromQuery] Guid to)
+    public Results<Ok<RoutingResult>, NotFound> GetRoute([FromQuery] long from, [FromQuery] long to)
     {
         var route = routingService.FindRoute(from, to);
         if (route == null)

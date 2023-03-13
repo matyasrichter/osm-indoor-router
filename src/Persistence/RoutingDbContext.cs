@@ -3,14 +3,14 @@ namespace Persistence;
 using Entities;
 using Microsoft.EntityFrameworkCore;
 
-public class MapDbContext : DbContext
+public class RoutingDbContext : DbContext
 {
-    public DbSet<MapNode> MapNodes => Set<MapNode>();
-    public DbSet<MapEdge> MapEdges => Set<MapEdge>();
+    public DbSet<RoutingNode> RoutingNodes => Set<RoutingNode>();
+    public DbSet<RoutingEdge> RoutingEdges => Set<RoutingEdge>();
 
-    public DbSet<MapVersion> MapVersions => Set<MapVersion>();
+    public DbSet<RoutingGraphVersion> RoutingGraphVersions => Set<RoutingGraphVersion>();
 
-    public MapDbContext(DbContextOptions options)
+    public RoutingDbContext(DbContextOptions options)
         : base(options) { }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

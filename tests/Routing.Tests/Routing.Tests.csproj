@@ -25,7 +25,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\src\Graph\Graph.csproj" />
       <ProjectReference Include="..\..\src\Routing\Routing.csproj" />
     </ItemGroup>
 

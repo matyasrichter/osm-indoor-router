@@ -1,54 +1,62 @@
 namespace GraphBuilding;
 
-using Graph;
 using Microsoft.FSharp.Collections;
 using OsmSharp;
-using Node = OsmSharp.Node;
+using Ports;
 
-public static class OsmStreamProcessor
+public class OsmStreamProcessor
 {
-    public static IGraph BuildGraphFromStream(IEnumerable<OsmGeo> source)
+    private readonly IGraphSavingPort savingPort;
+
+    public OsmStreamProcessor(IGraphSavingPort savingPort) => this.savingPort = savingPort;
+
+    public async Task BuildGraphFromStream(IEnumerable<OsmGeo> source)
     {
-        var builder = new GraphBuilder(Guid.NewGuid());
+        var version = await savingPort.AddVersion();
+        var builder = new GraphBuilder(version);
 
         foreach (var geo in source)
         {
-            builder = geo switch
+            _ = geo switch
             {
-                Node node => ProcessNode(builder, node),
-                Way way => ProcessWay(builder, way),
+                OsmSharp.Node node => await ProcessNode(builder, node, version),
+                Way way => await ProcessWay(builder, way, version),
                 _ => builder
             };
         }
 
-        return builder.Build();
+        await savingPort.FinalizeVersion(version);
     }
 
-    private static GraphBuilder ProcessNode(GraphBuilder builder, Node node)
+    private async Task<GraphBuilder> ProcessNode(
+        GraphBuilder builder,
+        OsmSharp.Node node,
+        long version
+    )
     {
         if (node is not { Longitude: not null, Latitude: not null })
         {
             return builder;
         }
 
-        return builder.AddNode(
-            new()
-            {
-                Id = Guid.NewGuid(),
-                Coordinates = new(node.Longitude.Value, node.Latitude.Value),
-                Level = 0,
-                SourceId = node.Id
-            }
+        var inserted = new InsertedNode(
+            builder.Version,
+            new(node.Longitude.Value, node.Latitude.Value),
+            0,
+            node.Id
         );
+        var graphNode = await savingPort.SaveNode(inserted, version);
+        return builder.AddNode(graphNode);
     }
 
-    private static GraphBuilder ProcessWay(GraphBuilder builder, Way way)
+    private async Task<GraphBuilder> ProcessWay(GraphBuilder builder, Way way, long version)
     {
         if (way.Tags is null || !way.Tags.ContainsKey("highway"))
         {
             return builder;
         }
 
+        var insertedEdges = new List<InsertedEdge>();
         foreach (
             var (wayNodeA, wayNodeB) in SeqModule.Windowed(2, way.Nodes).Select(x => (x[0], x[1]))
         )
@@ -60,27 +68,30 @@ public static class OsmStreamProcessor
                 continue;
             }
 
-            builder = builder
-                .AddEdge(
-                    new()
-                    {
-                        Id = Guid.NewGuid(),
-                        FromId = nodeA.Id,
-                        ToId = nodeB.Id,
-                        SourceId = way.Id
-                    }
-                )
-                .AddEdge(
-                    new()
-                    {
-                        Id = Guid.NewGuid(),
-                        FromId = nodeB.Id,
-                        ToId = nodeA.Id,
-                        SourceId = way.Id
-                    }
-                );
+            var edge = new InsertedEdge(
+                builder.Version,
+                nodeA.Id,
+                nodeB.Id,
+                GetPedestrianCost(nodeA, nodeB),
+                GetPedestrianCost(nodeB, nodeA),
+                way.Id
+            );
+            insertedEdges.Add(edge);
+        }
+
+        var edges = await savingPort.SaveEdges(insertedEdges, version);
+        foreach (var edge in edges)
+        {
+            builder = builder.AddEdge(edge);
         }
 
         return builder;
+    }
+
+    private static double GetPedestrianCost(Node a, Node b)
+    {
+        var distance = a.Coordinates.Distance(b.Coordinates);
+        // var verticalDistance = Math.Abs(a.Level - b.Level);
+        return distance;
     }
 }

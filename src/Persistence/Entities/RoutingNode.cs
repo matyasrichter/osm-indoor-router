@@ -1,20 +1,22 @@
 namespace Persistence.Entities;
 
 using System.ComponentModel.DataAnnotations;
-using Graph;
+using System.ComponentModel.DataAnnotations.Schema;
+using GraphBuilding;
 using NetTopologySuite.Geometries;
 
-public class MapNode
+public class RoutingNode
 {
     [Key]
-    public Guid Id { get; init; }
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    public long Id { get; init; }
 
-    public Guid Version { get; init; }
+    public long Version { get; init; }
     public Point Coordinates { get; init; } = default!;
     public decimal Level { get; init; }
     public long? SourceId { get; init; }
 
-    public static MapNode FromDomain(Node node, Guid version) =>
+    public static RoutingNode FromDomain(Node node, long version) =>
         new()
         {
             Id = node.Id,

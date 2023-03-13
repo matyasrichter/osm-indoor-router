@@ -1,23 +1,24 @@
 namespace GraphBuilding.Tests;
 
-using GraphBuilding;
 using OsmSharp;
 using OsmSharp.Tags;
+using Ports;
+using Node = Node;
 
 public class OsmStreamProcessorTests
 {
     [Fact]
-    public void CanBuildTrivialGraph()
+    public async Task CanBuildTrivialGraph()
     {
         var dataStream = new OsmGeo[]
         {
-            new Node
+            new OsmSharp.Node
             {
                 Id = 123456,
                 Latitude = 50.1963895,
                 Longitude = 14.3519902
             },
-            new Node
+            new OsmSharp.Node
             {
                 Id = 123457,
                 Latitude = 50.1965417,
@@ -31,19 +32,61 @@ public class OsmStreamProcessorTests
             }
         };
 
-        var graph = OsmStreamProcessor.BuildGraphFromStream(dataStream);
-
-        graph.Nodes.Should().HaveCount(2);
-        graph.GetEdges().Should().HaveCount(2);
-        var nodeA = graph.Nodes.First();
-        var nodeB = graph.Nodes.Last();
-        graph
-            .GetEdgesFromNode(nodeA)
-            .Should()
-            .ContainSingle(x => x.FromId == nodeA.Id && x.ToId == nodeB.Id);
-        graph
-            .GetEdgesFromNode(nodeB)
-            .Should()
-            .ContainSingle(x => x.FromId == nodeB.Id && x.ToId == nodeA.Id);
+        var savingPort = new Mock<IGraphSavingPort>();
+        var version = 102;
+        savingPort.Setup(x => x.AddVersion()).ReturnsAsync(version);
+        savingPort
+            .Setup(
+                x => x.SaveNode(It.Is<InsertedNode>(n => n.SourceId == dataStream[0].Id), version)
+            )
+            .ReturnsAsync(
+                new Func<InsertedNode, long, Node>(
+                    (node, _) =>
+                        new()
+                        {
+                            Id = 1,
+                            Coordinates = node.Coordinates,
+                            Level = node.Level,
+                            SourceId = node.SourceId
+                        }
+                )
+            );
+        savingPort
+            .Setup(
+                x => x.SaveNode(It.Is<InsertedNode>(n => n.SourceId == dataStream[1].Id), version)
+            )
+            .ReturnsAsync(
+                new Func<InsertedNode, long, Node>(
+                    (node, _) =>
+                        new()
+                        {
+                            Id = 2,
+                            Coordinates = node.Coordinates,
+                            Level = node.Level,
+                            SourceId = node.SourceId
+                        }
+                )
+            );
+        savingPort
+            .Setup(x => x.SaveEdges(It.IsAny<IEnumerable<InsertedEdge>>(), version))
+            .ReturnsAsync(
+                new Func<IEnumerable<InsertedEdge>, long, IEnumerable<Edge>>(
+                    (x, _) =>
+                        x.Select(
+                            e =>
+                                new Edge()
+                                {
+                                    Id = 1,
+                                    FromId = e.FromId,
+                                    ToId = e.ToId,
+                                    Cost = e.Cost,
+                                    ReverseCost = e.ReverseCost,
+                                    SourceId = e.SourceId
+                                }
+                        )
+                )
+            );
+        await new OsmStreamProcessor(savingPort.Object).BuildGraphFromStream(dataStream);
+        savingPort.VerifyAll();
     }
 }

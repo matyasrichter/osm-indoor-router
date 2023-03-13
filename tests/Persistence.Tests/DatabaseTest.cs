@@ -34,7 +34,7 @@ public sealed class DatabaseFixture : IAsyncLifetime, IDisposable
     public async Task InitializeAsync()
     {
         await PostgresContainer.StartAsync();
-        await using var dbContext = new MapDbContext(
+        await using var dbContext = new RoutingDbContext(
             new DbContextOptionsBuilder()
                 .UseNpgsql(PostgresContainer.ConnectionString + ";Include Error Detail=true")
                 .EnableSensitiveDataLogging()
@@ -55,7 +55,7 @@ public class DatabaseCollectionFixture : ICollectionFixture<DatabaseFixture> { }
 public class DbTestClass : IAsyncLifetime
 {
     private readonly string connectionString;
-    protected MapDbContext DbContext { get; private set; } = null!;
+    protected RoutingDbContext DbContext { get; private set; } = null!;
 
     protected DbTestClass(DatabaseFixture dbFixture)
     {
@@ -77,7 +77,8 @@ public class DbTestClass : IAsyncLifetime
     public async Task DisposeAsync()
     {
         // delete everything in the database before the next test
-        _ = await DbContext.MapNodes.ExecuteDeleteAsync();
-        _ = await DbContext.MapEdges.ExecuteDeleteAsync();
+        _ = await DbContext.RoutingNodes.ExecuteDeleteAsync();
+        _ = await DbContext.RoutingEdges.ExecuteDeleteAsync();
+        _ = await DbContext.RoutingEdges.ExecuteDeleteAsync();
     }
 }
