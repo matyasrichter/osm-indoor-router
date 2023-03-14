@@ -75,7 +75,9 @@ indent_style = tab
 dotnet_analyzer_diagnostic.severity = error
 
 dotnet_diagnostic.SYSLIB1006.severity = none
+dotnet_diagnostic.IDE0055.severity = none
 
+csharp_space_between_attribute_sections = true
 # Language keywords instead of framework type names for type references
 dotnet_style_predefined_type_for_locals_parameters_members = true:warning
 dotnet_style_predefined_type_for_member_access = true:warning

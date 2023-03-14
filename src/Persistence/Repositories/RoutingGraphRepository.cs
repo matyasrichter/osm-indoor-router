@@ -6,29 +6,6 @@ using GraphBuilding;
 using GraphBuilding.Ports;
 using Microsoft.EntityFrameworkCore;
 
-public static class InsertedRoutingRecordExtensions
-{
-    public static Node ToNode(this InsertedNode from, long id) =>
-        new()
-        {
-            Id = id,
-            Coordinates = from.Coordinates,
-            Level = from.Level,
-            SourceId = from.SourceId
-        };
-
-    public static Edge ToEdge(this InsertedEdge from, long id) =>
-        new()
-        {
-            Id = id,
-            FromId = from.FromId,
-            ToId = from.ToId,
-            Cost = from.Cost,
-            ReverseCost = from.ReverseCost,
-            SourceId = from.SourceId
-        };
-}
-
 public class RoutingGraphRepository : IGraphSavingPort
 {
     private readonly RoutingDbContext db;
@@ -83,19 +60,22 @@ public class RoutingGraphRepository : IGraphSavingPort
     public async Task<IEnumerable<Edge>> GetEdges() =>
         await db.RoutingEdges.Select(x => x.ToDomain()).ToListAsync();
 
-    public async Task<long> AddVersion() =>
-        (
-            await db.RoutingGraphVersions.AddAsync(
-                new() { CreatedAt = timeMachine.Now, IsActive = false }
-            )
-        )
-            .Entity
-            .Id;
+    public async Task<long> AddVersion()
+    {
+        var inserted = await db.RoutingGraphVersions.AddAsync(
+            new() { CreatedAt = timeMachine.Now, IsActive = false }
+        );
+        _ = await db.SaveChangesAsync();
+        return inserted.Entity.Id;
+    }
 
-    public async Task FinalizeVersion(long version) =>
-        await db.RoutingGraphVersions
+    public async Task FinalizeVersion(long version)
+    {
+        _ = await db.RoutingGraphVersions
             .Where(x => x.Id == version)
             .ExecuteUpdateAsync(x => x.SetProperty(y => y.IsActive, true));
+        _ = await db.SaveChangesAsync();
+    }
 
     public async Task<long?> GetCurrentGraphVersion() =>
         await db.RoutingGraphVersions

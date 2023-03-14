@@ -1,5 +1,6 @@
 namespace API.Controllers;
 
+using System.ComponentModel.DataAnnotations;
 using Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -15,9 +16,13 @@ public class RoutingController
     [HttpGet("route")]
     [ProducesResponseType(typeof(RoutingResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public Results<Ok<RoutingResult>, NotFound> GetRoute([FromQuery] long from, [FromQuery] long to)
+    public async Task<Results<Ok<RoutingResult>, NotFound>> GetRoute(
+        [FromQuery] [Required] long from,
+        [FromQuery] [Required] long to,
+        [FromQuery] [Required] long graphVersion
+    )
     {
-        var route = routingService.FindRoute(from, to);
+        var route = await routingService.FindRoute(from, to, graphVersion);
         if (route == null)
         {
             return TypedResults.NotFound();

@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Repositories;
+using Routing.Ports;
 
 public static class Configure
 {
@@ -16,5 +17,6 @@ public static class Configure
             .AddDbContext<RoutingDbContext>(
                 options => options.UseNpgsql(configuration.GetConnectionString("postgres"))
             )
-            .AddTransient<IGraphSavingPort, RoutingGraphRepository>();
+            .AddTransient<IGraphSavingPort, RoutingGraphRepository>()
+            .AddTransient<IRoutingPort, PgRoutingRepository>();
 }

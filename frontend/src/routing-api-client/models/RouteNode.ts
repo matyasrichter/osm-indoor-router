@@ -28,10 +28,10 @@ import {
 export interface RouteNode {
     /**
      * 
-     * @type {string}
+     * @type {number}
      * @memberof RouteNode
      */
-    id: string;
+    id: number;
     /**
      * 
      * @type {RouteNodeCoordinates}

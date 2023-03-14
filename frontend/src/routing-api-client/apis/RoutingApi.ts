@@ -23,8 +23,9 @@ import {
 } from '../models';
 
 export interface RouteGetRequest {
-    from?: string;
-    to?: string;
+    from?: number;
+    to?: number;
+    graphVersion?: number;
 }
 
 /**
@@ -43,6 +44,10 @@ export class RoutingApi extends runtime.BaseAPI {
 
         if (requestParameters.to !== undefined) {
             queryParameters['to'] = requestParameters.to;
+        }
+
+        if (requestParameters.graphVersion !== undefined) {
+            queryParameters['graphVersion'] = requestParameters.graphVersion;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};

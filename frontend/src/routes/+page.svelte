@@ -32,8 +32,9 @@
         }
     });
 
-    $: from = "" as String;
-    $: to = "" as String;
+    $: from = 0 as bigint;
+    $: to = 0 as bigint;
+    $: version = 0 as bigint;
 
     function addOrReplaceRoute(map: Map, coordinates: Array<LngLatLike>) {
         if (!!map.getLayer('route')) {
@@ -76,7 +77,7 @@
     async function route() {
         await new RoutingApi(new Configuration({
             basePath: "http://localhost:5276"
-        })).routeGet({from: from, to: to})
+        })).routeGet({from: from, to: to, graphVersion: version})
             .then(data => {
                 addOrReplaceRoute(
                     map,
@@ -96,6 +97,10 @@
         <label>
             To:
             <input type="text" bind:value={to}>
+        </label>
+        <label>
+            Version:
+            <input type="text" bind:value={version}>
         </label>
         <button type="submit">Route</button>
     </form>
