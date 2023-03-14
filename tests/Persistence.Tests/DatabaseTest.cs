@@ -27,7 +27,7 @@ public sealed class DatabaseFixture : IAsyncLifetime, IDisposable
             .WithDatabase(conf)
             .WithImage(
                 Environment.GetEnvironmentVariable("TEST_DB_IMAGE_NAME")
-                    ?? "postgis/postgis:15-3.3-alpine"
+                    ?? "gitlab.fit.cvut.cz:5000/richtm12/bp-code/postgis"
             )
             .Build();
 

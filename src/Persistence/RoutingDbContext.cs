@@ -22,6 +22,6 @@ public class RoutingDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-        _ = modelBuilder.HasPostgresExtension("postgis");
+        _ = modelBuilder.HasPostgresExtension("postgis").HasPostgresExtension("pgrouting");
     }
 }
