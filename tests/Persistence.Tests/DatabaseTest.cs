@@ -1,30 +1,19 @@
 namespace Persistence.Tests;
 
 using System.Diagnostics.Contracts;
-using DotNet.Testcontainers.Builders;
-using DotNet.Testcontainers.Configurations;
-using DotNet.Testcontainers.Containers;
 using Microsoft.EntityFrameworkCore;
+using Testcontainers.PostgreSql;
 
 // ReSharper disable once ClassNeverInstantiated.Global
-public sealed class DatabaseFixture : IAsyncLifetime, IDisposable
+public sealed class DatabaseFixture : IAsyncLifetime
 {
-    private readonly PostgreSqlTestcontainerConfiguration conf =
-        new()
-        {
-            Database = "db",
-            Username = "postgres",
-            Password = "postgres"
-        };
-
-    public TestcontainerDatabase PostgresContainer { get; }
+    public PostgreSqlContainer PostgresContainer { get; }
 
     public DatabaseFixture() =>
-        // https://github.com/testcontainers/testcontainers-dotnet/issues/750
-#pragma warning disable CS0618
-        PostgresContainer = new ContainerBuilder<PostgreSqlTestcontainer>()
-#pragma warning restore CS0618
-            .WithDatabase(conf)
+        PostgresContainer = new PostgreSqlBuilder()
+            .WithDatabase("postgres")
+            .WithUsername("postgres")
+            .WithPassword("postgres")
             .WithImage(
                 Environment.GetEnvironmentVariable("TEST_DB_IMAGE_NAME")
                     ?? "gitlab.fit.cvut.cz:5000/richtm12/bp-code/postgis"
@@ -36,7 +25,7 @@ public sealed class DatabaseFixture : IAsyncLifetime, IDisposable
         await PostgresContainer.StartAsync();
         await using var dbContext = new RoutingDbContext(
             new DbContextOptionsBuilder()
-                .UseNpgsql(PostgresContainer.ConnectionString + ";Include Error Detail=true")
+                .UseNpgsql(PostgresContainer.GetConnectionString() + ";Include Error Detail=true")
                 .EnableSensitiveDataLogging()
                 .EnableDetailedErrors()
                 .Options
@@ -45,8 +34,6 @@ public sealed class DatabaseFixture : IAsyncLifetime, IDisposable
     }
 
     public async Task DisposeAsync() => await PostgresContainer.StopAsync();
-
-    public void Dispose() => conf.Dispose();
 }
 
 [CollectionDefinition("DB", DisableParallelization = true)]
@@ -60,7 +47,7 @@ public class DbTestClass : IAsyncLifetime
     protected DbTestClass(DatabaseFixture dbFixture)
     {
         Contract.Requires(dbFixture != null);
-        connectionString = dbFixture!.PostgresContainer.ConnectionString;
+        connectionString = dbFixture!.PostgresContainer.GetConnectionString();
     }
 
     public Task InitializeAsync() =>
