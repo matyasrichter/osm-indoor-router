@@ -8,6 +8,7 @@ using Routing.Entities;
 using TestUtils;
 
 [Collection("Controller")]
+[Trait("Category", "DB")]
 public class RoutingControllerTests : ControllerTestBase
 {
     [Fact]
