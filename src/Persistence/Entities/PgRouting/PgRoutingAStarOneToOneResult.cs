@@ -18,9 +18,9 @@ public sealed record PgRoutingAStarOneToOneResult
 
     [ForeignKey(nameof(RoutingEdge))]
     [Column("edge")]
-    public long Edge { get; init; }
+    public long? Edge { get; init; }
 
-    public RoutingEdge RoutingEdge { get; init; } = null!;
+    public RoutingEdge? RoutingEdge { get; init; } = null!;
 
     [Column("cost")]
     public double Cost { get; init; }
