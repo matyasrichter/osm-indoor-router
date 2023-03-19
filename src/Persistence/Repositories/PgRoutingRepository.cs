@@ -1,8 +1,6 @@
 namespace Persistence.Repositories;
 
-using System.Runtime.CompilerServices;
 using Entities;
-using Entities.PgRouting;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Routing.Entities;

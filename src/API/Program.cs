@@ -1,10 +1,18 @@
+using System.Runtime.InteropServices;
 using API;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddServices(builder.Configuration);
-builder.Services.AddControllers();
+builder.Services
+    .AddControllers()
+    .AddJsonOptions(
+        options =>
+            options.JsonSerializerOptions.Converters.Add(
+                new NetTopologySuite.IO.Converters.GeoJsonConverterFactory()
+            )
+    );
 builder.Services.AddCors(
     options =>
         options.AddDefaultPolicy(
@@ -38,3 +46,6 @@ app.MapControllers();
 app.UseCors();
 
 app.Run();
+
+[ComVisible(true)]
+public partial class Program { } // so you can reference it from tests

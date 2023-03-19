@@ -30,9 +30,17 @@ public partial class RoutingService
         LogFoundRoute(from, to, routeNodes.Count, 0);
 
         var route = routeNodes
-            .Select(x => new RouteNode(x.Node.Id, x.Node.Coordinates, x.Node.Level))
+            .Select(
+                x =>
+                    new RouteNode(
+                        x.Node.Id,
+                        x.Node.Coordinates.Y,
+                        x.Node.Coordinates.X,
+                        x.Node.Level
+                    )
+            )
             .ToList();
-        return new(0, route);
+        return new(route);
     }
 
     [LoggerMessage(Level = LogLevel.Debug, Message = "Starting routing from {From} to {To}")]

@@ -1,6 +1,4 @@
 /* tslint:disable */
 /* eslint-disable */
-export * from './Coordinates';
+export * from './Route';
 export * from './RouteNode';
-export * from './RouteNodeCoordinates';
-export * from './RoutingResult';

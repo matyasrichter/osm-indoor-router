@@ -1,11 +1,11 @@
 namespace API.Controllers;
 
 using System.ComponentModel.DataAnnotations;
-using Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Routing;
+using Routing.Entities;
 
 public class RoutingController
 {
@@ -14,9 +14,9 @@ public class RoutingController
     public RoutingController(RoutingService routingService) => this.routingService = routingService;
 
     [HttpGet("route")]
-    [ProducesResponseType(typeof(RoutingResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Route), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<Results<Ok<RoutingResult>, NotFound>> GetRoute(
+    public async Task<Results<Ok<Route>, NotFound>> GetRoute(
         [FromQuery] [Required] long from,
         [FromQuery] [Required] long to,
         [FromQuery] [Required] long graphVersion
@@ -28,12 +28,6 @@ public class RoutingController
             return TypedResults.NotFound();
         }
 
-        var apiRoute = new RoutingResult(
-            route.TotalMeters,
-            route.Nodes.Select(
-                x => new RouteNode(x.Id, new(x.Coordinates.X, x.Coordinates.Y), x.Level)
-            )
-        );
-        return TypedResults.Ok(apiRoute);
+        return TypedResults.Ok(route);
     }
 }

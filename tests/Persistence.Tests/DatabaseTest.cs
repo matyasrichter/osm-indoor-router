@@ -1,8 +1,11 @@
 namespace Persistence.Tests;
 
+using System.Data;
 using System.Diagnostics.Contracts;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using Testcontainers.PostgreSql;
+using Respawn;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 public sealed class DatabaseFixture : IAsyncLifetime
@@ -43,6 +46,8 @@ public class DbTestClass : IAsyncLifetime
 {
     private readonly string connectionString;
     protected RoutingDbContext DbContext { get; private set; } = null!;
+    protected IDbConnection Connection { get; private set; } = null!;
+    private Respawner respawner = null!;
 
     protected DbTestClass(DatabaseFixture dbFixture)
     {
@@ -50,22 +55,26 @@ public class DbTestClass : IAsyncLifetime
         connectionString = dbFixture!.PostgresContainer.GetConnectionString();
     }
 
-    public Task InitializeAsync() =>
-        Task.FromResult(
-            DbContext = new(
-                new DbContextOptionsBuilder()
-                    .UseNpgsql(connectionString + ";Include Error Detail=true")
-                    .EnableSensitiveDataLogging()
-                    .EnableDetailedErrors()
-                    .Options
-            )
+    public async Task InitializeAsync()
+    {
+        DbContext = new(
+            new DbContextOptionsBuilder()
+                .UseNpgsql(connectionString + ";Include Error Detail=true")
+                .EnableSensitiveDataLogging()
+                .EnableDetailedErrors()
+                .Options
         );
+        await DbContext.Database.OpenConnectionAsync();
+        Connection = DbContext.Database.GetDbConnection();
+        respawner = await Respawner.CreateAsync(
+            DbContext.Database.GetDbConnection(),
+            new() { DbAdapter = DbAdapter.Postgres }
+        );
+    }
 
     public async Task DisposeAsync()
     {
-        // delete everything in the database before the next test
-        _ = await DbContext.RoutingNodes.ExecuteDeleteAsync();
-        _ = await DbContext.RoutingEdges.ExecuteDeleteAsync();
-        _ = await DbContext.RoutingEdges.ExecuteDeleteAsync();
+        await respawner.ResetAsync(DbContext.Database.GetDbConnection());
+        Connection.Dispose();
     }
 }

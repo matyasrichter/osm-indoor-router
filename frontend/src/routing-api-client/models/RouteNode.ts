@@ -13,13 +13,6 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { RouteNodeCoordinates } from './RouteNodeCoordinates';
-import {
-    RouteNodeCoordinatesFromJSON,
-    RouteNodeCoordinatesFromJSONTyped,
-    RouteNodeCoordinatesToJSON,
-} from './RouteNodeCoordinates';
-
 /**
  * 
  * @export
@@ -34,10 +27,16 @@ export interface RouteNode {
     id: number;
     /**
      * 
-     * @type {RouteNodeCoordinates}
+     * @type {number}
      * @memberof RouteNode
      */
-    coordinates: RouteNodeCoordinates;
+    latitude: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof RouteNode
+     */
+    longitude: number;
     /**
      * 
      * @type {number}
@@ -52,7 +51,8 @@ export interface RouteNode {
 export function instanceOfRouteNode(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "id" in value;
-    isInstance = isInstance && "coordinates" in value;
+    isInstance = isInstance && "latitude" in value;
+    isInstance = isInstance && "longitude" in value;
     isInstance = isInstance && "level" in value;
 
     return isInstance;
@@ -69,7 +69,8 @@ export function RouteNodeFromJSONTyped(json: any, ignoreDiscriminator: boolean):
     return {
         
         'id': json['id'],
-        'coordinates': RouteNodeCoordinatesFromJSON(json['coordinates']),
+        'latitude': json['latitude'],
+        'longitude': json['longitude'],
         'level': json['level'],
     };
 }
@@ -84,7 +85,8 @@ export function RouteNodeToJSON(value?: RouteNode | null): any {
     return {
         
         'id': value.id,
-        'coordinates': RouteNodeCoordinatesToJSON(value.coordinates),
+        'latitude': value.latitude,
+        'longitude': value.longitude,
         'level': value.level,
     };
 }

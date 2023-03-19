@@ -15,17 +15,17 @@
 
 import * as runtime from '../runtime';
 import type {
-  RoutingResult,
+  Route,
 } from '../models';
 import {
-    RoutingResultFromJSON,
-    RoutingResultToJSON,
+    RouteFromJSON,
+    RouteToJSON,
 } from '../models';
 
 export interface RouteGetRequest {
-    from?: number;
-    to?: number;
-    graphVersion?: number;
+    from: number;
+    to: number;
+    graphVersion: number;
 }
 
 /**
@@ -35,7 +35,19 @@ export class RoutingApi extends runtime.BaseAPI {
 
     /**
      */
-    async routeGetRaw(requestParameters: RouteGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<RoutingResult>> {
+    async routeGetRaw(requestParameters: RouteGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Route>> {
+        if (requestParameters.from === null || requestParameters.from === undefined) {
+            throw new runtime.RequiredError('from','Required parameter requestParameters.from was null or undefined when calling routeGet.');
+        }
+
+        if (requestParameters.to === null || requestParameters.to === undefined) {
+            throw new runtime.RequiredError('to','Required parameter requestParameters.to was null or undefined when calling routeGet.');
+        }
+
+        if (requestParameters.graphVersion === null || requestParameters.graphVersion === undefined) {
+            throw new runtime.RequiredError('graphVersion','Required parameter requestParameters.graphVersion was null or undefined when calling routeGet.');
+        }
+
         const queryParameters: any = {};
 
         if (requestParameters.from !== undefined) {
@@ -59,12 +71,12 @@ export class RoutingApi extends runtime.BaseAPI {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => RoutingResultFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => RouteFromJSON(jsonValue));
     }
 
     /**
      */
-    async routeGet(requestParameters: RouteGetRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<RoutingResult> {
+    async routeGet(requestParameters: RouteGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Route> {
         const response = await this.routeGetRaw(requestParameters, initOverrides);
         return await response.value();
     }

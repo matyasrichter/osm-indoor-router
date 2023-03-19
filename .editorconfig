@@ -256,6 +256,8 @@ dotnet_diagnostic.IDE0065.severity = none
 [tests/**/*.cs]
 # expression return values must be used
 dotnet_diagnostic.IDE0058.severity = none
+# http client calles with uri, not string
+dotnet_diagnostic.CA2234.severity = none
 
 [src/Persistence/Migrations/*.cs]
 dotnet_analyzer_diagnostic.severity = none
