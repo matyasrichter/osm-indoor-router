@@ -1,3 +1,4 @@
+using Core;
 using GraphBuilding;
 using GraphUpdater;
 using Persistence;
@@ -11,6 +12,7 @@ var host = Host.CreateDefaultBuilder(args)
                 .AddHttpClient()
                 .ConfigureGraphBuildingServices()
                 .ConfigurePersistenceServices(context.Configuration)
+                .ConfigureCoreServices()
                 .AddHostedService<GraphUpdatingBackgroundService>()
     )
     .Build();

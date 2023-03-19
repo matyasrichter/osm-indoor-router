@@ -1,19 +1,17 @@
 namespace GraphBuilding;
 
-using Graph;
-
 public class GraphBuilder
 {
-    private readonly Guid version;
-    private readonly Dictionary<Guid, Node> nodes = new();
-    private readonly Dictionary<long, Guid> sourceIdToId = new();
-    private readonly Dictionary<Guid, List<Edge>> edges = new();
+    public long Version { get; }
+    private readonly Dictionary<long, Node> nodes = new();
+    private readonly Dictionary<long, long> sourceIdToId = new();
+    private readonly Dictionary<long, List<Edge>> edges = new();
 
-    public GraphBuilder(Guid version) => this.version = version;
+    public GraphBuilder(long version) => Version = version;
 
-    public bool HasNode(Guid id) => nodes.ContainsKey(id);
+    public bool HasNode(long id) => nodes.ContainsKey(id);
 
-    public Node? GetNode(Guid id) => nodes.GetValueOrDefault(id);
+    public Node? GetNode(long id) => nodes.GetValueOrDefault(id);
 
     public Node? GetNodeBySourceId(long sourceId)
     {
@@ -48,6 +46,4 @@ public class GraphBuilder
         edges[edge.FromId].Add(edge);
         return this;
     }
-
-    public IGraph Build() => new DictionaryGraph(nodes, edges, version);
 }

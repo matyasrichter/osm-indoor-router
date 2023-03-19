@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 
-public class MapDbContextFactory : IDesignTimeDbContextFactory<MapDbContext>
+public class MapDbContextFactory : IDesignTimeDbContextFactory<RoutingDbContext>
 {
-    public MapDbContext CreateDbContext(string[] args)
+    public RoutingDbContext CreateDbContext(string[] args)
     {
         var env =
             Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT")
@@ -17,7 +17,7 @@ public class MapDbContextFactory : IDesignTimeDbContextFactory<MapDbContext>
             .AddJsonFile($"appsettings.{env}.json", false)
             .Build();
 
-        var optionsBuilder = new DbContextOptionsBuilder<MapDbContext>().UseNpgsql(
+        var optionsBuilder = new DbContextOptionsBuilder<RoutingDbContext>().UseNpgsql(
             conf.GetConnectionString("postgres")
         );
         return new(optionsBuilder.Options);
