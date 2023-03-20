@@ -28,6 +28,7 @@ public class RoutingDbContext : DbContext
         base.OnModelCreating(modelBuilder);
         _ = modelBuilder
             .HasPostgresExtension("postgis")
+            .HasPostgresExtension("hstore")
             .HasPostgresExtension("pgrouting")
             .Entity<PgRoutingAStarOneToOneResult>()
             .HasNoKey()
