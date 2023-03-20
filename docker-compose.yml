@@ -3,6 +3,9 @@ version: "3.8"
 name: indoorrouter
 services:
   db:
+    build:
+      context: .
+      dockerfile: ./dockerfiles/postgis.Dockerfile
     image: "gitlab.fit.cvut.cz:5000/richtm12/bp-code/postgis"
     environment:
       POSTGRES_USER: indoorrouter
@@ -12,6 +15,26 @@ services:
       - db_data:/var/lib/postgresql/data
     ports:
       - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  import-init:
+    environment:
+      PGHOST: db
+      PGUSER: indoorrouter
+      PGPASSWORD: indoorrouter
+      PGDATABASE: indoorrouter
+      EXTRACT_URL: https://download.geofabrik.de/europe/czech-republic-latest.osm.pbf
+      UPDATE_SERVER_URL: https://download.geofabrik.de/europe/czech-republic-updates
+      BBOX: 14.38534,50.10208,14.39604,50.10648
+    build:
+      context: .
+      dockerfile: ./dockerfiles/osm2pgsql.Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
 
 
 volumes:

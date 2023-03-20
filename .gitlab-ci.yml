@@ -123,43 +123,43 @@ push_dind:
   extends: .build_and_push_image
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      changes: [ "ci-images/dind.Dockerfile" ]
+      changes: [ "dockerfiles/dind.Dockerfile" ]
   variables:
     PUSHED_IMAGE_NAME: "docker-dind"
-    DOCKERFILE: "ci-images/dind.Dockerfile"
+    DOCKERFILE: "dockerfiles/dind.Dockerfile"
 
 push_dotnet:
   extends: .build_and_push_image
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      changes: [ "ci-images/dotnet.Dockerfile" ]
+      changes: [ "dockerfiles/dotnet.Dockerfile" ]
   variables:
     PUSHED_IMAGE_NAME: "dotnet"
-    DOCKERFILE: "ci-images/dotnet.Dockerfile"
+    DOCKERFILE: "dockerfiles/dotnet.Dockerfile"
 
 push_dotnet_dockercli:
   extends: .build_and_push_image
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      changes: [ "ci-images/dotnet-dockercli.Dockerfile" ]
+      changes: [ "dockerfiles/dotnet-dockercli.Dockerfile" ]
   variables:
     PUSHED_IMAGE_NAME: "dotnet-dockercli"
-    DOCKERFILE: "ci-images/dotnet-dockercli.Dockerfile"
+    DOCKERFILE: "dockerfiles/dotnet-dockercli.Dockerfile"
 
 push_postgis:
   extends: .build_and_push_image
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      changes: [ "ci-images/postgis.Dockerfile" ]
+      changes: [ "dockerfiles/postgis.Dockerfile" ]
   variables:
     PUSHED_IMAGE_NAME: "postgis"
-    DOCKERFILE: "ci-images/postgis.Dockerfile"
+    DOCKERFILE: "dockerfiles/postgis.Dockerfile"
 
 push_ryuk:
   extends: .build_and_push_image
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      changes: [ "ci-images/ryuk.Dockerfile" ]
+      changes: [ "dockerfiles/ryuk.Dockerfile" ]
   variables:
     PUSHED_IMAGE_NAME: "testcontainers/ryuk"
-    DOCKERFILE: "ci-images/ryuk.Dockerfile"
+    DOCKERFILE: "dockerfiles/ryuk.Dockerfile"
