@@ -12,3 +12,4 @@ artifacts/
 .idea
 tests/*/TestResults/
 CoverageReports/
+import-data

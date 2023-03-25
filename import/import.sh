@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # This script is contains checks for env variables, is used as the entrypoint for the import container
 
-set -xeo pipefail
+set -eo pipefail
 
 if [ -z "${EXTRACT_URL}" ]; then
     echo "EXTRACT_URL is not set"

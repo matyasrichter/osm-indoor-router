@@ -20,8 +20,10 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-  import-init:
+  import:
     environment:
+      UID: ${UID}
+      GID: ${GID}
       PGHOST: db
       PGUSER: indoorrouter
       PGPASSWORD: indoorrouter
@@ -29,6 +31,9 @@ services:
       EXTRACT_URL: https://download.geofabrik.de/europe/czech-republic-latest.osm.pbf
       UPDATE_SERVER_URL: https://download.geofabrik.de/europe/czech-republic-updates
       BBOX: 14.38534,50.10208,14.39604,50.10648
+    volumes:
+      - "./import-data:/app/data"
+      - "./import:/app/import"
     build:
       context: .
       dockerfile: ./dockerfiles/osm2pgsql.Dockerfile
