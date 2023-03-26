@@ -10,6 +10,6 @@ artifacts/
 *DS_Store
 *.sln.ide
 .idea
-tests/*/TestResults/
+tests/**/TestResults/
 CoverageReports/
 import-data
