@@ -49,6 +49,9 @@ csharpier:
   rules:
     - changes:
         - src/**/*
+        - tests/**/*
+        - .gitlab-ci.yml
+        - .editorconfig
   script:
     - dotnet csharpier --check .
 
@@ -58,6 +61,7 @@ build:
   rules:
     - changes:
         - src/**/*
+        - .gitlab-ci.yml
   script:
     - dotnet build --no-restore
 
@@ -68,6 +72,9 @@ test:
   rules:
     - changes:
         - src/**/*
+        - tests/**/*
+        - .gitlab-ci.yml
+        - .editorconfig
   needs:
     - job: push_dotnet_dockercli
       optional: true
