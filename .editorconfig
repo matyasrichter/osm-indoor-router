@@ -32,7 +32,7 @@ indent_style = tab
 indent_size = 2
 
 # XML Configuration Files
-[*.{xml,config,props,targets,nuspec,resx,ruleset,vsixmanifest,vsct}]
+[*.{xml,config,props,targets,nuspec,resx,ruleset,vsixmanifest,vsct,runsettings}]
 indent_size = 2
 
 # JSON Files

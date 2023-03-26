@@ -96,6 +96,7 @@ test:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - >
       dotnet test --no-restore
+      --settings .runsettings
       --collect:"XPlat Code Coverage"
       --test-adapter-path:.
       --logger:"junit;LogFilePath=../../artifacts/{assembly}-test-result.xml;MethodFormat=Class;FailureBodyFormat=Verbose"
