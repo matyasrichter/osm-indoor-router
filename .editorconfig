@@ -261,3 +261,6 @@ dotnet_diagnostic.CA2234.severity = none
 
 [src/Persistence/Migrations/*.cs]
 dotnet_analyzer_diagnostic.severity = none
+
+[src/Persistence/Entities/Raw/*.cs]
+dotnet_analyzer_diagnostic.CA1002.severity = suggestion

@@ -1,6 +1,6 @@
 namespace Persistence.Repositories;
 
-using Entities;
+using Entities.Processed;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Routing.Entities;

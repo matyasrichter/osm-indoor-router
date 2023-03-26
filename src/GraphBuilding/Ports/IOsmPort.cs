@@ -1,0 +1,28 @@
+namespace GraphBuilding.Ports;
+
+using NetTopologySuite.Geometries;
+
+public record OsmPoint(long NodeId, IReadOnlyDictionary<string, string> Tags, Point Geometry);
+
+public record OsmLine(
+    long WayId,
+    IReadOnlyDictionary<string, string> Tags,
+    ICollection<long> Nodes,
+    LineString Geometry
+);
+
+public record OsmPolygon(
+    long AreaId,
+    IReadOnlyDictionary<string, string> Tags,
+    ICollection<long> Nodes,
+    Polygon Geometry
+);
+
+public interface IOsmPort
+{
+    public Task<OsmPoint?> GetPointByOsmId(long osmId);
+    public Task<IEnumerable<OsmPoint?>> GetPointsByOsmIds(IEnumerable<long> osmId);
+    public Task<IEnumerable<OsmPoint>> GetPoints(Geometry boundingBox);
+    public Task<IEnumerable<OsmLine>> GetLines(Geometry boundingBox);
+    public Task<IEnumerable<OsmPolygon>> GetPolygons(Geometry boundingBox);
+}

@@ -7,28 +7,30 @@ local now = os.date()
 
 local tables = {}
 
-tables.points = osm2pgsql.define_node_table('points', {
+tables.points = osm2pgsql.define_node_table('osm_points', {
     { column = 'tags', type = 'jsonb' },
     { column = 'geom', type = 'point', projection = srid, not_null = true },
     { column = 'updated_at', sql_type = 'timestamp' },
 })
 
-tables.lines = osm2pgsql.define_way_table('lines', {
+tables.lines = osm2pgsql.define_way_table('osm_lines', {
     { column = 'tags', type = 'jsonb' },
     { column = 'geom', type = 'linestring', projection = srid, not_null = true },
+    { column = 'nodes', sql_type = 'bigint[]', not_null = true },
     { column = 'updated_at', sql_type = 'timestamp' },
 })
 
-tables.polygons = osm2pgsql.define_area_table('polygons', {
+tables.polygons = osm2pgsql.define_area_table('osm_polygons', {
     { column = 'tags', type = 'jsonb' },
     { column = 'geom', type = 'geometry', projection = srid, not_null = true },
-    { column = 'area', type = 'area' },
+    { column = 'nodes', sql_type = 'bigint[]', not_null = true },
     { column = 'updated_at', sql_type = 'timestamp' },
 })
 
-tables.routes = osm2pgsql.define_relation_table('routes', {
+tables.routes = osm2pgsql.define_relation_table('osm_routes', {
     { column = 'tags', type = 'jsonb' },
     { column = 'geom', type = 'multilinestring', projection = srid, not_null = true },
+    { column = 'members', type = 'jsonb', not_null = true },
     { column = 'updated_at', sql_type = 'timestamp' },
 })
 
@@ -243,12 +245,14 @@ function osm2pgsql.process_way(object)
         tables.polygons:insert({
             tags = object.tags,
             geom = object:as_polygon(),
+            nodes = '{' .. table.concat(object.nodes,",") .. '}',
             updated_at = now
         })
     else
         tables.lines:insert({
             tags = object.tags,
             geom = object:as_linestring(),
+            nodes = '{' .. table.concat(object.nodes,",") .. '}',
             updated_at = now
         })
     end
@@ -265,6 +269,7 @@ function osm2pgsql.process_relation(object)
         tables.routes:insert({
             tags = object.tags,
             geom = object:as_multilinestring(),
+            members = object.members,
             updated_at = now
         })
         return
@@ -274,6 +279,7 @@ function osm2pgsql.process_relation(object)
         tables.polygons:insert({
             tags = object.tags,
             geom = object:as_multipolygon(),
+            members = object.members,
             updated_at = now
         })
     end

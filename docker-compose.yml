@@ -20,17 +20,25 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: indoorrouter@example.org
+      PGADMIN_DEFAULT_PASSWORD: indoorrouter
+    ports:
+      - "127.0.0.1:8000:80"
+    depends_on:
+      db:
+        condition: service_healthy
   import:
     environment:
-      UID: ${UID}
-      GID: ${GID}
       PGHOST: db
       PGUSER: indoorrouter
       PGPASSWORD: indoorrouter
       PGDATABASE: indoorrouter
       EXTRACT_URL: https://download.geofabrik.de/europe/czech-republic-latest.osm.pbf
       UPDATE_SERVER_URL: https://download.geofabrik.de/europe/czech-republic-updates
-      BBOX: 14.38534,50.10208,14.39604,50.10648
+      BBOX: 14.384794,50.099895,14.396553,50.106529
     volumes:
       - "./import-data:/app/data"
       - "./import:/app/import"

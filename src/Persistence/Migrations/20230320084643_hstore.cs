@@ -5,7 +5,7 @@
 namespace Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class hstore : Migration
+    public partial class AddHstore : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

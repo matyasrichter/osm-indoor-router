@@ -19,8 +19,8 @@ public class OsmStreamProcessor
         {
             _ = geo switch
             {
-                OsmSharp.Node node => await ProcessNode(builder, node, version),
-                Way way => await ProcessWay(builder, way, version),
+                OsmSharp.Node node => await ProcessNode(builder, node),
+                Way way => await ProcessWay(builder, way),
                 _ => builder
             };
         }
@@ -28,11 +28,7 @@ public class OsmStreamProcessor
         await savingPort.FinalizeVersion(version);
     }
 
-    private async Task<GraphBuilder> ProcessNode(
-        GraphBuilder builder,
-        OsmSharp.Node node,
-        long version
-    )
+    private async Task<GraphBuilder> ProcessNode(GraphBuilder builder, OsmSharp.Node node)
     {
         if (node is not { Longitude: not null, Latitude: not null })
         {
@@ -45,11 +41,11 @@ public class OsmStreamProcessor
             0,
             node.Id
         );
-        var graphNode = await savingPort.SaveNode(inserted, version);
+        var graphNode = await savingPort.SaveNode(inserted);
         return builder.AddNode(graphNode);
     }
 
-    private async Task<GraphBuilder> ProcessWay(GraphBuilder builder, Way way, long version)
+    private async Task<GraphBuilder> ProcessWay(GraphBuilder builder, Way way)
     {
         if (way.Tags is null || !way.Tags.ContainsKey("highway"))
         {
@@ -79,7 +75,7 @@ public class OsmStreamProcessor
             insertedEdges.Add(edge);
         }
 
-        var edges = await savingPort.SaveEdges(insertedEdges, version);
+        var edges = await savingPort.SaveEdges(insertedEdges);
         foreach (var edge in edges)
         {
             builder = builder.AddEdge(edge);

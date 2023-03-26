@@ -1,6 +1,5 @@
 namespace GraphBuilding;
 
-using Ports;
 using Settings;
 
 public class GraphUpdater
@@ -23,8 +22,8 @@ public class GraphUpdater
     public async Task UpdateGraph(CancellationToken ct)
     {
         using var source = await overpassLoader.LoadInBBox(
-            appSettings.Bbox.SouthWest.AsPoint(),
-            appSettings.Bbox.NorthEast.AsPoint()
+            new(appSettings.Bbox.SouthWest.Latitude, appSettings.Bbox.SouthWest.Longitude),
+            new(appSettings.Bbox.NorthEast.Latitude, appSettings.Bbox.NorthEast.Longitude)
         );
         if (ct.IsCancellationRequested)
         {

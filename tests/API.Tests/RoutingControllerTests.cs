@@ -29,16 +29,15 @@ public class RoutingControllerTests : ControllerTestBase
 
         // create a three node graph A <--> B <--> C
         var version = await repo.AddVersion();
-        var nodeA = await repo.SaveNode(new(version, new(10, 20), 0, 1), version);
-        var nodeB = await repo.SaveNode(new(version, new(20, 25), 0, 2), version);
-        var nodeC = await repo.SaveNode(new(version, new(30, 31), 0, 3), version);
+        var nodeA = await repo.SaveNode(new(version, new(10, 20), 0, 1));
+        var nodeB = await repo.SaveNode(new(version, new(20, 25), 0, 2));
+        var nodeC = await repo.SaveNode(new(version, new(30, 31), 0, 3));
         await repo.SaveEdges(
             new InsertedEdge[]
             {
                 new(version, nodeA.Id, nodeB.Id, 100, 200, 123456),
                 new(version, nodeB.Id, nodeC.Id, 100, 200, 123457)
-            },
-            version
+            }
         );
         await repo.FinalizeVersion(version);
 

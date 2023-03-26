@@ -1,6 +1,6 @@
 namespace Persistence.Tests;
 
-using Entities;
+using Entities.Processed;
 using Repositories;
 using Routing.Entities;
 

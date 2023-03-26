@@ -1,7 +1,7 @@
 namespace Persistence.Repositories;
 
 using Core;
-using Entities;
+using Entities.Processed;
 using GraphBuilding;
 using GraphBuilding.Ports;
 using Microsoft.EntityFrameworkCore;
@@ -17,7 +17,7 @@ public class RoutingGraphRepository : IGraphSavingPort
         this.timeMachine = timeMachine;
     }
 
-    public async Task<Node> SaveNode(InsertedNode node, long version)
+    public async Task<Node> SaveNode(InsertedNode node)
     {
         var result = await db.RoutingNodes.AddAsync(
             new()
@@ -35,7 +35,7 @@ public class RoutingGraphRepository : IGraphSavingPort
     public async Task<IEnumerable<Node>> GetNodes() =>
         await db.RoutingNodes.Select(x => x.ToDomain()).ToListAsync();
 
-    public async Task<IEnumerable<Edge>> SaveEdges(IEnumerable<InsertedEdge> edges, long version)
+    public async Task<IEnumerable<Edge>> SaveEdges(IEnumerable<InsertedEdge> edges)
     {
         var toInsert = edges
             .Select(

@@ -30,7 +30,7 @@ public sealed class RoutingGraphRepositoryTests : DbTestClass
 
         foreach (var insertedNode in toInsert)
         {
-            points.Add(await repo.SaveNode(insertedNode, version));
+            points.Add(await repo.SaveNode(insertedNode));
         }
 
         (await repo.GetNodes()).Should().HaveCount(3).And.BeEquivalentTo(points);
@@ -45,14 +45,14 @@ public sealed class RoutingGraphRepositoryTests : DbTestClass
         );
 
         var version = await repo.AddVersion();
-        var node = await repo.SaveNode(new(version, new(1, 2), 0m, null), version);
+        var node = await repo.SaveNode(new(version, new(1, 2), 0m, null));
         var toInsert = new HashSet<InsertedEdge>()
         {
             new(version, 100, node.Id, 2, 1, null),
             new(version, node.Id, 100, 1, 3, null)
         };
 
-        var saving = async () => await repo.SaveEdges(toInsert, version);
+        var saving = async () => await repo.SaveEdges(toInsert);
 
         await saving.Should().ThrowAsync<Exception>();
         (await repo.GetEdges()).Should().BeEmpty();
@@ -67,16 +67,16 @@ public sealed class RoutingGraphRepositoryTests : DbTestClass
         );
 
         var version = await repo.AddVersion();
-        var nodeA = await repo.SaveNode(new(version, new(1, 2), 0m, null), version);
-        var nodeB = await repo.SaveNode(new(version, new(3, 4), 0m, null), version);
-        var nodeC = await repo.SaveNode(new(version, new(5, 8), 0m, null), version);
+        var nodeA = await repo.SaveNode(new(version, new(1, 2), 0m, null));
+        var nodeB = await repo.SaveNode(new(version, new(3, 4), 0m, null));
+        var nodeC = await repo.SaveNode(new(version, new(5, 8), 0m, null));
         var toInsert = new HashSet<InsertedEdge>()
         {
             new(version, nodeA.Id, nodeB.Id, 1, 3, null),
             new(version, nodeA.Id, nodeC.Id, 1, 3, null)
         };
 
-        await repo.SaveEdges(toInsert, version);
+        await repo.SaveEdges(toInsert);
 
         var edges = await repo.GetEdges();
         edges.Should().HaveCount(2);

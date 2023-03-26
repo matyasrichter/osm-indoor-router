@@ -15,8 +15,8 @@ public record InsertedEdge(
 
 public interface IGraphSavingPort
 {
-    Task<Node> SaveNode(InsertedNode node, long version);
-    Task<IEnumerable<Edge>> SaveEdges(IEnumerable<InsertedEdge> edges, long version);
+    Task<Node> SaveNode(InsertedNode node);
+    Task<IEnumerable<Edge>> SaveEdges(IEnumerable<InsertedEdge> edges);
     Task<long> AddVersion();
     Task FinalizeVersion(long version);
 }

@@ -34,6 +34,18 @@ public sealed class DatabaseFixture : IAsyncLifetime
                 .Options
         );
         await dbContext.Database.MigrateAsync();
+        await dbContext.Database.ExecuteSqlRawAsync(
+            "CREATE TABLE IF NOT EXISTS osm_points (node_id BIGINT PRIMARY KEY, tags JSONB,"
+                + " geom GEOMETRY(Point, 4326), updated_at TIMESTAMP WITH TIME ZONE);"
+        );
+        await dbContext.Database.ExecuteSqlRawAsync(
+            "CREATE TABLE IF NOT EXISTS osm_lines (way_id BIGINT PRIMARY KEY, tags JSONB,"
+                + " geom GEOMETRY(LineString, 4326), nodes bigint[], updated_at TIMESTAMP WITH TIME ZONE);"
+        );
+        await dbContext.Database.ExecuteSqlRawAsync(
+            "CREATE TABLE IF NOT EXISTS osm_polygons (area_id BIGINT PRIMARY KEY, tags JSONB,"
+                + " geom GEOMETRY(Geometry, 4326), nodes bigint[], updated_at TIMESTAMP WITH TIME ZONE);"
+        );
     }
 
     public async Task DisposeAsync() => await PostgresContainer.StopAsync();
@@ -66,6 +78,7 @@ public class DbTestClass : IAsyncLifetime
         );
         await DbContext.Database.OpenConnectionAsync();
         Connection = DbContext.Database.GetDbConnection();
+        await ((NpgsqlConnection)Connection).ReloadTypesAsync();
         respawner = await Respawner.CreateAsync(
             DbContext.Database.GetDbConnection(),
             new() { DbAdapter = DbAdapter.Postgres }

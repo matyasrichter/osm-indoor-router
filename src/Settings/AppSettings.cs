@@ -12,13 +12,16 @@ public record AppSettings
 public record Bbox
 {
     [Required]
-    public required Coordinates SouthWest { get; init; }
+    public required LatLng SouthWest { get; init; }
 
     [Required]
-    public required Coordinates NorthEast { get; init; }
+    public required LatLng NorthEast { get; init; }
+
+    public Geometry AsRectangle() =>
+        new GeometryFactory().ToGeometry(new(SouthWest.ToCoordinate(), NorthEast.ToCoordinate()));
 }
 
-public record Coordinates
+public record LatLng
 {
     [Required]
     public required double Latitude { get; init; }
@@ -26,5 +29,5 @@ public record Coordinates
     [Required]
     public required double Longitude { get; init; }
 
-    public Point AsPoint() => new(Latitude, Longitude);
-};
+    public Coordinate ToCoordinate() => new(Latitude, Longitude);
+}

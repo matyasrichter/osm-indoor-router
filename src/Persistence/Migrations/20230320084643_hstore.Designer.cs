@@ -14,7 +14,7 @@ namespace Persistence.Migrations
 {
     [DbContext(typeof(RoutingDbContext))]
     [Migration("20230320084643_hstore")]
-    partial class hstore
+    partial class AddHstore
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

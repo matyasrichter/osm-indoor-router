@@ -52,7 +52,7 @@ public class IntegrationTestFactory : WebApplicationFactory<Program>, IAsyncLife
     public new async Task DisposeAsync()
     {
         await DbContext.DisposeAsync();
-        Client.Dispose();
+        Client?.Dispose();
     }
 }
 

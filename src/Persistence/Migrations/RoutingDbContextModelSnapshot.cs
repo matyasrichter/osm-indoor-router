@@ -93,7 +93,7 @@ namespace Persistence.Migrations
 
                     b.HasIndex("ToId");
 
-                    b.ToTable("RoutingEdges");
+                    b.ToTable("RoutingEdges", (string)null);
                 });
 
             modelBuilder.Entity("Persistence.Entities.RoutingGraphVersion", b =>
@@ -112,7 +112,7 @@ namespace Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("RoutingGraphVersions");
+                    b.ToTable("RoutingGraphVersions", (string)null);
                 });
 
             modelBuilder.Entity("Persistence.Entities.RoutingNode", b =>
@@ -138,7 +138,7 @@ namespace Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("RoutingNodes");
+                    b.ToTable("RoutingNodes", (string)null);
                 });
 
             modelBuilder.Entity("Persistence.Entities.PgRouting.PgRoutingAStarOneToOneResult", b =>

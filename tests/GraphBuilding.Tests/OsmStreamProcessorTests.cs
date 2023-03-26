@@ -36,12 +36,10 @@ public class OsmStreamProcessorTests
         var version = 102;
         savingPort.Setup(x => x.AddVersion()).ReturnsAsync(version);
         savingPort
-            .Setup(
-                x => x.SaveNode(It.Is<InsertedNode>(n => n.SourceId == dataStream[0].Id), version)
-            )
+            .Setup(x => x.SaveNode(It.Is<InsertedNode>(n => n.SourceId == dataStream[0].Id)))
             .ReturnsAsync(
-                new Func<InsertedNode, long, Node>(
-                    (node, _) =>
+                new Func<InsertedNode, Node>(
+                    node =>
                         new()
                         {
                             Id = 1,
@@ -52,12 +50,10 @@ public class OsmStreamProcessorTests
                 )
             );
         savingPort
-            .Setup(
-                x => x.SaveNode(It.Is<InsertedNode>(n => n.SourceId == dataStream[1].Id), version)
-            )
+            .Setup(x => x.SaveNode(It.Is<InsertedNode>(n => n.SourceId == dataStream[1].Id)))
             .ReturnsAsync(
-                new Func<InsertedNode, long, Node>(
-                    (node, _) =>
+                new Func<InsertedNode, Node>(
+                    node =>
                         new()
                         {
                             Id = 2,
@@ -68,10 +64,10 @@ public class OsmStreamProcessorTests
                 )
             );
         savingPort
-            .Setup(x => x.SaveEdges(It.IsAny<IEnumerable<InsertedEdge>>(), version))
+            .Setup(x => x.SaveEdges(It.IsAny<IEnumerable<InsertedEdge>>()))
             .ReturnsAsync(
-                new Func<IEnumerable<InsertedEdge>, long, IEnumerable<Edge>>(
-                    (x, _) =>
+                new Func<IEnumerable<InsertedEdge>, IEnumerable<Edge>>(
+                    x =>
                         x.Select(
                             e =>
                                 new Edge()
