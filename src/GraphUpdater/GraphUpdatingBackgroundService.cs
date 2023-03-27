@@ -27,8 +27,8 @@ public partial class GraphUpdatingBackgroundService : BackgroundService
         LogGraphUpdaterStarting();
         using (var scope = serviceProvider.CreateScope())
         {
-            var updater = scope.ServiceProvider.GetRequiredService<GraphUpdater>();
-            await updater.UpdateGraph(stoppingToken);
+            var updater = scope.ServiceProvider.GetRequiredService<MapProcessor>();
+            await updater.Process(stoppingToken);
         }
 
         LogGraphUpdaterFinished();

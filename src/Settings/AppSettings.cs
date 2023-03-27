@@ -18,7 +18,9 @@ public record Bbox
     public required LatLng NorthEast { get; init; }
 
     public Geometry AsRectangle() =>
-        new GeometryFactory().ToGeometry(new(SouthWest.ToCoordinate(), NorthEast.ToCoordinate()));
+        new GeometryFactory(new(), 4326).ToGeometry(
+            new(SouthWest.ToCoordinate(), NorthEast.ToCoordinate())
+        );
 }
 
 public record LatLng
@@ -29,5 +31,5 @@ public record LatLng
     [Required]
     public required double Longitude { get; init; }
 
-    public Coordinate ToCoordinate() => new(Latitude, Longitude);
+    public Coordinate ToCoordinate() => new(Longitude, Latitude);
 }

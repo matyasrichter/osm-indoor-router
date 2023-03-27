@@ -11,6 +11,8 @@ public class GraphBuilder
 
     public bool HasNode(long id) => nodes.ContainsKey(id);
 
+    public bool HasNodeBySourceId(long sourceId) => sourceIdToId.ContainsKey(sourceId);
+
     public Node? GetNode(long id) => nodes.GetValueOrDefault(id);
 
     public Node? GetNodeBySourceId(long sourceId)

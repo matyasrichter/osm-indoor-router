@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Persistence;
 using Respawn;
+using Settings;
 using Testcontainers.PostgreSql;
 
 [CollectionDefinition("Controller")]
@@ -19,7 +20,10 @@ public class IntegrationTestFactory : WebApplicationFactory<Program>, IAsyncLife
     public RoutingDbContext DbContext { get; set; } = null!;
     public HttpClient Client { get; private set; } = null!;
 
-    public IntegrationTestFactory() =>
+    public AppSettings Settings { get; }
+
+    public IntegrationTestFactory()
+    {
         PostgresContainer = new PostgreSqlBuilder()
             .WithDatabase("postgres")
             .WithUsername("postgres")
@@ -29,10 +33,22 @@ public class IntegrationTestFactory : WebApplicationFactory<Program>, IAsyncLife
                     ?? "gitlab.fit.cvut.cz:5000/richtm12/bp-code/postgis"
             )
             .Build();
+        Settings = new()
+        {
+            Bbox = new()
+            {
+                NorthEast = new() { Latitude = 50.105917, Longitude = 14.39519 },
+                SouthWest = new() { Latitude = 50.1007, Longitude = 14.386007 }
+            }
+        };
+    }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder) =>
         builder.ConfigureTestServices(
-            services => services.Replace(new(typeof(RoutingDbContext), DbContext))
+            services =>
+                services
+                    .Replace(new(typeof(RoutingDbContext), DbContext))
+                    .Replace(new(typeof(AppSettings), Settings))
         );
 
     public async Task InitializeAsync()
@@ -59,6 +75,7 @@ public class IntegrationTestFactory : WebApplicationFactory<Program>, IAsyncLife
 public abstract class ControllerTestBase : IAsyncLifetime
 {
     protected HttpClient Client { get; }
+    protected AppSettings Settings { get; }
     protected RoutingDbContext DbContext { get; }
 
     private Respawner respawner = null!;
@@ -66,6 +83,7 @@ public abstract class ControllerTestBase : IAsyncLifetime
     protected ControllerTestBase(IntegrationTestFactory factory)
     {
         Client = factory.Client;
+        Settings = factory.Settings;
         DbContext = factory.DbContext;
     }
 

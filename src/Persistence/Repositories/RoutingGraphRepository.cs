@@ -5,8 +5,9 @@ using Entities.Processed;
 using GraphBuilding;
 using GraphBuilding.Ports;
 using Microsoft.EntityFrameworkCore;
+using Routing.Ports;
 
-public class RoutingGraphRepository : IGraphSavingPort
+public class RoutingGraphRepository : IGraphSavingPort, IGraphVersionProvider
 {
     private readonly RoutingDbContext db;
     private readonly ITimeMachine timeMachine;

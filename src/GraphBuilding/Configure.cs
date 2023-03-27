@@ -8,7 +8,7 @@ public static class Configure
         this IServiceCollection services
     ) =>
         services
-            .AddTransient<GraphUpdater>()
+            .AddTransient<MapProcessor>()
             .AddTransient<OverpassLoader>()
             .AddTransient<OsmStreamProcessor>();
 }
