@@ -43,8 +43,7 @@ public class MapProcessor
         {
             if (line.Tags.ContainsKey("highway"))
             {
-                Node? prev = null;
-                var edgesToInsert = await CreateEdgesFromLine(builder, line, prev).ToListAsync(ct);
+                var edgesToInsert = await CreateEdgesFromLine(builder, line).ToListAsync(ct);
 
                 var edges = await savingPort.SaveEdges(edgesToInsert);
                 foreach (var e in edges)
@@ -57,10 +56,10 @@ public class MapProcessor
 
     private async IAsyncEnumerable<InsertedEdge> CreateEdgesFromLine(
         GraphBuilder builder,
-        OsmLine line,
-        Node? prev
+        OsmLine line
     )
     {
+        Node? prev = null;
         foreach (var (coord, nodeOsmId) in line.Geometry.Coordinates.Zip(line.Nodes))
         {
             var node = await GetOrCreateNode(builder, nodeOsmId, coord);
@@ -84,12 +83,13 @@ public class MapProcessor
         if (!builder.HasNodeBySourceId(nodeOsmId))
         {
             var osmNode = await osm.GetPointByOsmId(nodeOsmId);
-            if (osmNode is null)
+            InsertedNode toInsert = osmNode switch
             {
-                return null;
-            }
+                null => new(builder.Version, new(coord), 0, nodeOsmId),
+                _ => new(builder.Version, new(coord), 0, nodeOsmId)
+            };
 
-            var node = await savingPort.SaveNode(new(builder.Version, new(coord), 0, nodeOsmId));
+            var node = await savingPort.SaveNode(toInsert);
             _ = builder.AddNode(node);
             return node;
         }
