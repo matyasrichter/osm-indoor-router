@@ -16,10 +16,13 @@
 import * as runtime from '../runtime';
 import type {
   Route,
+  RoutingConfig,
 } from '../models';
 import {
     RouteFromJSON,
     RouteToJSON,
+    RoutingConfigFromJSON,
+    RoutingConfigToJSON,
 } from '../models';
 
 export interface RouteGetRequest {
@@ -32,6 +35,30 @@ export interface RouteGetRequest {
  * 
  */
 export class RoutingApi extends runtime.BaseAPI {
+
+    /**
+     */
+    async configGetRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<RoutingConfig>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/config`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => RoutingConfigFromJSON(jsonValue));
+    }
+
+    /**
+     */
+    async configGet(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<RoutingConfig> {
+        const response = await this.configGetRaw(initOverrides);
+        return await response.value();
+    }
 
     /**
      */

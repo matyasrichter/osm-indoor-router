@@ -2,7 +2,10 @@
     import IndoorEqual from "mapbox-gl-indoorequal";
     import {LngLat, LngLatBounds, LngLatLike, Map} from 'maplibre-gl';
     import {onDestroy, onMount} from "svelte";
-    import {Configuration, RoutingApi} from "../routing-api-client"
+    import {Configuration, RoutingApi, type RoutingConfig} from "../routing-api-client"
+    import {Button, Column, Form, Row, TextInput} from "carbon-components-svelte";
+
+    export let data: RoutingConfig;
 
     let map: Map;
     let mapContainer: HTMLDivElement;
@@ -13,8 +16,8 @@
             // todo: extract key to env
             style: 'https://api.maptiler.com/maps/basic-v2/style.json?key=VxRJSs3YrShQ27b53YEL',
             maxBounds: new LngLatBounds(
-                new LngLat(14.35594439506531, 50.196269582652754),
-                new LngLat(14.35934007167816, 50.1981630992081)
+                new LngLat(data.bbox.southWest.longitude, data.bbox.southWest.latitude),
+                new LngLat(data.bbox.northEast.longitude, data.bbox.northEast.latitude)
             ),
         });
         map.once('load', function () {
@@ -43,7 +46,6 @@
 
     $: from = 0 as bigint;
     $: to = 0 as bigint;
-    $: version = 0 as bigint;
 
     function addOrReplaceRoute(map: Map, coordinates: Array<LngLatLike>) {
         if (!!map.getLayer('route')) {
@@ -86,7 +88,7 @@
     async function route() {
         await new RoutingApi(new Configuration({
             basePath: "http://localhost:5276"
-        })).routeGet({from: from, to: to, graphVersion: version})
+        })).routeGet({from: from, to: to, graphVersion: data.graphVersion})
             .then(data => {
                 addOrReplaceRoute(
                     map,
@@ -96,24 +98,23 @@
             .catch(error => console.error(error));
     }
 </script>
-
 <div class="wrapper">
-    <form on:submit|preventDefault={route}>
-        <label>
-            From:
-            <input type="text" bind:value={from}>
-        </label>
-        <label>
-            To:
-            <input type="text" bind:value={to}>
-        </label>
-        <label>
-            Version:
-            <input type="text" bind:value={version}>
-        </label>
-        <button type="submit">Route</button>
-    </form>
-    <div id="info"></div>
+    <Form on:submit={(e) => {
+        e.preventDefault()
+        route()
+    }}>
+        <Row>
+            <Column>
+                <TextInput labelText="From" required bind:value={from}></TextInput>
+            </Column>
+            <Column>
+                <TextInput labelText="To" required bind:value={to}></TextInput>
+            </Column>
+            <Column>
+                <Button type="submit" size="lg">Route</Button>
+            </Column>
+        </Row>
+    </Form>
     <div id="map" bind:this={mapContainer}></div>
 </div>
 <style>
