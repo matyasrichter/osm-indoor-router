@@ -2,50 +2,47 @@ namespace GraphBuilding;
 
 public class GraphBuilder
 {
-    public long Version { get; }
-    private readonly Dictionary<long, Node> nodes = new();
-    private readonly Dictionary<long, long> sourceIdToId = new();
-    private readonly Dictionary<long, List<Edge>> edges = new();
+    public List<InMemoryNode> Nodes { get; } = new();
+    public List<InMemoryEdge> Edges { get; } = new();
 
-    public GraphBuilder(long version) => Version = version;
+    // sourceId -> level -> nodes index
+    private readonly Dictionary<long, Dictionary<decimal, int>> sourceIdToNodeId = new();
 
-    public bool HasNode(long id) => nodes.ContainsKey(id);
+    public InMemoryNode? GetNode(int id) => Nodes.Count < id ? null : Nodes[id];
 
-    public bool HasNodeBySourceId(long sourceId) => sourceIdToId.ContainsKey(sourceId);
-
-    public Node? GetNode(long id) => nodes.GetValueOrDefault(id);
-
-    public Node? GetNodeBySourceId(long sourceId)
+    public (int Id, InMemoryNode Node)? GetNodeBySourceId(long sourceId, int level)
     {
-        var id = sourceIdToId.GetValueOrDefault(sourceId);
-        if (id == default)
-        {
+        var ids = sourceIdToNodeId.GetValueOrDefault(sourceId);
+        if (ids == default)
             return null;
-        }
 
-        return nodes.GetValueOrDefault(id);
+        var id = ids.GetValueOrDefault(level);
+        if (id == default)
+            return null;
+
+        return (id, Nodes[id]);
     }
 
-    public GraphBuilder AddNode(Node node)
+    public int AddNode(InMemoryNode inMemoryNode)
     {
-        nodes[node.Id] = node;
-        if (node.SourceId is not null)
+        var id = Nodes.Count;
+        Nodes.Add(inMemoryNode);
+        if (inMemoryNode.SourceId is { } sourceId)
         {
-            sourceIdToId[node.SourceId.Value] = node.Id;
+            if (!sourceIdToNodeId.ContainsKey(sourceId))
+                sourceIdToNodeId[sourceId] = new() { { inMemoryNode.Level, id } };
+            else
+                _ = sourceIdToNodeId[sourceId][inMemoryNode.Level] = id;
         }
 
-        return this;
+        return id;
     }
 
-    public GraphBuilder AddEdge(Edge edge)
-    {
-        if (!edges.ContainsKey(edge.FromId))
-        {
-            edges[edge.FromId] = new() { edge };
-            return this;
-        }
+    public void AddEdge(InMemoryEdge inMemoryEdge) => Edges.Add(inMemoryEdge);
 
-        edges[edge.FromId].Add(edge);
-        return this;
-    }
+    public IEnumerable<(long InternalId, InMemoryNode Node)> GetNodesWithInternalIds() =>
+        Nodes.Select((x, i) => ((long)i, x));
+
+    public IEnumerable<InMemoryEdge> GetRemappedEdges(IReadOnlyDictionary<long, long> nodeIdsMap) =>
+        Edges.Select(x => x with { FromId = nodeIdsMap[x.FromId], ToId = nodeIdsMap[x.ToId] });
 }

@@ -1,7 +1,7 @@
 namespace Persistence.Tests;
 
 using GraphBuilding;
-using GraphBuilding.Ports;
+using Microsoft.EntityFrameworkCore;
 using Repositories;
 using TestUtils;
 
@@ -10,7 +10,7 @@ using TestUtils;
 public sealed class RoutingGraphRepositoryTests : DbTestClass
 {
     [Fact]
-    public async Task CanSaveAndRetrievePoints()
+    public async Task CanSavePoints()
     {
         var repo = new RoutingGraphRepository(
             DbContext,
@@ -18,22 +18,21 @@ public sealed class RoutingGraphRepositoryTests : DbTestClass
         );
 
         var version = await repo.AddVersion();
-        var toInsert = new HashSet<InsertedNode>()
+        var toInsert = new HashSet<InMemoryNode>()
         {
-            new(version, new(1, 2), 0m, null),
-            new(version, new(2, 3), 0m, null),
-            new(version, new(3, 4), 0m, null)
+            new(new(1, 2), 0m, null),
+            new(new(2, 3), 0m, null),
+            new(new(3, 4), 0m, null)
         };
-        var points = new List<Node>();
 
-        (await repo.GetNodes()).Should().BeEmpty();
+        (await DbContext.RoutingNodes.CountAsync()).Should().Be(0);
 
-        foreach (var insertedNode in toInsert)
-        {
-            points.Add(await repo.SaveNode(insertedNode));
-        }
+        var ids = (await repo.SaveNodes(toInsert, version)).ToList();
+        ids.Should().HaveCount(toInsert.Count);
 
-        (await repo.GetNodes()).Should().HaveCount(3).And.BeEquivalentTo(points);
+        var inDb = await DbContext.RoutingNodes.ToListAsync();
+        inDb.Should().HaveCount(toInsert.Count);
+        inDb.Select(x => x.Id).Should().BeEquivalentTo(ids);
     }
 
     [Fact]
@@ -45,17 +44,19 @@ public sealed class RoutingGraphRepositoryTests : DbTestClass
         );
 
         var version = await repo.AddVersion();
-        var node = await repo.SaveNode(new(version, new(1, 2), 0m, null));
-        var toInsert = new HashSet<InsertedEdge>()
+        var nodeId = (
+            await repo.SaveNodes(new InMemoryNode[] { new(new(1, 2), 0m, null) }, version)
+        ).First();
+        var toInsert = new HashSet<InMemoryEdge>()
         {
-            new(version, 100, node.Id, 2, 1, null),
-            new(version, node.Id, 100, 1, 3, null)
+            new(100, nodeId, 2, 1, null),
+            new(nodeId, 100, 1, 3, null)
         };
 
-        var saving = async () => await repo.SaveEdges(toInsert);
+        var saving = async () => await repo.SaveEdges(toInsert, version);
 
         await saving.Should().ThrowAsync<Exception>();
-        (await repo.GetEdges()).Should().BeEmpty();
+        (await DbContext.RoutingEdges.CountAsync()).Should().Be(0);
     }
 
     [Fact]
@@ -67,19 +68,26 @@ public sealed class RoutingGraphRepositoryTests : DbTestClass
         );
 
         var version = await repo.AddVersion();
-        var nodeA = await repo.SaveNode(new(version, new(1, 2), 0m, null));
-        var nodeB = await repo.SaveNode(new(version, new(3, 4), 0m, null));
-        var nodeC = await repo.SaveNode(new(version, new(5, 8), 0m, null));
-        var toInsert = new HashSet<InsertedEdge>()
+        var nodeIds = (
+            await repo.SaveNodes(
+                new InMemoryNode[]
+                {
+                    new(new(1, 2), 0m, null),
+                    new(new(3, 4), 0m, null),
+                    new(new(5, 8), 0m, null)
+                },
+                version
+            )
+        ).ToList();
+        var toInsert = new HashSet<InMemoryEdge>()
         {
-            new(version, nodeA.Id, nodeB.Id, 1, 3, null),
-            new(version, nodeA.Id, nodeC.Id, 1, 3, null)
+            new(nodeIds[0], nodeIds[1], 1, 3, null),
+            new(nodeIds[0], nodeIds[2], 1, 3, null)
         };
 
-        await repo.SaveEdges(toInsert);
+        await repo.SaveEdges(toInsert, version);
 
-        var edges = await repo.GetEdges();
-        edges.Should().HaveCount(2);
+        (await DbContext.RoutingEdges.CountAsync()).Should().Be(2);
     }
 
     public RoutingGraphRepositoryTests(DatabaseFixture dbFixture)

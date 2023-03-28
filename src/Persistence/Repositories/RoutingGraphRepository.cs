@@ -18,32 +18,33 @@ public class RoutingGraphRepository : IGraphSavingPort, IGraphVersionProvider
         this.timeMachine = timeMachine;
     }
 
-    public async Task<Node> SaveNode(InsertedNode node)
+    public async Task<IEnumerable<long>> SaveNodes(IEnumerable<InMemoryNode> nodes, long version)
     {
-        var result = await db.RoutingNodes.AddAsync(
-            new()
-            {
-                Version = node.Version,
-                Coordinates = node.Coordinates,
-                Level = node.Level,
-                SourceId = node.SourceId
-            }
-        );
+        var entities = nodes
+            .Select(
+                n =>
+                    new RoutingNode()
+                    {
+                        Version = version,
+                        Coordinates = n.Coordinates,
+                        Level = n.Level,
+                        SourceId = n.SourceId
+                    }
+            )
+            .ToList();
+        await db.RoutingNodes.AddRangeAsync(entities);
         _ = await db.SaveChangesAsync();
-        return result.Entity.ToDomain();
+        return entities.Select(x => x.Id);
     }
 
-    public async Task<IEnumerable<Node>> GetNodes() =>
-        await db.RoutingNodes.Select(x => x.ToDomain()).ToListAsync();
-
-    public async Task<IEnumerable<Edge>> SaveEdges(IEnumerable<InsertedEdge> edges)
+    public async Task<IEnumerable<long>> SaveEdges(IEnumerable<InMemoryEdge> edges, long version)
     {
         var toInsert = edges
             .Select(
                 e =>
                     new RoutingEdge()
                     {
-                        Version = e.Version,
+                        Version = version,
                         FromId = e.FromId,
                         ToId = e.ToId,
                         Cost = e.Cost,
@@ -55,11 +56,8 @@ public class RoutingGraphRepository : IGraphSavingPort, IGraphVersionProvider
 
         await db.RoutingEdges.AddRangeAsync(toInsert);
         _ = await db.SaveChangesAsync();
-        return toInsert.Select(x => x.ToDomain());
+        return toInsert.Select(x => x.Id);
     }
-
-    public async Task<IEnumerable<Edge>> GetEdges() =>
-        await db.RoutingEdges.Select(x => x.ToDomain()).ToListAsync();
 
     public async Task<long> AddVersion()
     {

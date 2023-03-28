@@ -2,7 +2,7 @@ namespace API.Tests;
 
 using System.Net;
 using System.Net.Http.Json;
-using GraphBuilding.Ports;
+using GraphBuilding;
 using Persistence.Repositories;
 using Responses;
 using Routing.Entities;
@@ -30,20 +30,25 @@ public class RoutingControllerTests : ControllerTestBase
 
         // create a three node graph A <--> B <--> C
         var version = await repo.AddVersion();
-        var nodeA = await repo.SaveNode(new(version, new(10, 20), 0, 1));
-        var nodeB = await repo.SaveNode(new(version, new(20, 25), 0, 2));
-        var nodeC = await repo.SaveNode(new(version, new(30, 31), 0, 3));
+        var nodes = new InMemoryNode[]
+        {
+            new(new(10, 20), 0, 1),
+            new(new(20, 25), 0, 2),
+            new(new(30, 31), 0, 3)
+        };
+        var nodeIds = (await repo.SaveNodes(nodes, version)).ToList();
         await repo.SaveEdges(
-            new InsertedEdge[]
+            new InMemoryEdge[]
             {
-                new(version, nodeA.Id, nodeB.Id, 100, 200, 123456),
-                new(version, nodeB.Id, nodeC.Id, 100, 200, 123457)
-            }
+                new(nodeIds[0], nodeIds[1], 100, 200, 123456),
+                new(nodeIds[1], nodeIds[2], 100, 200, 123457)
+            },
+            version
         );
         await repo.FinalizeVersion(version);
 
         var response = await Client.GetAsync(
-            $"route?from={nodeA.Id}&to={nodeC.Id}&graphVersion={version}"
+            $"route?from={nodeIds[0]}&to={nodeIds[2]}&graphVersion={version}"
         );
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -54,9 +59,9 @@ public class RoutingControllerTests : ControllerTestBase
             .BeEquivalentTo(
                 new List<RouteNode>()
                 {
-                    new(nodeA.Id, nodeA.Coordinates.Y, nodeA.Coordinates.X, nodeA.Level),
-                    new(nodeB.Id, nodeB.Coordinates.Y, nodeB.Coordinates.X, nodeB.Level),
-                    new(nodeC.Id, nodeC.Coordinates.Y, nodeC.Coordinates.X, nodeC.Level)
+                    new(nodeIds[0], nodes[0].Coordinates.Y, nodes[0].Coordinates.X, nodes[0].Level),
+                    new(nodeIds[1], nodes[1].Coordinates.Y, nodes[1].Coordinates.X, nodes[1].Level),
+                    new(nodeIds[2], nodes[2].Coordinates.Y, nodes[2].Coordinates.X, nodes[2].Level)
                 }
             );
     }
