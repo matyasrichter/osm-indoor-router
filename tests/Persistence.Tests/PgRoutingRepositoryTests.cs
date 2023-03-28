@@ -14,20 +14,8 @@ public class PgRoutingRepositoryTests : DbTestClass
         RoutingEdge Edge
     )> CreateTrivialGraph()
     {
-        var nodeA = new RoutingNode()
-        {
-            Version = 10,
-            Coordinates = new(10, 20),
-            Level = 0,
-            SourceId = 1
-        };
-        var nodeB = new RoutingNode()
-        {
-            Version = 10,
-            Coordinates = new(10, 20),
-            Level = 0,
-            SourceId = 1
-        };
+        var nodeA = new RoutingNode(10, new(10, 20), 0, 1);
+        var nodeB = new RoutingNode(10, new(10, 20), 0, 1);
         await DbContext.RoutingNodes.AddRangeAsync(nodeA, nodeB);
         await DbContext.SaveChangesAsync();
         var edge = new RoutingEdge()
@@ -74,20 +62,8 @@ public class PgRoutingRepositoryTests : DbTestClass
     [Fact]
     public async Task HandlesRouteNotFound()
     {
-        var nodeA = new RoutingNode()
-        {
-            Version = 10,
-            Coordinates = new(10, 20),
-            Level = 0,
-            SourceId = 1
-        };
-        var nodeB = new RoutingNode()
-        {
-            Version = 10,
-            Coordinates = new(10, 20),
-            Level = 0,
-            SourceId = 1
-        };
+        var nodeA = new RoutingNode(10, new(10, 20), 0, 1);
+        var nodeB = new RoutingNode(10, new(10, 20), 0, 1);
         await DbContext.RoutingNodes.AddRangeAsync(nodeA, nodeB);
         await DbContext.SaveChangesAsync();
         var repo = new PgRoutingRepository(DbContext);

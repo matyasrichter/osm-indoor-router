@@ -6,6 +6,25 @@ using NetTopologySuite.Geometries;
 
 public class RoutingNode
 {
+    public RoutingNode() { }
+
+    public RoutingNode(long version, Point coordinates, decimal level, long? sourceId)
+    {
+        Version = version;
+        Coordinates = coordinates;
+        Level = level;
+        SourceId = sourceId;
+    }
+
+    public RoutingNode(long id, long version, Point coordinates, decimal level, long? sourceId)
+    {
+        Id = id;
+        Version = version;
+        Coordinates = coordinates;
+        Level = level;
+        SourceId = sourceId;
+    }
+
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public long Id { get; init; }

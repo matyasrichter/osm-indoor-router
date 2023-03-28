@@ -5,9 +5,11 @@ using Entities.Processed;
 using GraphBuilding;
 using GraphBuilding.Ports;
 using Microsoft.EntityFrameworkCore;
+using NetTopologySuite.Geometries;
+using Routing.Entities;
 using Routing.Ports;
 
-public class RoutingGraphRepository : IGraphSavingPort, IGraphVersionProvider
+public class RoutingGraphRepository : IGraphSavingPort, IGraphVersionProvider, INodeFinder
 {
     private readonly RoutingDbContext db;
     private readonly ITimeMachine timeMachine;
@@ -21,16 +23,7 @@ public class RoutingGraphRepository : IGraphSavingPort, IGraphVersionProvider
     public async Task<IEnumerable<long>> SaveNodes(IEnumerable<InMemoryNode> nodes, long version)
     {
         var entities = nodes
-            .Select(
-                n =>
-                    new RoutingNode()
-                    {
-                        Version = version,
-                        Coordinates = n.Coordinates,
-                        Level = n.Level,
-                        SourceId = n.SourceId
-                    }
-            )
+            .Select(n => new RoutingNode(version, n.Coordinates, n.Level, n.SourceId))
             .ToList();
         await db.RoutingNodes.AddRangeAsync(entities);
         _ = await db.SaveChangesAsync();
@@ -77,9 +70,31 @@ public class RoutingGraphRepository : IGraphSavingPort, IGraphVersionProvider
     }
 
     public async Task<long?> GetCurrentGraphVersion() =>
-        await db.RoutingGraphVersions
-            .OrderByDescending(x => x.CreatedAt)
-            .Where(x => x.IsActive)
-            .Select(x => x.Id)
+        (
+            await db.RoutingGraphVersions
+                .OrderByDescending(x => x.CreatedAt)
+                .Where(x => x.IsActive)
+                .FirstOrDefaultAsync()
+        )?.Id;
+
+    public async Task<Node?> FindClosestNode(
+        double latitude,
+        double longitude,
+        decimal level,
+        long graphVersion
+    ) =>
+        await db.RoutingNodes
+            .Where(x => x.Version == graphVersion)
+            .Where(x => x.Level == level || x.Level == 0)
+            .OrderBy(
+                x =>
+                    x.Coordinates.Distance(
+                        new GeometryFactory(new(), 4326).CreatePoint(
+                            new Coordinate(latitude, longitude)
+                        )
+                    )
+            )
+            .ThenBy(x => Math.Abs(x.Level - level))
+            .Select(x => new Node(x.Id, x.Coordinates, x.Level))
             .FirstOrDefaultAsync();
 }

@@ -20,5 +20,6 @@ public static class Configure
             .AddTransient<IGraphSavingPort, RoutingGraphRepository>()
             .AddTransient<IGraphVersionProvider, RoutingGraphRepository>()
             .AddTransient<IRoutingPort, PgRoutingRepository>()
-            .AddTransient<IOsmPort, OsmRepository>();
+            .AddTransient<IOsmPort, OsmRepository>()
+            .AddTransient<INodeFinder, RoutingGraphRepository>();
 }
