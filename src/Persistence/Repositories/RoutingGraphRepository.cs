@@ -90,7 +90,7 @@ public class RoutingGraphRepository : IGraphSavingPort, IGraphVersionProvider, I
                 x =>
                     x.Coordinates.Distance(
                         new GeometryFactory(new(), 4326).CreatePoint(
-                            new Coordinate(latitude, longitude)
+                            new Coordinate(longitude, latitude)
                         )
                     )
             )

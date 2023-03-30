@@ -1,20 +1,28 @@
 namespace GraphBuilding;
 
+using Microsoft.Extensions.Logging;
 using NetTopologySuite.Geometries;
 using Ports;
 using Settings;
 
-public class MapProcessor
+public partial class MapProcessor
 {
     private readonly IOsmPort osm;
     private readonly IGraphSavingPort savingPort;
     private readonly AppSettings settings;
+    private readonly ILogger<MapProcessor> logger;
 
-    public MapProcessor(IOsmPort osm, IGraphSavingPort savingPort, AppSettings settings)
+    public MapProcessor(
+        IOsmPort osm,
+        IGraphSavingPort savingPort,
+        AppSettings settings,
+        ILogger<MapProcessor> logger
+    )
     {
         this.osm = osm;
         this.savingPort = savingPort;
         this.settings = settings;
+        this.logger = logger;
     }
 
     public async Task Process(CancellationToken ct)
@@ -24,8 +32,9 @@ public class MapProcessor
 
         var graphBuilder = new GraphBuilder();
         await BuildGraph(graphBuilder, ct);
+        LogBuiltGraph(graphBuilder.Edges.Count, graphBuilder.Nodes.Count);
 
-        if (ct.IsCancellationRequested)
+        if (ct.IsCancellationRequested || graphBuilder.Edges.Count == 0)
             return;
 
         var version = await savingPort.AddVersion();
@@ -77,7 +86,7 @@ public class MapProcessor
     {
         var level = 0;
         var existingNode = builder.GetNodeBySourceId(nodeOsmId, level);
-        if (existingNode is not null)
+        if (existingNode is null)
         {
             var osmNode = await osm.GetPointByOsmId(nodeOsmId);
             InMemoryNode node = osmNode switch
@@ -92,4 +101,10 @@ public class MapProcessor
 
         return existingNode;
     }
+
+    [LoggerMessage(
+        Level = LogLevel.Information,
+        Message = "Built graph with {EdgeCount} edges, {NodeCount} nodes"
+    )]
+    private partial void LogBuiltGraph(int edgeCount, int nodeCount);
 }
