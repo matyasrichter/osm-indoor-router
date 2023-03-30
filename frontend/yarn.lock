@@ -201,6 +201,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@floating-ui/core@npm:^0.7.2":
+  version: 0.7.3
+  resolution: "@floating-ui/core@npm:0.7.3"
+  checksum: f48f9fb0d19dcbe7a68c38e8de7fabb11f0c0e6e0ef215ae60b5004900bacb1386e7b89cb377d91a90ff7d147ea1f06c2905136ecf34dea162d9696d8f448d5f
+  languageName: node
+  linkType: hard
+
+"@floating-ui/dom@npm:0.5.2":
+  version: 0.5.2
+  resolution: "@floating-ui/dom@npm:0.5.2"
+  dependencies:
+    "@floating-ui/core": ^0.7.2
+  checksum: ff0897abed2e97a8d134b4dd8fa5309553eda3c25dbc2dbe8f7564b3eeac93d21d9334ae7c1ba1f1e5442ed119d82d2ce6935cd4ff607da1c0c6a913c493f5fc
+  languageName: node
+  linkType: hard
+
 "@gar/promisify@npm:^1.1.3":
   version: 1.1.3
   resolution: "@gar/promisify@npm:1.1.3"
@@ -482,6 +498,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@stitches/core@npm:1.2.8":
+  version: 1.2.8
+  resolution: "@stitches/core@npm:1.2.8"
+  checksum: 3a76a697b1d71ffb212e8b166f923c8f66ef99de93689dd417571f90fbba5692abb9a92220acd102baf5298896f0fdfeaa721da2d61adee1247531a26f67a15f
+  languageName: node
+  linkType: hard
+
 "@sveltejs/adapter-auto@npm:^2.0.0":
   version: 2.0.0
   resolution: "@sveltejs/adapter-auto@npm:2.0.0"
@@ -533,6 +556,26 @@ __metadata:
     svelte: ^3.54.0
     vite: ^4.0.0
   checksum: 2584728109c6d52d310c7112554afb5b029da2b077809bf7fc5841f489198921609fb1957ff85d4aa176e89a6f32713447a60eb3db57249244f8536b4bf36872
+  languageName: node
+  linkType: hard
+
+"@svelteuidev/composables@npm:^0.10.0":
+  version: 0.10.0
+  resolution: "@svelteuidev/composables@npm:0.10.0"
+  checksum: 4dcb7d539f721c54f63440b037140c5c15141f6163b23dd464e0966a8fe7a11c9ed662827f3ba16bed96eb74ec489cff8d020709c199a71dc79bda188ce3bbb7
+  languageName: node
+  linkType: hard
+
+"@svelteuidev/core@npm:^0.10.0":
+  version: 0.10.0
+  resolution: "@svelteuidev/core@npm:0.10.0"
+  dependencies:
+    "@floating-ui/dom": 0.5.2
+    "@stitches/core": 1.2.8
+  peerDependencies:
+    "@svelteuidev/composables": 0.10.0
+    svelte: ">=3.55.0"
+  checksum: bfb1464407c60753ec1891958d8937dbc8b2b32e5d557c429d03ed6da51084e66c37348e5f3a2d17f79ca90a9f17329fcc3c2dde1d60a8fba975184ff6a655f4
   languageName: node
   linkType: hard
 
@@ -612,14 +655,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/pug@npm:^2.0.4, @types/pug@npm:^2.0.6":
+"@types/pug@npm:^2.0.6":
   version: 2.0.6
   resolution: "@types/pug@npm:2.0.6"
   checksum: e8d09c3ddc7e6b87050a16d73694518f259a8ed74a0ab79b81b847baf89d92d44959ed68199966ac6f4a218c715c9bb3e4c86c8800d4868a4a674f4b21d2f01d
   languageName: node
   linkType: hard
 
-"@types/sass@npm:^1.16.0, @types/sass@npm:^1.43.1":
+"@types/sass@npm:^1.43.1":
   version: 1.43.1
   resolution: "@types/sass@npm:1.43.1"
   dependencies:
@@ -1038,26 +1081,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"carbon-components-svelte@npm:^0.73.5":
-  version: 0.73.5
-  resolution: "carbon-components-svelte@npm:0.73.5"
-  dependencies:
-    flatpickr: 4.6.9
-  checksum: 6f3ff3a3dad4be076e209801b83eb43da90a58ea03f0b75c3c690bf7376d7f0b0b8c1bb4092db44567061f5a239f93652fe13f1f799e4e6212a40cbec9d29b89
-  languageName: node
-  linkType: hard
-
-"carbon-preprocess-svelte@npm:^0.9.1":
-  version: 0.9.1
-  resolution: "carbon-preprocess-svelte@npm:0.9.1"
-  dependencies:
-    purgecss: ^4.1.3
-    svelte-preprocess: ^4.10.7
-    typescript: ^4.7.4
-  checksum: be7248e60192993d9583aa34262ca94f21a6628704cb6d42152cacac129861f621259a4363ffba4e27e49d8e84871cac6fc1065793054b290d9a1e04c7bf1895
-  languageName: node
-  linkType: hard
-
 "chai@npm:^4.3.7":
   version: 4.3.7
   resolution: "chai@npm:4.3.7"
@@ -1196,7 +1219,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"commander@npm:8.3.0, commander@npm:^8.0.0":
+"commander@npm:8.3.0":
   version: 8.3.0
   resolution: "commander@npm:8.3.0"
   checksum: 0f82321821fc27b83bd409510bb9deeebcfa799ff0bf5d102128b500b7af22872c0c92cb6a0ebc5a4cf19c6b550fba9cedfa7329d18c6442a625f851377bacf0
@@ -1283,15 +1306,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cssesc@npm:^3.0.0":
-  version: 3.0.0
-  resolution: "cssesc@npm:3.0.0"
-  bin:
-    cssesc: bin/cssesc
-  checksum: f8c4ababffbc5e2ddf2fa9957dda1ee4af6048e22aeda1869d0d00843223c1b13ad3f5d88b51caa46c994225eacb636b764eb807a8883e2fb6f99b4f4e8c48b2
-  languageName: node
-  linkType: hard
-
 "date-fns@npm:^2.16.1":
   version: 2.29.3
   resolution: "date-fns@npm:2.29.3"
@@ -1364,7 +1378,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"detect-indent@npm:^6.0.0, detect-indent@npm:^6.1.0":
+"detect-indent@npm:^6.1.0":
   version: 6.1.0
   resolution: "detect-indent@npm:6.1.0"
   checksum: ab953a73c72dbd4e8fc68e4ed4bfd92c97eb6c43734af3900add963fd3a9316f3bc0578b018b24198d4c31a358571eff5f0656e81a1f3b9ad5c547d58b2d093d
@@ -1831,13 +1845,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"flatpickr@npm:4.6.9":
-  version: 4.6.9
-  resolution: "flatpickr@npm:4.6.9"
-  checksum: 4702ad182531af0524b2fc74a70e06d276ff91918449092b3a11c464cb5a5e010df6c7cc9ff92e8b8373f81b238ea85d911ce9b3b883ee8df5085180cc3aea13
-  languageName: node
-  linkType: hard
-
 "flatted@npm:^3.1.0":
   version: 3.2.7
   resolution: "flatted@npm:3.2.7"
@@ -1863,20 +1870,21 @@ __metadata:
     "@playwright/test": ^1.28.1
     "@sveltejs/adapter-auto": ^2.0.0
     "@sveltejs/kit": ^1.5.0
+    "@svelteuidev/composables": ^0.10.0
+    "@svelteuidev/core": ^0.10.0
     "@typescript-eslint/eslint-plugin": ^5.45.0
     "@typescript-eslint/parser": ^5.45.0
-    carbon-components-svelte: ^0.73.5
-    carbon-preprocess-svelte: ^0.9.1
     eslint: ^8.28.0
     eslint-config-prettier: ^8.5.0
     eslint-plugin-svelte3: ^4.0.0
     mapbox-gl-indoorequal: ^0.2.16
     maplibre-gl: ^2.4.0
+    normalize.css: ^8.0.1
     prettier: ^2.8.0
     prettier-plugin-svelte: ^2.8.1
-    reset-css: ^5.0.1
     svelte: ^3.54.0
     svelte-check: ^3.0.1
+    svelte-icons: ^2.1.0
     tslib: ^2.4.1
     typescript: ^4.9.3
     vite: ^4.0.0
@@ -2020,7 +2028,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"glob@npm:^7.1.3, glob@npm:^7.1.4, glob@npm:^7.1.7":
+"glob@npm:^7.1.3, glob@npm:^7.1.4":
   version: 7.2.3
   resolution: "glob@npm:7.2.3"
   dependencies:
@@ -2523,15 +2531,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"magic-string@npm:^0.25.7":
-  version: 0.25.9
-  resolution: "magic-string@npm:0.25.9"
-  dependencies:
-    sourcemap-codec: ^1.4.8
-  checksum: 9a0e55a15c7303fc360f9572a71cffba1f61451bc92c5602b1206c9d17f492403bf96f946dfce7483e66822d6b74607262e24392e87b0ac27b786e69a40e9b1a
-  languageName: node
-  linkType: hard
-
 "magic-string@npm:^0.27.0":
   version: 0.27.0
   resolution: "magic-string@npm:0.27.0"
@@ -2911,6 +2910,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"normalize.css@npm:^8.0.1":
+  version: 8.0.1
+  resolution: "normalize.css@npm:8.0.1"
+  checksum: 4698cae88ec35e3f3e82f9f9402e6ffb906c27ccd6373cad88e6b3f5634fc7a043cb38702472299e5edb73825cf8b18d5fd9283f58829eddda79ea97453049a2
+  languageName: node
+  linkType: hard
+
 "npmlog@npm:^6.0.0":
   version: 6.0.2
   resolution: "npmlog@npm:6.0.2"
@@ -3106,17 +3112,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss-selector-parser@npm:^6.0.6":
-  version: 6.0.11
-  resolution: "postcss-selector-parser@npm:6.0.11"
-  dependencies:
-    cssesc: ^3.0.0
-    util-deprecate: ^1.0.2
-  checksum: 0b01aa9c2d2c8dbeb51e9b204796b678284be9823abc8d6d40a8b16d4149514e922c264a8ed4deb4d6dbced564b9be390f5942c058582d8656351516d6c49cde
-  languageName: node
-  linkType: hard
-
-"postcss@npm:^8.3.5, postcss@npm:^8.4.21":
+"postcss@npm:^8.4.21":
   version: 8.4.21
   resolution: "postcss@npm:8.4.21"
   dependencies:
@@ -3191,20 +3187,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"purgecss@npm:^4.1.3":
-  version: 4.1.3
-  resolution: "purgecss@npm:4.1.3"
-  dependencies:
-    commander: ^8.0.0
-    glob: ^7.1.7
-    postcss: ^8.3.5
-    postcss-selector-parser: ^6.0.6
-  bin:
-    purgecss: bin/purgecss.js
-  checksum: 508613f904b130401f2a403d3383533f703c6bcd56e1254c1e8f57818a5337db3a667f66f48355f86271b20dd576691357752f460eb2edd94c095e4178391c5f
-  languageName: node
-  linkType: hard
-
 "queue-microtask@npm:^1.2.2":
   version: 1.2.3
   resolution: "queue-microtask@npm:1.2.3"
@@ -3257,13 +3239,6 @@ __metadata:
   version: 2.1.1
   resolution: "require-directory@npm:2.1.1"
   checksum: fb47e70bf0001fdeabdc0429d431863e9475e7e43ea5f94ad86503d918423c1543361cc5166d713eaa7029dd7a3d34775af04764bebff99ef413111a5af18c80
-  languageName: node
-  linkType: hard
-
-"reset-css@npm:^5.0.1":
-  version: 5.0.1
-  resolution: "reset-css@npm:5.0.1"
-  checksum: b93380a2c691bfc85344bfa07e781266a2f58fef194c1aec61923d4591d30d73f54a12e4fe32b48668ce9bc82c2d42715e7e9fdd108d85b3c93b2a319f0a077c
   languageName: node
   linkType: hard
 
@@ -3541,20 +3516,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sorcery@npm:^0.10.0":
-  version: 0.10.0
-  resolution: "sorcery@npm:0.10.0"
-  dependencies:
-    buffer-crc32: ^0.2.5
-    minimist: ^1.2.0
-    sander: ^0.5.0
-    sourcemap-codec: ^1.3.0
-  bin:
-    sorcery: bin/index.js
-  checksum: e23fc06336c6e47274bd5e23849f8a7a40071d06a6fe1105f2557eb8613563b4c867230fd5f7b143e86a9bf45f62279e39ce68545482821d7b51b185133f2bc9
-  languageName: node
-  linkType: hard
-
 "sorcery@npm:^0.11.0":
   version: 0.11.0
   resolution: "sorcery@npm:0.11.0"
@@ -3580,13 +3541,6 @@ __metadata:
   version: 0.6.1
   resolution: "source-map@npm:0.6.1"
   checksum: 59ce8640cf3f3124f64ac289012c2b8bd377c238e316fb323ea22fbfe83da07d81e000071d7242cad7a23cd91c7de98e4df8830ec3f133cb6133a5f6e9f67bc2
-  languageName: node
-  linkType: hard
-
-"sourcemap-codec@npm:^1.3.0, sourcemap-codec@npm:^1.4.8":
-  version: 1.4.8
-  resolution: "sourcemap-codec@npm:1.4.8"
-  checksum: b57981c05611afef31605732b598ccf65124a9fcb03b833532659ac4d29ac0f7bfacbc0d6c5a28a03e84c7510e7e556d758d0bb57786e214660016fb94279316
   languageName: node
   linkType: hard
 
@@ -3730,52 +3684,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"svelte-preprocess@npm:^4.10.7":
-  version: 4.10.7
-  resolution: "svelte-preprocess@npm:4.10.7"
-  dependencies:
-    "@types/pug": ^2.0.4
-    "@types/sass": ^1.16.0
-    detect-indent: ^6.0.0
-    magic-string: ^0.25.7
-    sorcery: ^0.10.0
-    strip-indent: ^3.0.0
-  peerDependencies:
-    "@babel/core": ^7.10.2
-    coffeescript: ^2.5.1
-    less: ^3.11.3 || ^4.0.0
-    postcss: ^7 || ^8
-    postcss-load-config: ^2.1.0 || ^3.0.0 || ^4.0.0
-    pug: ^3.0.0
-    sass: ^1.26.8
-    stylus: ^0.55.0
-    sugarss: ^2.0.0
-    svelte: ^3.23.0
-    typescript: ^3.9.5 || ^4.0.0
-  peerDependenciesMeta:
-    "@babel/core":
-      optional: true
-    coffeescript:
-      optional: true
-    less:
-      optional: true
-    node-sass:
-      optional: true
-    postcss:
-      optional: true
-    postcss-load-config:
-      optional: true
-    pug:
-      optional: true
-    sass:
-      optional: true
-    stylus:
-      optional: true
-    sugarss:
-      optional: true
-    typescript:
-      optional: true
-  checksum: 51a0820c14bcc411ddf3b1cf4c772e73873626ed0b6c54dfca9e06bd6a6b22c9502436df3f1a4dab9eb3a404bba95002fd70cadea29a84fc36da3071309a8b91
+"svelte-icons@npm:^2.1.0":
+  version: 2.1.0
+  resolution: "svelte-icons@npm:2.1.0"
+  checksum: a32e305152be010a694cc7afe5848fb8f88dd2dba36624cbd3c92a2bf54e5683c57c44b4faa31bccee19cf9cc855158e588591672c4ae89984e3500bef0c488a
   languageName: node
   linkType: hard
 
@@ -4009,7 +3921,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:^4.7.4, typescript@npm:^4.9.3, typescript@npm:^4.9.4":
+"typescript@npm:^4.9.3, typescript@npm:^4.9.4":
   version: 4.9.5
   resolution: "typescript@npm:4.9.5"
   bin:
@@ -4019,7 +3931,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@^4.7.4#~builtin<compat/typescript>, typescript@patch:typescript@^4.9.3#~builtin<compat/typescript>, typescript@patch:typescript@^4.9.4#~builtin<compat/typescript>":
+"typescript@patch:typescript@^4.9.3#~builtin<compat/typescript>, typescript@patch:typescript@^4.9.4#~builtin<compat/typescript>":
   version: 4.9.5
   resolution: "typescript@patch:typescript@npm%3A4.9.5#~builtin<compat/typescript>::version=4.9.5&hash=23ec76"
   bin:
@@ -4072,7 +3984,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"util-deprecate@npm:^1.0.1, util-deprecate@npm:^1.0.2":
+"util-deprecate@npm:^1.0.1":
   version: 1.0.2
   resolution: "util-deprecate@npm:1.0.2"
   checksum: 474acf1146cb2701fe3b074892217553dfcf9a031280919ba1b8d651a068c9b15d863b7303cb15bd00a862b498e6cf4ad7b4a08fb134edd5a6f7641681cb54a2

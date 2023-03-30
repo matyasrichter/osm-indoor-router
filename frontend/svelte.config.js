@@ -1,6 +1,5 @@
 import adapter from '@sveltejs/adapter-auto';
 import {vitePreprocess} from '@sveltejs/kit/vite';
-import {optimizeImports} from "carbon-preprocess-svelte";
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
@@ -8,7 +7,6 @@ const config = {
   // for more information about preprocessors
   preprocess: [
     vitePreprocess(),
-    optimizeImports()
   ],
 
   kit: {

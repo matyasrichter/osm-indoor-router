@@ -1,5 +1,13 @@
 <script>
-    import "reset-css/reset.css"
-    import "carbon-components-svelte/css/g10.css"
+    import 'normalize.css'
 </script>
-<slot></slot>
+<div class="wrapper">
+    <slot></slot>
+</div>
+
+<style>
+    .wrapper {
+        width: 100vw;
+        height: 100vh;
+    }
+</style>

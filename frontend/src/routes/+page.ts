@@ -1,8 +1,8 @@
-import {Configuration, RoutingApi, type RoutingConfig} from "../routing-api-client";
+import {ConfigApi, Configuration, RoutingApi, type RoutingConfig} from "../routing-api-client";
 import {error} from "@sveltejs/kit";
 
 export async function load(): Promise<RoutingConfig> {
-  const api = new RoutingApi(new Configuration({
+  const api = new ConfigApi(new Configuration({
     basePath: "http://localhost:5276"
   }));
 
