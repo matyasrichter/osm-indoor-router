@@ -1,13 +1,14 @@
 <script>
-    import 'normalize.css'
+	import 'normalize.css';
 </script>
+
 <div class="wrapper">
-    <slot></slot>
+	<slot />
 </div>
 
 <style>
-    .wrapper {
-        width: 100vw;
-        height: 100vh;
-    }
+	.wrapper {
+		width: 100vw;
+		height: 100vh;
+	}
 </style>

@@ -1,3 +1,1 @@
-<div class="centered error">
-    Something went wrong.
-</div>
+<div class="centered error">Something went wrong.</div>
