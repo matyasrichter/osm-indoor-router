@@ -5,7 +5,7 @@
 	import IndoorEqual from 'mapbox-gl-indoorequal';
 	import {
 		FullscreenControl,
-		IControl,
+		type IControl,
 		LngLat,
 		LngLatBounds,
 		Map,
@@ -13,6 +13,7 @@
 		ScaleControl
 	} from 'maplibre-gl';
 	import RoutingPickerControl from './RoutingPickerControl.svelte';
+	import { env } from '$env/dynamic/public';
 
 	export let data: RoutingConfig;
 
@@ -24,7 +25,7 @@
 		map = new Map({
 			container: mapContainer,
 			// todo: extract key to env
-			style: 'https://api.maptiler.com/maps/basic-v2/style.json?key=VxRJSs3YrShQ27b53YEL',
+			style: env.PUBLIC_MAPBOX_STYLE_URL!,
 			maxBounds: new LngLatBounds(
 				new LngLat(data.bbox.southWest.longitude, data.bbox.southWest.latitude),
 				new LngLat(data.bbox.northEast.longitude, data.bbox.northEast.latitude)
@@ -35,7 +36,7 @@
 		});
 
 		// todo: extract key to env
-		indoorEqual = new IndoorEqual(map, { apiKey: 'iek_jSa6tSF1g0wUbRUL1iLsIq4R0gMJ' });
+		indoorEqual = new IndoorEqual(map, { apiKey: env.PUBLIC_INDOOREQUAL_API_KEY });
 		indoorEqual.loadSprite('/indoorequal/indoorequal');
 		map.addControl(indoorEqual as IControl);
 		map.addControl(new NavigationControl({}));

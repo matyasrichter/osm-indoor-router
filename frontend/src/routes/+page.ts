@@ -1,11 +1,12 @@
 import { ConfigApi, Configuration, type RoutingConfig } from '../routing-api-client';
 import { error } from '@sveltejs/kit';
+import { env } from '$env/dynamic/public'
 
 export async function load({ fetch }): Promise<RoutingConfig> {
 	const api = new ConfigApi(
 		new Configuration({
 			fetchApi: fetch,
-			basePath: 'http://localhost:5276'
+			basePath: env.PUBLIC_API_URL
 		})
 	);
 

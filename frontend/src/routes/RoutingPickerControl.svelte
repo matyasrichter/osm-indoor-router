@@ -4,6 +4,7 @@
 	import { Configuration, type RouteNode, RoutingApi, SearchApi } from '../routing-api-client';
 	import { onMount } from 'svelte';
 	import { Button } from '@svelteuidev/core';
+	import { env } from '$env/dynamic/public';
 
 	export let map: Map | undefined;
 	export let graphVersion: number;
@@ -23,7 +24,7 @@
 	onMount(() => {
 		control = new RoutingPickerControl();
 		const apiConf = new Configuration({
-			basePath: 'http://localhost:5276'
+			basePath: env.PUBLIC_API_URL
 		});
 		routingApi = new RoutingApi(apiConf);
 		searchApi = new SearchApi(apiConf);
@@ -240,9 +241,6 @@
 			span:first-child {
 				font-size: 2em;
 				margin: auto 0.5em auto 0;
-			}
-			.coords-display {
-				font-size: 1.5em;
 			}
 
 			&:first-child {
