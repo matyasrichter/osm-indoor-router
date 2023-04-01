@@ -128,7 +128,7 @@ build_push_updater:
     - test
   variables:
     PUSHED_IMAGE_NAME: "indoorrouter_be_updater"
-    DOCKERFILE: "src/GraphUpdter/Dockerfile"
+    DOCKERFILE: "src/GraphUpdater/Dockerfile"
 
 build_front:
   extends: .build_image
