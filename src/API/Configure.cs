@@ -1,9 +1,11 @@
 namespace API;
 
 using Core;
+using Microsoft.AspNetCore.HttpOverrides;
 using Persistence;
 using Routing;
 using Settings;
+using Microsoft.Extensions.Configuration;
 
 public static class Configure
 {
@@ -16,10 +18,25 @@ public static class Configure
             .ConfigurePersistenceServices(configuration)
             .ConfigureCoreServices()
             .ConfigureRoutingServices()
-            .AddCors(
+            .Configure<ForwardedHeadersOptions>(
                 options =>
+                    options.ForwardedHeaders =
+                        ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+            )
+            .AddCors(
+                (options) =>
                     options.AddDefaultPolicy(
-                        policy => policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()
+                        policy =>
+                            policy
+                                .WithOrigins(
+                                    configuration
+                                        .GetSection("Settings:CorsAllowedOrigins")
+                                        .Get<string[]>()
+                                        ?? throw new InvalidOperationException(
+                                            "Missing CorsAllowedOrigins"
+                                        )
+                                )
+                                .WithMethods("GET")
                     )
             )
             .AddEndpointsApiExplorer()

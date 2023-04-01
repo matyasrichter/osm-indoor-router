@@ -9,9 +9,13 @@ builder.Services.AddServices(builder.Configuration);
 
 var app = builder.Build();
 
+app.UseForwardedHeaders();
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
-    _ = app.UseSwagger().UseSwaggerUI();
+    _ = app.UseSwagger().UseSwaggerUI().UseDeveloperExceptionPage();
+if (app.Environment.IsProduction())
+    _ = app.UseHsts();
 
 app.UseHttpsRedirection();
 

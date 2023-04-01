@@ -39,7 +39,8 @@ public class IntegrationTestFactory : WebApplicationFactory<Program>, IAsyncLife
             {
                 NorthEast = new() { Latitude = 50.105917, Longitude = 14.39519 },
                 SouthWest = new() { Latitude = 50.1007, Longitude = 14.386007 }
-            }
+            },
+            CorsAllowedOrigins = new[] { "localhost" }
         };
     }
 

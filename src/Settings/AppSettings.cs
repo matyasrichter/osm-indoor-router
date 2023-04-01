@@ -7,6 +7,9 @@ public record AppSettings
 {
     [Required]
     public required Bbox Bbox { get; init; }
+
+    [Required]
+    public required IEnumerable<string> CorsAllowedOrigins { get; init; }
 }
 
 public record Bbox
