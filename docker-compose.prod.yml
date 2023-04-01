@@ -1,0 +1,90 @@
+---
+version: "3.8"
+services:
+  caddy:
+    image: caddy:2.6.4-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+  swarm-cronjob:
+    image: crazymax/swarm-cronjob
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    environment:
+      - "TZ=Europe/Paris"
+      - "LOG_LEVEL=info"
+      - "LOG_JSON=false"
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+  db:
+    image: "gitlab.fit.cvut.cz:5000/richtm12/bp-code/postgis"
+    env_file:
+      - .env.db
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+  frontend:
+    image: "gitlab.fit.cvut.cz:5000/richtm12/bp-code/indoorrouter_fe"
+    env_file:
+      - .env.fe
+  api:
+    image: "gitlab.fit.cvut.cz:5000/richtm12/bp-code/indoorrouter_be_api"
+    environment:
+      DOTNET_ENVIRONMENT: Production
+    volumes:
+      - "./appsettings.Production.json:/App/appsettings.Production.json"
+  updater:
+    image: "gitlab.fit.cvut.cz:5000/richtm12/bp-code/indoorrouter_be_updater"
+    environment:
+      DOTNET_ENVIRONMENT: Production
+    volumes:
+      - "./appsettings.Production.json:/App/appsettings.Production.json"
+    deploy:
+      mode: replicated
+      replicas: 0
+      labels:
+        - "swarm.cronjob.enable=true"
+        - "swarm.cronjob.schedule=10 4 * * *"
+        - "swarm.cronjob.skip-running=true"
+        - "swarm.cronjob.registry-auth=true"
+      restart_policy:
+        condition: none
+  import:
+    image: "gitlab.fit.cvut.cz:5000/richtm12/bp-code/osm2pgsql"
+    command: ./import/update.sh
+    env_file:
+      - .env.import
+    volumes:
+      - "./import-data:/app/data"
+    deploy:
+      mode: replicated
+      replicas: 0
+      labels:
+        - "swarm.cronjob.enable=true"
+        - "swarm.cronjob.schedule=5 4 * * *"
+        - "swarm.cronjob.skip-running=true"
+        - "swarm.cronjob.registry-auth=true"
+      restart_policy:
+        condition: none
+
+volumes:
+  db_data:
+    driver: local
+  caddy_data:
