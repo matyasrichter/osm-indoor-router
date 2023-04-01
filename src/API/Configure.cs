@@ -15,5 +15,25 @@ public static class Configure
             .ConfigureSettingsServices()
             .ConfigurePersistenceServices(configuration)
             .ConfigureCoreServices()
-            .ConfigureRoutingServices();
+            .ConfigureRoutingServices()
+            .AddCors(
+                options =>
+                    options.AddDefaultPolicy(
+                        policy => policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()
+                    )
+            )
+            .AddEndpointsApiExplorer()
+            .AddSwaggerGen(setup =>
+            {
+                setup.SupportNonNullableReferenceTypes();
+                setup.UseAllOfToExtendReferenceSchemas();
+                setup.SchemaFilter<NotNullableRequiredSchemaFilter>();
+            })
+            .AddControllers()
+            .AddJsonOptions(
+                options =>
+                    options.JsonSerializerOptions.Converters.Add(
+                        new NetTopologySuite.IO.Converters.GeoJsonConverterFactory()
+                    )
+            );
 }

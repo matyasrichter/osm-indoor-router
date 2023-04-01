@@ -1,4 +1,6 @@
-FROM node:18-slim as build
+ARG BASE_IMAGE=node:18-alpine
+
+FROM ${BASE_IMAGE} as build
 
 WORKDIR /app
 
@@ -10,7 +12,7 @@ COPY . .
 
 RUN yarn build
 
-FROM node:18-slim as final
+FROM ${BASE_IMAGE} as final
 
 WORKDIR /app
 

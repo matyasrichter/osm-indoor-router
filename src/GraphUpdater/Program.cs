@@ -17,4 +17,13 @@ var host = Host.CreateDefaultBuilder(args)
     )
     .Build();
 
+// Apply migrations
+using (var scope = host.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+
+    var context = services.GetRequiredService<RoutingDbContext>();
+    Migrate.MigrateUp(context);
+}
+
 await host.RunAsync();
