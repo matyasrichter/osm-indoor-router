@@ -2,6 +2,9 @@
 	import 'normalize.css';
 </script>
 
+<svelte:head>
+    <title>Indoor Router</title> 
+</svelte:head>
 <div class="wrapper">
 	<slot />
 </div>
