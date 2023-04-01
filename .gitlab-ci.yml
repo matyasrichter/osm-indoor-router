@@ -43,6 +43,21 @@ stages:
     - 'dotnet restore --packages $NUGET_PACKAGES_DIRECTORY'
     - 'dotnet tool restore'
 
+.build_image:
+  image: $CI_REGISTRY/ict/images/buildah:v1
+  stage: prereq
+  script:
+    - buildah build -t $CI_REGISTRY_IMAGE/$PUSHED_IMAGE_NAME:latest $EXTRA_ARGS -f $DOCKERFILE $CONTEXT
+
+.build_and_push_image:
+  image: $CI_REGISTRY/ict/images/buildah:v1
+  stage: prereq
+  variables:
+    CONTEXT: .
+  script:
+    - buildah build -t $CI_REGISTRY_IMAGE/$PUSHED_IMAGE_NAME:latest $EXTRA_ARGS -f $DOCKERFILE $CONTEXT
+    - buildah push $CI_REGISTRY_IMAGE/$PUSHED_IMAGE_NAME:latest
+
 csharpier:
   extends: .dotnet
   stage: lint
@@ -55,15 +70,93 @@ csharpier:
   script:
     - dotnet csharpier --check .
 
-build:
-  extends: .dotnet
+build_api:
+  extends: .build_image
   stage: build
   rules:
-    - changes:
+    - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
+      changes:
         - src/**/*
+        - Dockerfile
         - .gitlab-ci.yml
-  script:
-    - dotnet build --no-restore
+  needs: []
+  variables:
+    PUSHED_IMAGE_NAME: "indoorrouter_be_api"
+    DOCKERFILE: "src/API/Dockerfile"
+
+build_push_api:
+  extends: .build_and_push_image
+  stage: docker
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes:
+        - src/**/*
+        - Dockerfile
+        - .gitlab-ci.yml
+  variables:
+    PUSHED_IMAGE_NAME: "indoorrouter_be_api"
+    DOCKERFILE: "src/API/Dockerfile"
+
+build_updater:
+  extends: .build_image
+  stage: build
+  rules:
+    - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
+      changes:
+        - src/**/*
+        - Dockerfile
+        - .gitlab-ci.yml
+  needs: []
+  variables:
+    PUSHED_IMAGE_NAME: "indoorrouter_be_updater"
+    DOCKERFILE: "src/GraphUpdater/Dockerfile"
+
+build_push_updater:
+  extends: .build_and_push_image
+  stage: docker
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes:
+        - src/**/*
+        - Dockerfile
+        - .gitlab-ci.yml
+  variables:
+    PUSHED_IMAGE_NAME: "indoorrouter_be_updater"
+    DOCKERFILE: "src/GraphUpdter/Dockerfile"
+
+build_front:
+  extends: .build_image
+  stage: build
+  rules:
+    - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
+      changes:
+        - frontend/**/*
+        - .gitlab-ci.yml
+  needs:
+    - job: push_node
+      optional: true
+  variables:
+    PUSHED_IMAGE_NAME: "indoorrouter_fe"
+    DOCKERFILE: "frontend/Dockerfile"
+    EXTRA_ARGS: "--build-arg BASE_IMAGE=$CI_REGISTRY_IMAGE/node"
+    CONTEXT: "frontend"
+
+build_push_front:
+  extends: .build_and_push_image
+  stage: docker
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes:
+        - frontend/**/*
+        - .gitlab-ci.yml
+  needs:
+    - job: push_node
+      optional: true
+  variables:
+    PUSHED_IMAGE_NAME: "indoorrouter_fe"
+    DOCKERFILE: "frontend/Dockerfile"
+    EXTRA_ARGS: "--build-arg BASE_IMAGE=$CI_REGISTRY_IMAGE/node"
+    CONTEXT: "frontend"
 
 test:
   extends: .dotnet
@@ -120,12 +213,6 @@ test:
 # so that we don't have to pull them from Docker Hub.
 # --------------------------------
 
-.build_and_push_image:
-  image: $CI_REGISTRY/ict/images/buildah:v1
-  stage: prereq
-  script:
-    - buildah build -t $CI_REGISTRY_IMAGE/$PUSHED_IMAGE_NAME:latest -f $DOCKERFILE .
-    - buildah push $CI_REGISTRY_IMAGE/$PUSHED_IMAGE_NAME:latest
 
 push_dind:
   extends: .build_and_push_image
@@ -171,3 +258,13 @@ push_ryuk:
   variables:
     PUSHED_IMAGE_NAME: "testcontainers/ryuk"
     DOCKERFILE: "dockerfiles/ryuk.Dockerfile"
+
+push_node:
+  extends: .build_and_push_image
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes: [ "dockerfiles/node.Dockerfile" ]
+  variables:
+    PUSHED_IMAGE_NAME: "node"
+    DOCKERFILE: "dockerfiles/node.Dockerfile"
+
