@@ -56,7 +56,7 @@ stages:
     CONTEXT: .
   script:
     - buildah build -t $CI_REGISTRY_IMAGE/$PUSHED_IMAGE_NAME:latest $EXTRA_ARGS -f $DOCKERFILE $CONTEXT
-    - buildah push $CI_REGISTRY_IMAGE/$PUSHED_IMAGE_NAME:latest
+    - buildah push --authfile /run/containers/0/auth.json $CI_REGISTRY_IMAGE/$PUSHED_IMAGE_NAME:latest
 
 csharpier:
   extends: .dotnet
@@ -93,6 +93,9 @@ build_push_api:
         - src/**/*
         - Dockerfile
         - .gitlab-ci.yml
+  needs:
+    - csharpier
+    - test
   variables:
     PUSHED_IMAGE_NAME: "indoorrouter_be_api"
     DOCKERFILE: "src/API/Dockerfile"
@@ -120,6 +123,9 @@ build_push_updater:
         - src/**/*
         - Dockerfile
         - .gitlab-ci.yml
+  needs:
+    - csharpier
+    - test
   variables:
     PUSHED_IMAGE_NAME: "indoorrouter_be_updater"
     DOCKERFILE: "src/GraphUpdter/Dockerfile"
