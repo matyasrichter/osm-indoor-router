@@ -213,6 +213,31 @@ test:
         coverage_format: cobertura
         path: ./**/**/coverage.cobertura.xml
 
+deploy:
+  image: $CI_REGISTRY_IMAGE/dind
+  stage: deploy
+  services:
+    - name: $CI_REGISTRY_IMAGE/dind
+      alias: docker
+  variables:
+    DEPLOY_TARGET: nav.mrichter.dev
+  before_script:
+    - docker login -u $CI_DEPLOY_USER -p $CI_DEPLOY_PASSWORD $CI_REGISTRY
+    - eval $(ssh-agent -s)
+    - ssh-add $DEPLOY_SSH_KEY
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan $DEPLOY_TARGET > ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+  script:
+    - >
+      ssh richtm12@DEPLOY_TARGET
+      docker stack deploy
+      docker-compose.yml
+      --with-registry-auth
+      indoorrouter
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
 # --------------------------------
 # The following jobs are used to push images to our GitLab registry
