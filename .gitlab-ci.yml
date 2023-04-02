@@ -222,7 +222,6 @@ deploy:
   variables:
     DEPLOY_TARGET: nav.mrichter.dev
   before_script:
-    - docker login -u $CI_DEPLOY_USER -p $CI_DEPLOY_PASSWORD $CI_REGISTRY
     - eval $(ssh-agent -s)
     - chmod 400 "$DEPLOY_SSH_KEY"
     - ssh-add "$DEPLOY_SSH_KEY"
