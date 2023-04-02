@@ -234,7 +234,7 @@ deploy:
     - >
       ssh indoorrouter@$DEPLOY_TARGET
       docker stack deploy
-      docker-compose.yml
+      -c docker-compose.yml
       --with-registry-auth
       indoorrouter
   rules:
