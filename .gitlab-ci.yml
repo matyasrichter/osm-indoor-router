@@ -232,7 +232,7 @@ deploy:
     - chmod 644 ~/.ssh/known_hosts
   script:
     - >
-      ssh richtm12@DEPLOY_TARGET
+      ssh indoorrouter@$DEPLOY_TARGET
       docker stack deploy
       docker-compose.yml
       --with-registry-auth
