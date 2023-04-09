@@ -5,12 +5,18 @@ using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Routing.Entities;
 using Routing.Ports;
+using Settings;
 
 public class PgRoutingRepository : IRoutingPort
 {
     private readonly RoutingDbContext db;
+    private readonly AppSettings settings;
 
-    public PgRoutingRepository(RoutingDbContext db) => this.db = db;
+    public PgRoutingRepository(RoutingDbContext db, AppSettings settings)
+    {
+        this.db = db;
+        this.settings = settings;
+    }
 
     public async Task<IReadOnlyCollection<RouteSegment>> FindRoute(
         long sourceId,
@@ -20,10 +26,12 @@ public class PgRoutingRepository : IRoutingPort
     {
         var routingNodesTable = db.RoutingNodes.EntityType.GetTableName();
         var routingEdgesTable = db.RoutingEdges.EntityType.GetTableName();
+        // sqrt(dx^2 + dy^2), see https://docs.pgrouting.org/latest/en/aStar-family.html#astar-heuristics
+        const int heuristic = 4;
         return await db.PgRoutingAStarOneToOneResults
             .FromSqlRaw(
                 "SELECT * FROM pgr_aStar("
-                    + $"   'SELECT "
+                    + "   'SELECT "
                     + $"      e.\"{nameof(RoutingEdge.Id)}\" as id,"
                     + $"      e.\"{nameof(RoutingEdge.FromId)}\" as source,"
                     + $"      e.\"{nameof(RoutingEdge.ToId)}\" as target,"
@@ -40,7 +48,7 @@ public class PgRoutingRepository : IRoutingPort
                     + $"      ON n2.\"{nameof(RoutingNode.Id)}\" = e.\"{nameof(RoutingEdge.ToId)}\""
                     // this should be safe from sqli, since we have already validated that the value is a long
                     + $"   WHERE e.\"{nameof(RoutingEdge.Version)}\" = \'\'{graphVersion}\'\'"
-                    + "', @sourceId, @targetId)",
+                    + $"', @sourceId, @targetId, heuristic := {heuristic}, factor := {GetFactor()})",
                 new NpgsqlParameter("version", graphVersion),
                 new NpgsqlParameter("sourceId", sourceId),
                 new NpgsqlParameter("targetId", targetId)
@@ -56,5 +64,13 @@ public class PgRoutingRepository : IRoutingPort
                     )
             )
             .ToListAsync();
+    }
+
+    private double GetFactor()
+    {
+        const double latFactor = 111_111;
+        var centerLat = (settings.Bbox.SouthWest.Latitude + settings.Bbox.NorthEast.Latitude) / 2;
+        // rough estimate but good enough for small distances
+        return Math.Cos(centerLat) * latFactor;
     }
 }

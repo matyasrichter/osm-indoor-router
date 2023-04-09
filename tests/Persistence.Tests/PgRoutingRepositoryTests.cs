@@ -3,6 +3,7 @@ namespace Persistence.Tests;
 using Entities.Processed;
 using Repositories;
 using Routing.Entities;
+using Settings;
 
 [Collection("DB")]
 [Trait("Category", "DB")]
@@ -35,7 +36,7 @@ public class PgRoutingRepositoryTests : DbTestClass
     public async Task CanRouteOnTrivialGraph()
     {
         var (nodeA, nodeB, edge) = await CreateTrivialGraph();
-        var repo = new PgRoutingRepository(DbContext);
+        var repo = new PgRoutingRepository(DbContext, settings);
         var route = await repo.FindRoute(nodeA.Id, nodeB.Id, 10);
         var expected = new List<RouteSegment>()
         {
@@ -49,7 +50,7 @@ public class PgRoutingRepositoryTests : DbTestClass
     public async Task CanRouteOnTrivialGraphReverse()
     {
         var (nodeA, nodeB, edge) = await CreateTrivialGraph();
-        var repo = new PgRoutingRepository(DbContext);
+        var repo = new PgRoutingRepository(DbContext, settings);
         var route = await repo.FindRoute(nodeB.Id, nodeA.Id, 10);
         var expected = new List<RouteSegment>()
         {
@@ -66,11 +67,22 @@ public class PgRoutingRepositoryTests : DbTestClass
         var nodeB = new RoutingNode(10, new(10, 20), 0, 1);
         await DbContext.RoutingNodes.AddRangeAsync(nodeA, nodeB);
         await DbContext.SaveChangesAsync();
-        var repo = new PgRoutingRepository(DbContext);
+        var repo = new PgRoutingRepository(DbContext, settings);
         var route = await repo.FindRoute(nodeA.Id, nodeB.Id, 10);
         route.Should().BeEmpty();
     }
 
     public PgRoutingRepositoryTests(DatabaseFixture dbFixture)
         : base(dbFixture) { }
+
+    private readonly AppSettings settings =
+        new()
+        {
+            Bbox = new()
+            {
+                SouthWest = new() { Latitude = 50.100700, Longitude = 14.386007 },
+                NorthEast = new() { Latitude = 50.105917, Longitude = 14.395190 }
+            },
+            CorsAllowedOrigins = Array.Empty<string>()
+        };
 }

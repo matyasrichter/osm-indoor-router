@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using NetTopologySuite.Geometries;
 using Ports;
 using Settings;
+using Coordinate = NetTopologySuite.Geometries.Coordinate;
 
 public partial class MapProcessor
 {
@@ -11,6 +12,8 @@ public partial class MapProcessor
     private readonly IGraphSavingPort savingPort;
     private readonly AppSettings settings;
     private readonly ILogger<MapProcessor> logger;
+
+    private static readonly GeometryFactory Gf = new(new(), 4326);
 
     public MapProcessor(
         IOsmPort osm,
@@ -70,7 +73,9 @@ public partial class MapProcessor
 
             if (node is not null && prev is not null)
             {
-                var distance = prev.Value.Node.Coordinates.Distance(node.Value.Node.Coordinates);
+                var distance = prev.Value.Node.Coordinates.GetMetricDistance(
+                    node.Value.Node.Coordinates
+                );
                 builder.AddEdge(new(prev.Value.Id, node.Value.Id, distance, distance, line.WayId));
             }
 
@@ -91,8 +96,8 @@ public partial class MapProcessor
             var osmNode = await osm.GetPointByOsmId(nodeOsmId);
             InMemoryNode node = osmNode switch
             {
-                null => new(new(coord), level, nodeOsmId),
-                _ => new(new(coord), level, nodeOsmId)
+                null => new(Gf.CreatePoint(coord), level, nodeOsmId),
+                _ => new(Gf.CreatePoint(coord), level, nodeOsmId)
             };
 
             var id = builder.AddNode(node);
