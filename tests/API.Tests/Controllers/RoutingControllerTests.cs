@@ -58,9 +58,27 @@ public class RoutingControllerTests : ControllerTestBase
             .BeEquivalentTo(
                 new List<RouteNode>()
                 {
-                    new(nodeIds[0], nodes[0].Coordinates.Y, nodes[0].Coordinates.X, nodes[0].Level),
-                    new(nodeIds[1], nodes[1].Coordinates.Y, nodes[1].Coordinates.X, nodes[1].Level),
-                    new(nodeIds[2], nodes[2].Coordinates.Y, nodes[2].Coordinates.X, nodes[2].Level)
+                    new(
+                        nodeIds[0],
+                        nodes[0].Coordinates.Y,
+                        nodes[0].Coordinates.X,
+                        nodes[0].Level,
+                        nodes[0].IsLevelConnection
+                    ),
+                    new(
+                        nodeIds[1],
+                        nodes[1].Coordinates.Y,
+                        nodes[1].Coordinates.X,
+                        nodes[1].Level,
+                        nodes[1].IsLevelConnection
+                    ),
+                    new(
+                        nodeIds[2],
+                        nodes[2].Coordinates.Y,
+                        nodes[2].Coordinates.X,
+                        nodes[2].Level,
+                        nodes[2].IsLevelConnection
+                    )
                 }
             );
     }

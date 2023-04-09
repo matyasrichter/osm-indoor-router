@@ -8,21 +8,36 @@ public class RoutingNode
 {
     public RoutingNode() { }
 
-    public RoutingNode(long version, Point coordinates, decimal level, long? sourceId)
+    public RoutingNode(
+        long version,
+        Point coordinates,
+        decimal level,
+        long? sourceId,
+        bool isLevelConnection
+    )
     {
         Version = version;
         Coordinates = coordinates;
         Level = level;
         SourceId = sourceId;
+        IsLevelConnection = isLevelConnection;
     }
 
-    public RoutingNode(long id, long version, Point coordinates, decimal level, long? sourceId)
+    public RoutingNode(
+        long id,
+        long version,
+        Point coordinates,
+        decimal level,
+        long? sourceId,
+        bool isLevelConnection
+    )
     {
         Id = id;
         Version = version;
         Coordinates = coordinates;
         Level = level;
         SourceId = sourceId;
+        IsLevelConnection = isLevelConnection;
     }
 
     [Key]
@@ -35,5 +50,6 @@ public class RoutingNode
     public Point Coordinates { get; init; } = default!;
 
     public decimal Level { get; init; }
+    public bool IsLevelConnection { get; init; }
     public long? SourceId { get; init; }
 }

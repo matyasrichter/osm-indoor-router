@@ -36,7 +36,8 @@ public partial class RoutingService
                         x.Node.Id,
                         x.Node.Coordinates.Y,
                         x.Node.Coordinates.X,
-                        x.Node.Level
+                        x.Node.Level,
+                        x.Node.IsLevelConnection
                     )
             )
             .ToList();

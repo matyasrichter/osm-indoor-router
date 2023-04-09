@@ -49,7 +49,7 @@ public class SearchControllerTests : ControllerTestBase
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         (await response.Content.ReadFromJsonAsync<RouteNode>())
             .Should()
-            .Be(new RouteNode(ids[0], 0, 0, 0));
+            .Be(new RouteNode(ids[0], 0, 0, 0, false));
     }
 
     [Fact]

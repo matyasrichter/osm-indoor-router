@@ -110,71 +110,71 @@ public sealed class RoutingGraphRepositoryTests : DbTestClass
                 "it is the closest and all nodes are on level 3",
                 new RoutingNode[]
                 {
-                    new(1, 1, GF.CreatePoint(new Coordinate(10, 10)), 3, 123),
-                    new(2, 1, GF.CreatePoint(new Coordinate(20, 10)), 3, 123),
-                    new(3, 1, GF.CreatePoint(new Coordinate(16, 16)), 3, 123)
+                    new(1, 1, GF.CreatePoint(new Coordinate(10, 10)), 3, 123, false),
+                    new(2, 1, GF.CreatePoint(new Coordinate(20, 10)), 3, 123, false),
+                    new(3, 1, GF.CreatePoint(new Coordinate(16, 16)), 3, 123, false)
                 },
                 15,
                 15,
                 3,
                 1,
-                new(3, GF.CreatePoint(new Coordinate(16, 16)), 3)
+                new(3, GF.CreatePoint(new Coordinate(16, 16)), 3, false)
             },
             {
                 "it is the closest on that level (not globally)",
                 new RoutingNode[]
                 {
-                    new(1, 1, GF.CreatePoint(new Coordinate(10, 10)), 2, 123),
-                    new(2, 1, GF.CreatePoint(new Coordinate(16, 10)), 2, 123),
-                    new(3, 1, GF.CreatePoint(new Coordinate(16, 16)), 1, 123)
+                    new(1, 1, GF.CreatePoint(new Coordinate(10, 10)), 2, 123, false),
+                    new(2, 1, GF.CreatePoint(new Coordinate(16, 10)), 2, 123, false),
+                    new(3, 1, GF.CreatePoint(new Coordinate(16, 16)), 1, 123, false)
                 },
                 15,
                 15,
                 1,
                 1,
-                new(3, GF.CreatePoint(new Coordinate(16, 16)), 1)
+                new(3, GF.CreatePoint(new Coordinate(16, 16)), 1, false)
             },
             {
                 "it is the closest in that graph version (not globally)",
                 new RoutingNode[]
                 {
-                    new(1, 2, GF.CreatePoint(new Coordinate(10, 10)), 2, 123),
-                    new(2, 2, GF.CreatePoint(new Coordinate(16, 10)), 2, 123),
-                    new(3, 1, GF.CreatePoint(new Coordinate(16, 16)), 2, 123)
+                    new(1, 2, GF.CreatePoint(new Coordinate(10, 10)), 2, 123, false),
+                    new(2, 2, GF.CreatePoint(new Coordinate(16, 10)), 2, 123, false),
+                    new(3, 1, GF.CreatePoint(new Coordinate(16, 16)), 2, 123, false)
                 },
                 15,
                 15,
                 2,
                 2,
-                new(2, GF.CreatePoint(new Coordinate(16, 10)), 2)
+                new(2, GF.CreatePoint(new Coordinate(16, 10)), 2, false)
             },
             {
                 "it is the closest, even though there's a closer node on level 0",
                 new RoutingNode[]
                 {
-                    new(1, 2, GF.CreatePoint(new Coordinate(10, 10)), 2, 123),
-                    new(2, 2, GF.CreatePoint(new Coordinate(16, 16)), 2, 123),
-                    new(3, 2, GF.CreatePoint(new Coordinate(16, 16)), 0, 123)
+                    new(1, 2, GF.CreatePoint(new Coordinate(10, 10)), 2, 123, false),
+                    new(2, 2, GF.CreatePoint(new Coordinate(16, 16)), 2, 123, false),
+                    new(3, 2, GF.CreatePoint(new Coordinate(16, 16)), 0, 123, false)
                 },
                 15,
                 15,
                 2,
                 2,
-                new(2, GF.CreatePoint(new Coordinate(16, 16)), 2)
+                new(2, GF.CreatePoint(new Coordinate(16, 16)), 2, false)
             },
             {
                 "it is the closest at level 0, and there aren't any nodes on level 2",
                 new RoutingNode[]
                 {
-                    new(1, 2, GF.CreatePoint(new Coordinate(10, 10)), 0, 123),
-                    new(2, 2, GF.CreatePoint(new Coordinate(16, 15)), 1, 123),
-                    new(3, 2, GF.CreatePoint(new Coordinate(16, 16)), 0, 123)
+                    new(1, 2, GF.CreatePoint(new Coordinate(10, 10)), 0, 123, false),
+                    new(2, 2, GF.CreatePoint(new Coordinate(16, 15)), 1, 123, false),
+                    new(3, 2, GF.CreatePoint(new Coordinate(16, 16)), 0, 123, false)
                 },
                 15,
                 15,
                 2,
                 2,
-                new(3, GF.CreatePoint(new Coordinate(16, 16)), 0)
+                new(3, GF.CreatePoint(new Coordinate(16, 16)), 0, false)
             }
         };
 

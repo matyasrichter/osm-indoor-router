@@ -58,7 +58,12 @@ public class PgRoutingRepository : IRoutingPort
             .Select(
                 x =>
                     new RouteSegment(
-                        new(x.RoutingNode.Id, x.RoutingNode.Coordinates, x.RoutingNode.Level),
+                        new(
+                            x.RoutingNode.Id,
+                            x.RoutingNode.Coordinates,
+                            x.RoutingNode.Level,
+                            x.RoutingNode.IsLevelConnection
+                        ),
                         x.RoutingEdge != null ? new(x.RoutingEdge.Id, x.Cost) : null,
                         x.AggCost
                     )

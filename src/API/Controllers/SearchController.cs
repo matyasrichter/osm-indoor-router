@@ -28,7 +28,7 @@ public class SearchController : Controller
             return TypedResults.NotFound();
 
         return TypedResults.Ok(
-            new RouteNode(node.Id, node.Coordinates.Y, node.Coordinates.X, node.Level)
+            new RouteNode(node.Id, node.Coordinates.Y, node.Coordinates.X, node.Level, false)
         );
     }
 }

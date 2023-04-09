@@ -15,8 +15,8 @@ public class PgRoutingRepositoryTests : DbTestClass
         RoutingEdge Edge
     )> CreateTrivialGraph()
     {
-        var nodeA = new RoutingNode(10, new(10, 20), 0, 1);
-        var nodeB = new RoutingNode(10, new(10, 20), 0, 1);
+        var nodeA = new RoutingNode(10, new(10, 20), 0, 1, false);
+        var nodeB = new RoutingNode(10, new(10, 20), 0, 1, false);
         await DbContext.RoutingNodes.AddRangeAsync(nodeA, nodeB);
         await DbContext.SaveChangesAsync();
         var edge = new RoutingEdge()
@@ -40,8 +40,8 @@ public class PgRoutingRepositoryTests : DbTestClass
         var route = await repo.FindRoute(nodeA.Id, nodeB.Id, 10);
         var expected = new List<RouteSegment>()
         {
-            new(new(nodeA.Id, nodeA.Coordinates, nodeA.Level), new(edge.Id, edge.Cost), 0),
-            new(new(nodeB.Id, nodeB.Coordinates, nodeB.Level), null, 100)
+            new(new(nodeA.Id, nodeA.Coordinates, nodeA.Level, false), new(edge.Id, edge.Cost), 0),
+            new(new(nodeB.Id, nodeB.Coordinates, nodeB.Level, false), null, 100)
         };
         route.Should().BeEquivalentTo(expected);
     }
@@ -54,8 +54,12 @@ public class PgRoutingRepositoryTests : DbTestClass
         var route = await repo.FindRoute(nodeB.Id, nodeA.Id, 10);
         var expected = new List<RouteSegment>()
         {
-            new(new(nodeB.Id, nodeB.Coordinates, nodeB.Level), new(edge.Id, edge.ReverseCost), 0),
-            new(new(nodeA.Id, nodeA.Coordinates, nodeA.Level), null, 50)
+            new(
+                new(nodeB.Id, nodeB.Coordinates, nodeB.Level, false),
+                new(edge.Id, edge.ReverseCost),
+                0
+            ),
+            new(new(nodeA.Id, nodeA.Coordinates, nodeA.Level, false), null, 50)
         };
         route.Should().BeEquivalentTo(expected);
     }
@@ -63,8 +67,8 @@ public class PgRoutingRepositoryTests : DbTestClass
     [Fact]
     public async Task HandlesRouteNotFound()
     {
-        var nodeA = new RoutingNode(10, new(10, 20), 0, 1);
-        var nodeB = new RoutingNode(10, new(10, 20), 0, 1);
+        var nodeA = new RoutingNode(10, new(10, 20), 0, 1, false);
+        var nodeB = new RoutingNode(10, new(10, 20), 0, 1, false);
         await DbContext.RoutingNodes.AddRangeAsync(nodeA, nodeB);
         await DbContext.SaveChangesAsync();
         var repo = new PgRoutingRepository(DbContext, settings);

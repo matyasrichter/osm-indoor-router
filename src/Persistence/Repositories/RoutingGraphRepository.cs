@@ -23,7 +23,16 @@ public class RoutingGraphRepository : IGraphSavingPort, IGraphVersionProvider, I
     public async Task<IEnumerable<long>> SaveNodes(IEnumerable<InMemoryNode> nodes, long version)
     {
         var entities = nodes
-            .Select(n => new RoutingNode(version, n.Coordinates, n.Level, n.SourceId))
+            .Select(
+                n =>
+                    new RoutingNode(
+                        version,
+                        n.Coordinates,
+                        n.Level,
+                        n.SourceId,
+                        n.IsLevelConnection
+                    )
+            )
             .ToList();
         await db.RoutingNodes.AddRangeAsync(entities);
         _ = await db.SaveChangesAsync();
@@ -95,6 +104,6 @@ public class RoutingGraphRepository : IGraphSavingPort, IGraphVersionProvider, I
                     )
             )
             .ThenBy(x => Math.Abs(x.Level - level))
-            .Select(x => new Node(x.Id, x.Coordinates, x.Level))
+            .Select(x => new Node(x.Id, x.Coordinates, x.Level, x.IsLevelConnection))
             .FirstOrDefaultAsync();
 }
