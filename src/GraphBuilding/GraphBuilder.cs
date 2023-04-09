@@ -1,48 +1,63 @@
 namespace GraphBuilding;
 
+using LineProcessors;
+using Parsers;
+using Ports;
+using Settings;
+
 public class GraphBuilder
 {
-    public List<InMemoryNode> Nodes { get; } = new();
-    public List<InMemoryEdge> Edges { get; } = new();
+    private readonly IOsmPort osm;
+    private readonly AppSettings settings;
+    private readonly LevelParser levelParser;
 
-    // sourceId -> level -> nodes index
-    private readonly Dictionary<long, Dictionary<decimal, int>> sourceIdToNodeId = new();
-
-    public InMemoryNode? GetNode(int id) => Nodes.Count < id ? null : Nodes[id];
-
-    public (int Id, InMemoryNode Node)? GetNodeBySourceId(long sourceId, int level)
+    public GraphBuilder(IOsmPort osm, AppSettings settings, LevelParser levelParser)
     {
-        var ids = sourceIdToNodeId.GetValueOrDefault(sourceId);
-        if (ids == default)
-            return null;
-
-        var id = ids.GetValueOrDefault(level);
-        if (id == default)
-            return null;
-
-        return (id, Nodes[id]);
+        this.osm = new CachingOsmPortWrapper(osm);
+        this.settings = settings;
+        this.levelParser = levelParser;
     }
 
-    public int AddNode(InMemoryNode inMemoryNode)
+    public async Task BuildGraph(GraphHolder holder, CancellationToken ct)
     {
-        var id = Nodes.Count;
-        Nodes.Add(inMemoryNode);
-        if (inMemoryNode.SourceId is { } sourceId)
+        var lines = await osm.GetLines(settings.Bbox.AsRectangle());
+        if (ct.IsCancellationRequested)
+            return;
+        var hwProcessor = new GenericHighwayProcessor(osm, levelParser);
+        foreach (var line in lines)
         {
-            if (!sourceIdToNodeId.ContainsKey(sourceId))
-                sourceIdToNodeId[sourceId] = new() { { inMemoryNode.Level, id } };
-            else
-                _ = sourceIdToNodeId[sourceId][inMemoryNode.Level] = id;
+            if (!line.Tags.ContainsKey("highway"))
+                continue;
+            SaveLine(holder, await hwProcessor.Process(line));
         }
-
-        return id;
     }
 
-    public void AddEdge(InMemoryEdge inMemoryEdge) => Edges.Add(inMemoryEdge);
+    private static void SaveLine(GraphHolder holder, ProcessingResult line)
+    {
+        var nodeIdMap = line.Nodes
+            .Select(x => GetOrCreateNode(holder, x))
+            .Select((node, index) => (node, index))
+            .ToDictionary(x => (long)x.index, x => x.node);
+        foreach (var edge in line.Edges)
+        {
+            var remapped = edge with
+            {
+                FromId = nodeIdMap[edge.FromId],
+                ToId = nodeIdMap[edge.ToId]
+            };
+            holder.AddEdge(remapped);
+        }
+    }
 
-    public IEnumerable<(long InternalId, InMemoryNode Node)> GetNodesWithInternalIds() =>
-        Nodes.Select((x, i) => ((long)i, x));
+    private static int GetOrCreateNode(GraphHolder holder, InMemoryNode node)
+    {
+        var existingNode =
+            node.SourceId is not null && !node.IsLevelConnection
+                ? holder.GetNodeBySourceId(node.SourceId.Value, node.Level)
+                : null;
 
-    public IEnumerable<InMemoryEdge> GetRemappedEdges(IReadOnlyDictionary<long, long> nodeIdsMap) =>
-        Edges.Select(x => x with { FromId = nodeIdsMap[x.FromId], ToId = nodeIdsMap[x.ToId] });
+        if (existingNode is { Id: var existingId })
+            return existingId;
+        return holder.AddNode(node);
+    }
 }
