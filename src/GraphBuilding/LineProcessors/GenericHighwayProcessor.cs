@@ -66,28 +66,28 @@ public class GenericHighwayProcessor : BaseLineProcessor, ILineProcessor
         var currLevel = level;
         var points = await Osm.GetPointsByOsmIds(source.Nodes);
         var coords = source.Geometry.Coordinates.Zip(source.Nodes.Zip(points));
-        // for stairs mapped in downward direction, iterate from end
-        if (source.Tags.GetValueOrDefault("incline") == "down")
-            coords = coords.Reverse();
         foreach (var (coord, osmNode) in coords)
         {
-            var levelTag = osmNode.Second?.Tags.GetValueOrDefault("level");
-            // we need the lowest (original) level of the node
-            // taking min handles cases where a node is incorrectly tagged with multiple levels
-            var nodeLevel = levelTag is not null ? levelParser.Parse(levelTag).Min() : level;
-            if (nodeLevel > currLevel)
-                currLevel = nodeLevel;
+            var isLevelConnection = false;
+            // for multi-level ways, we need to handle level connections
+            if (maxLevelOffset != 0)
+            {
+                var levelTag = osmNode.Second?.Tags.GetValueOrDefault("level");
+                var repeatOnTag = osmNode.Second?.Tags.GetValueOrDefault("repeat_on");
+                // we need the lowest (original) level of the node
+                // taking min handles cases where a node is incorrectly tagged with multiple levels
+                currLevel = levelTag is not null
+                    ? levelParser.Parse(levelTag).Min()
+                    : repeatOnTag is not null
+                        ? levelParser.Parse(repeatOnTag).Min()
+                        : currLevel;
+                // level connections are nodes "between" levels,
+                // we set this flag if this line is not single-level and this node does not have a level tag
+                isLevelConnection = levelTag is null && repeatOnTag is null;
+            }
 
             InMemoryNode node =
-                new(
-                    Gf.CreatePoint(coord),
-                    currLevel,
-                    osmNode.First,
-                    // level connections are nodes "between" levels,
-                    // we set this flag if this line is not single-level and this node does not have a level tag
-                    maxLevelOffset > 0
-                        && levelTag is null
-                );
+                new(Gf.CreatePoint(coord), currLevel, osmNode.First, isLevelConnection);
 
             if (prev is not null)
             {
@@ -106,9 +106,6 @@ public class GenericHighwayProcessor : BaseLineProcessor, ILineProcessor
             result.Nodes.Add(node);
             prev = node;
         }
-
-        if (currLevel != maxLevelOffset && result.Nodes.Count > 0)
-            result.Nodes[^1] = result.Nodes[^1] with { IsLevelConnection = false };
 
         return result;
     }
