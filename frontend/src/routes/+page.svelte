@@ -20,6 +20,7 @@
 	let map: Map;
 	let mapContainer: HTMLDivElement;
 	let indoorEqual: IndoorEqual;
+	let level: number = 0
 
 	onMount(() => {
 		map = new Map({
@@ -38,6 +39,9 @@
 		// todo: extract key to env
 		indoorEqual = new IndoorEqual(map, { apiKey: env.PUBLIC_INDOOREQUAL_API_KEY });
 		indoorEqual.loadSprite('/indoorequal/indoorequal');
+		indoorEqual.on('levelchange', (e: string) => {
+			level = parseFloat(e)
+		})
 		map.addControl(indoorEqual as IControl);
 		map.addControl(new NavigationControl({}));
 		map.addControl(new ScaleControl({}));
@@ -50,7 +54,7 @@
 </script>
 
 <div id="map" bind:this={mapContainer} />
-<RoutingPickerControl {map} graphVersion={data.graphVersion} level={indoorEqual?.level} />
+<RoutingPickerControl {map} graphVersion={data.graphVersion} level={level} />
 
 <style>
 	#map {
