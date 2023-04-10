@@ -2,7 +2,7 @@ namespace GraphBuilding.LineProcessors;
 
 using Ports;
 
-public record ProcessingResult(IList<InMemoryNode> Nodes, IList<InMemoryEdge> Edges);
+public record ProcessingResult(List<InMemoryNode> Nodes, List<InMemoryEdge> Edges);
 
 public interface ILineProcessor
 {

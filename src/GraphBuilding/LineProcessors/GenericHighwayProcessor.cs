@@ -10,51 +10,106 @@ public class GenericHighwayProcessor : BaseLineProcessor, ILineProcessor
     public GenericHighwayProcessor(IOsmPort osm, LevelParser levelParser)
         : base(osm) => this.levelParser = levelParser;
 
-    private static readonly IEnumerable<decimal> GroundLevelEnumerable = new[] { 0M };
-
-    public Task<ProcessingResult> Process(OsmLine source)
+    public async Task<ProcessingResult> Process(OsmLine source)
     {
         var levelTag = source.Tags.GetValueOrDefault("level");
         var repeatOnTag = source.Tags.GetValueOrDefault("repeat_on");
-        var levels = (levelTag, repeatOnTag) switch
+        var levels = (
+            levelTag is null ? Enumerable.Empty<decimal>() : levelParser.Parse(levelTag)
+        ).ToList();
+        var repeatOnLevels = (
+            repeatOnTag is null ? Enumerable.Empty<decimal>() : levelParser.Parse(repeatOnTag)
+        ).ToList();
+
+        var ogLevel =
+            levels.Count != 0
+                ? levels.Min()
+                : repeatOnLevels.Count != 0
+                    ? repeatOnLevels.Min()
+                    : 0M;
+        var levelDiff = levels.Count != 0 ? levels.Max() - levels.Min() : 0M;
+
+        repeatOnLevels = repeatOnLevels.Where(x => x != ogLevel).ToList();
+
+        var ogLevelLine = await ProcessSingleLevel(source, ogLevel, levelDiff);
+
+        var result = new ProcessingResult(new(), new());
+        result.Nodes.AddRange(ogLevelLine.Nodes);
+        result.Edges.AddRange(ogLevelLine.Edges);
+
+        var nodeOffset = result.Nodes.Count;
+        foreach (var l in repeatOnLevels)
         {
-            (null, null) => GroundLevelEnumerable,
-            (null, not null) => levelParser.Parse(repeatOnTag),
-            (not null, null) => levelParser.Parse(levelTag),
-            _ => levelParser.Parse(levelTag).Concat(levelParser.Parse(repeatOnTag)).Distinct()
-        };
-        return Task.FromResult(
-            levels.Aggregate(
-                new ProcessingResult(new List<InMemoryNode>(), new List<InMemoryEdge>()),
-                (agg, level) => ProcessSingleLevel(source, level, agg)
-            )
-        );
+            var levelOffset = l - ogLevel;
+            result.Nodes.AddRange(
+                ogLevelLine.Nodes.Select(x => x with { Level = x.Level + levelOffset })
+            );
+            result.Edges.AddRange(
+                ogLevelLine.Edges.Select(
+                    x => x with { FromId = x.FromId + nodeOffset, ToId = x.ToId + nodeOffset }
+                )
+            );
+            nodeOffset += ogLevelLine.Nodes.Count;
+        }
+
+        return result;
     }
 
-    private static ProcessingResult ProcessSingleLevel(
+    private async Task<ProcessingResult> ProcessSingleLevel(
         OsmLine source,
         decimal level,
-        ProcessingResult agg
+        decimal maxLevelOffset
     )
     {
-        var index = agg.Nodes.Count;
-        var prevIndex = agg.Nodes.Count;
+        var result = new ProcessingResult(new(), new());
         InMemoryNode? prev = null;
-        foreach (var (coord, nodeOsmId) in source.Geometry.Coordinates.Zip(source.Nodes))
+        var currLevel = level;
+        var points = await Osm.GetPointsByOsmIds(source.Nodes);
+        var coords = source.Geometry.Coordinates.Zip(source.Nodes.Zip(points));
+        // for stairs mapped in downward direction, iterate from end
+        if (source.Tags.GetValueOrDefault("incline") == "down")
+            coords = coords.Reverse();
+        foreach (var (coord, osmNode) in coords)
         {
-            InMemoryNode node = new(Gf.CreatePoint(coord), level, nodeOsmId);
+            var levelTag = osmNode.Second?.Tags.GetValueOrDefault("level");
+            // we need the lowest (original) level of the node
+            // taking min handles cases where a node is incorrectly tagged with multiple levels
+            var nodeLevel = levelTag is not null ? levelParser.Parse(levelTag).Min() : level;
+            if (nodeLevel > currLevel)
+                currLevel = nodeLevel;
+
+            InMemoryNode node =
+                new(
+                    Gf.CreatePoint(coord),
+                    currLevel,
+                    osmNode.First,
+                    // level connections are nodes "between" levels,
+                    // we set this flag if this line is not single-level and this node does not have a level tag
+                    maxLevelOffset > 0
+                        && levelTag is null
+                );
 
             if (prev is not null)
             {
                 var distance = prev.Coordinates.GetMetricDistance(node.Coordinates);
-                agg.Edges.Add(new(prevIndex++, index, distance, distance, source.WayId));
+                result.Edges.Add(
+                    new(
+                        result.Nodes.Count - 1,
+                        result.Nodes.Count,
+                        distance,
+                        distance,
+                        source.WayId
+                    )
+                );
             }
 
-            agg.Nodes.Add(node);
+            result.Nodes.Add(node);
             prev = node;
-            index++;
         }
 
-        return agg;
+        if (currLevel != maxLevelOffset && result.Nodes.Count > 0)
+            result.Nodes[^1] = result.Nodes[^1] with { IsLevelConnection = false };
+
+        return result;
     }
 }
