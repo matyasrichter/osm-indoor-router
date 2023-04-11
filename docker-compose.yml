@@ -37,7 +37,7 @@ services:
       PGPASSWORD: indoorrouter
       PGDATABASE: indoorrouter
       EXTRACT_URL: https://download.geofabrik.de/europe/czech-republic-latest.osm.pbf
-      UPDATE_SERVER_URL: https://download.geofabrik.de/europe/czech-republic-updates
+      UPDATE_SERVER_URL: https://planet.openstreetmap.org/replication/minute/
       BBOX: 14.384794,50.099895,14.396553,50.106529
     volumes:
       - "./import-data:/app/data"
