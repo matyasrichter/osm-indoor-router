@@ -1,22 +1,32 @@
 <script lang="ts">
-	import type { Map, ControlPosition, IControl, LngLat } from 'maplibre-gl';
-	import { LngLatBounds, type LngLatLike, MapMouseEvent } from 'maplibre-gl';
-	import { Configuration, type RouteNode, RoutingApi, SearchApi } from '../routing-api-client';
+	import type { Map, ControlPosition, IControl, LngLat, LngLatLike } from 'maplibre-gl';
+	import { LngLatBounds, MapMouseEvent } from 'maplibre-gl';
+	import {
+		Configuration,
+		type RouteNode,
+		RoutingApi,
+		SearchApi,
+		type Route
+	} from '../routing-api-client';
 	import { onMount } from 'svelte';
 	import { Button } from '@svelteuidev/core';
 	import { env } from '$env/dynamic/public';
+	import IndoorEqual from 'mapbox-gl-indoorequal';
 
 	export let map: Map | undefined;
 	export let graphVersion: number;
-	export let level: number;
+	let indoorEqual: IndoorEqual;
 	let container: HTMLDivElement;
 	let control: RoutingPickerControl;
+	let level: number = 0;
 
 	let searchApi: SearchApi;
 	let routingApi: RoutingApi;
 
 	let startNode: RouteNode | null = null;
 	let targetNode: RouteNode | null = null;
+
+	let route: Route | null = null;
 
 	let pickingStart = false;
 	let pickingTarget = false;
@@ -30,8 +40,45 @@
 		searchApi = new SearchApi(apiConf);
 	});
 
+	let zIndex1 = 'z-index-1';
+	let zIndex2 = 'z-index-2';
+
 	$: if (map !== undefined) {
-		map?.addControl(control);
+		map?.on('load', () => {
+			indoorEqual = new IndoorEqual(map!, {
+				apiKey: env.PUBLIC_INDOOREQUAL_API_KEY,
+				heatmap: false
+			});
+			indoorEqual.loadSprite('/indoorequal/indoorequal');
+			indoorEqual?.on('levelchange', (e: string) => {
+				try {
+					level = parseFloat(e);
+				} catch (e) {
+					console.error(e);
+				}
+			})
+			map?.addControl(indoorEqual as IControl);
+			map?.addSource('empty', {
+				type: 'geojson',
+				data: { type: 'FeatureCollection', features: [] }
+			});
+			map?.addControl(control);
+			// this is a hack to allow us to order layers later
+			// these empty layers will always be available to use as beforeId
+			map?.addLayer({
+				id: zIndex2,
+				type: 'symbol',
+				source: 'empty'
+			});
+			map?.addLayer(
+				{
+					id: zIndex1,
+					type: 'symbol',
+					source: 'empty'
+				},
+				zIndex2
+			);
+		});
 	}
 
 	$: if (map != undefined && startNode != null) {
@@ -44,6 +91,8 @@
 	} else {
 		removeRoutePoint('target');
 	}
+	$: [route, level] && route != null && addOrReplaceRoute(route.nodes);
+	$: route != null && zoomToRoute(route.nodes);
 
 	class RoutingPickerControl implements IControl {
 		getDefaultPosition(): ControlPosition {
@@ -83,58 +132,98 @@
 			});
 	}
 
-	async function route() {
+	async function getRoute() {
 		if (!startNode || !targetNode) {
 			return;
 		}
 		await routingApi
 			.routeGet({ from: startNode.id, to: targetNode.id, graphVersion: graphVersion })
 			.then((data) => {
-				addOrReplaceRoute(data.nodes.map((node) => [node.longitude, node.latitude]));
-				zoomToRoute(data.nodes.map((node) => [node.longitude, node.latitude]));
+				route = data;
 			})
 			.catch((error) => console.error(error));
 	}
 
-	const addOrReplaceRoute = (coordinates: Array<LngLatLike>) => {
+	const routeLayerName = 'route';
+	const routeSourceName = 'route';
+
+	const addOrReplaceRoute = (coordinates: Array<RouteNode>) => {
 		removeRoute();
-		map?.addSource('route', {
+		const segments: { level: number; nodes: RouteNode[] }[] = [];
+		let currentSegment: RouteNode[] = [];
+		for (const coord of coordinates) {
+			const prev = currentSegment.at(-1);
+			currentSegment.push(coord);
+			if (prev !== undefined && prev.level !== coord.level) {
+				segments.push({ level: prev.level, nodes: currentSegment });
+				currentSegment = [coord];
+			}
+		}
+		if (currentSegment.length > 0) {
+			segments.push({ level: currentSegment.at(-1)!.level, nodes: currentSegment });
+		}
+
+		map?.addSource(routeSourceName, {
 			type: 'geojson',
 			data: {
-				type: 'LineString',
-				coordinates: coordinates
+				type: 'FeatureCollection',
+				features: segments.map((segment) => ({
+					type: 'Feature',
+					properties: {
+						level: segment.level,
+						color:
+							segment.level === level
+								? '#005b96'
+								: segment.level < level
+								? '#b3cde0'
+								: '#011f4b',
+						opacity: segment.level === level ? 1 : 0.5
+					},
+					geometry: {
+						type: 'LineString',
+						coordinates: segment.nodes.map((node) => [node.longitude, node.latitude])
+					}
+				}))
 			}
 		});
-		map?.addLayer({
-			id: 'route',
-			type: 'line',
-			source: 'route',
-			layout: {
-				'line-join': 'round',
-				'line-cap': 'round',
-				'line-sort-key': 1
+		map?.addLayer(
+			{
+				id: routeLayerName,
+				type: 'line',
+				source: routeSourceName,
+				layout: {
+					'line-join': 'round',
+					'line-cap': 'round',
+					'line-sort-key': ['get', 'level']
+				},
+				paint: {
+					'line-color': ['get', 'color'],
+					'line-opacity': ['get', 'opacity'],
+					'line-width': 6
+				}
 			},
-			paint: {
-				'line-color': '#00b0fb',
-				'line-width': 8
-			}
-		});
+			zIndex1
+		);
 	};
 
 	const removeRoute = () => {
-		if (map?.getLayer('route')) {
-			map?.removeLayer('route');
+		if (map?.getLayer(routeLayerName)) {
+			map?.removeLayer(routeLayerName);
 		}
-		if (map?.getSource('route')) {
-			map?.removeSource('route');
+		if (map?.getSource(routeSourceName)) {
+			map?.removeSource(routeSourceName);
 		}
 	};
 
-	const zoomToRoute = (coordinates: Array<LngLatLike>) => {
+	const zoomToRoute = (coordinates: RouteNode[]) => {
+		if (coordinates.length === 0) {
+			return;
+		}
+		const initial = [coordinates[0].longitude, coordinates[0].latitude];
 		// find bounds of the route and fit map to bounds
 		const bounds = coordinates.reduce(function (bounds, coordinate) {
-			return bounds.extend(coordinate);
-		}, new LngLatBounds(coordinates[0], coordinates[0]));
+			return bounds.extend([coordinate.longitude, coordinate.latitude]);
+		}, new LngLatBounds(initial, initial));
 
 		map?.fitBounds(bounds, {
 			padding: 100
@@ -150,18 +239,21 @@
 				coordinates: coords
 			}
 		});
-		map?.addLayer({
-			id: name,
-			type: 'circle',
-			source: name,
-			layout: {
-				'circle-sort-key': 2
+		map?.addLayer(
+			{
+				id: name,
+				type: 'circle',
+				source: name,
+				layout: {
+					'circle-sort-key': 2
+				},
+				paint: {
+					'circle-radius': ['interpolate', ['exponential', 1.5], ['zoom'], 5, 6, 18, 15],
+					'circle-color': color
+				}
 			},
-			paint: {
-				'circle-radius': ['interpolate', ['exponential', 1.5], ['zoom'], 5, 6, 18, 15],
-				'circle-color': color
-			}
-		});
+			zIndex2
+		);
 	};
 	const removeRoutePoint = (name: string) => {
 		removeRoute();
@@ -211,7 +303,7 @@
 			</Button>
 		</div>
 		<div class="submit-button">
-			<Button disabled={!startNode || !targetNode} on:click={route}>Find route</Button>
+			<Button disabled={!startNode || !targetNode} on:click={getRoute}>Find route</Button>
 		</div>
 	</div>
 </div>

@@ -20,7 +20,6 @@
 	let map: Map;
 	let mapContainer: HTMLDivElement;
 	let indoorEqual: IndoorEqual;
-	let level: number = 0;
 
 	onMount(() => {
 		map = new Map({
@@ -35,17 +34,6 @@
 		map.on('load', () => {
 			map?.resize();
 		});
-
-		// todo: extract key to env
-		indoorEqual = new IndoorEqual(map, {
-			apiKey: env.PUBLIC_INDOOREQUAL_API_KEY,
-			heatmap: false
-		});
-		indoorEqual.loadSprite('/indoorequal/indoorequal');
-		indoorEqual.on('levelchange', (e: string) => {
-			level = parseFloat(e);
-		});
-		map.addControl(indoorEqual as IControl);
 		map.addControl(new NavigationControl({}));
 		map.addControl(new ScaleControl({}));
 		map.addControl(new FullscreenControl({}));
@@ -57,7 +45,7 @@
 </script>
 
 <div id="map" bind:this={mapContainer} />
-<RoutingPickerControl {map} graphVersion={data.graphVersion} {level} />
+<RoutingPickerControl {map} graphVersion={data.graphVersion}/>
 
 <style>
 	#map {
