@@ -3,7 +3,7 @@
 </script>
 
 <svelte:head>
-    <title>Indoor Router</title> 
+	<title>Indoor Router</title>
 </svelte:head>
 <div class="wrapper">
 	<slot />

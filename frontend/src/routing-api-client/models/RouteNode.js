@@ -11,65 +11,22 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-
 import { exists, mapValues } from '../runtime';
-/**
- *
- * @export
- * @interface RouteNode
- */
-export interface RouteNode {
-	/**
-	 *
-	 * @type {number}
-	 * @memberof RouteNode
-	 */
-	id: number;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof RouteNode
-	 */
-	latitude: number;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof RouteNode
-	 */
-	longitude: number;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof RouteNode
-	 */
-	level: number;
-	/**
-	 *
-	 * @type {boolean}
-	 * @memberof RouteNode
-	 */
-	isLevelConnection: boolean;
-}
-
 /**
  * Check if a given object implements the RouteNode interface.
  */
-export function instanceOfRouteNode(value: object): boolean {
+export function instanceOfRouteNode(value) {
 	let isInstance = true;
 	isInstance = isInstance && 'id' in value;
 	isInstance = isInstance && 'latitude' in value;
 	isInstance = isInstance && 'longitude' in value;
 	isInstance = isInstance && 'level' in value;
-	isInstance = isInstance && 'isLevelConnection' in value;
-
 	return isInstance;
 }
-
-export function RouteNodeFromJSON(json: any): RouteNode {
+export function RouteNodeFromJSON(json) {
 	return RouteNodeFromJSONTyped(json, false);
 }
-
-export function RouteNodeFromJSONTyped(json: any, ignoreDiscriminator: boolean): RouteNode {
+export function RouteNodeFromJSONTyped(json, ignoreDiscriminator) {
 	if (json === undefined || json === null) {
 		return json;
 	}
@@ -77,12 +34,10 @@ export function RouteNodeFromJSONTyped(json: any, ignoreDiscriminator: boolean):
 		id: json['id'],
 		latitude: json['latitude'],
 		longitude: json['longitude'],
-		level: json['level'],
-		isLevelConnection: json['isLevelConnection']
+		level: json['level']
 	};
 }
-
-export function RouteNodeToJSON(value?: RouteNode | null): any {
+export function RouteNodeToJSON(value) {
 	if (value === undefined) {
 		return undefined;
 	}
@@ -93,7 +48,7 @@ export function RouteNodeToJSON(value?: RouteNode | null): any {
 		id: value.id,
 		latitude: value.latitude,
 		longitude: value.longitude,
-		level: value.level,
-		isLevelConnection: value.isLevelConnection
+		level: value.level
 	};
 }
+//# sourceMappingURL=RouteNode.js.map
