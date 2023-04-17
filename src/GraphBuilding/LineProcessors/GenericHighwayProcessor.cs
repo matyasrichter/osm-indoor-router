@@ -92,6 +92,19 @@ public class GenericHighwayProcessor : BaseLineProcessor, ILineProcessor
             if (prev is not null)
             {
                 var distance = prev.Coordinates.GetMetricDistance(node.Coordinates);
+                if (prev.Level != node.Level)
+                {
+                    // This is a very rough estimate,
+                    // but hopefully good enough to de-prioritize unnecessary level connections.
+                    // We're pretending that the level connection is the hypotenuse of a triangle.
+                    const double levelVerticalDistance = 3.0;
+                    var totalVerticalDistance =
+                        levelVerticalDistance * (double)Math.Abs(prev.Level - node.Level);
+                    distance = Math.Sqrt(
+                        Math.Pow(distance, 2) + Math.Pow(totalVerticalDistance, 2)
+                    );
+                }
+
                 result.Edges.Add(
                     new(
                         result.Nodes.Count - 1,
