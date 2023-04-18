@@ -76,6 +76,7 @@ dotnet_analyzer_diagnostic.severity = error
 
 dotnet_diagnostic.SYSLIB1006.severity = none
 dotnet_diagnostic.IDE0055.severity = none
+dotnet_analyzer_diagnostic.CA1002.severity = suggestion
 
 csharp_space_between_attribute_sections = true
 # Language keywords instead of framework type names for type references
@@ -264,5 +265,3 @@ dotnet_diagnostic.CA1506.severity = none
 [src/Persistence/Migrations/*.cs]
 dotnet_analyzer_diagnostic.severity = none
 
-[src/Persistence/Entities/Raw/*.cs]
-dotnet_analyzer_diagnostic.CA1002.severity = suggestion
