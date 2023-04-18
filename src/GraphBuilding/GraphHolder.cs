@@ -10,8 +10,8 @@ public interface IGraphHolder
 
 public class GraphHolder : IGraphHolder
 {
-    public List<InMemoryNode> Nodes { get; } = new();
-    public List<InMemoryEdge> Edges { get; } = new();
+    public IList<InMemoryNode> Nodes { get; } = new List<InMemoryNode>();
+    public IList<InMemoryEdge> Edges { get; } = new List<InMemoryEdge>();
 
     // sourceId -> level -> nodes index
     private readonly Dictionary<long, Dictionary<decimal, int>> sourceIdToNodeId = new();

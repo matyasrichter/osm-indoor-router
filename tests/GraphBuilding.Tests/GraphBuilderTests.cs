@@ -180,7 +180,7 @@ public class GraphBuilderTests
         var levelConnections = holder.Nodes.Where(x => x.SourceId == 4173362012).ToList();
         levelConnections.Should().HaveCount(3, "there are levels 0;1;2");
 
-        var l1id = holder.Nodes.FindIndex(x => x is { SourceId: 4173362012, Level: 1 });
+        var l1id = holder.Nodes.ToList().FindIndex(x => x is { SourceId: 4173362012, Level: 1 });
 
         holder.Edges
             .Where(x => x.ToId == l1id || x.FromId == l1id)
