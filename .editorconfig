@@ -265,11 +265,15 @@ dotnet_diagnostic.IDE0058.severity = none
 dotnet_diagnostic.CA2234.severity = none
 # high coupling
 dotnet_diagnostic.CA1506.severity = none
+# do not expose generic lists
+dotnet_diagnostic.CA1002.severity = none
 
 [src/Persistence/Migrations/*.cs]
 dotnet_analyzer_diagnostic.severity = none
 
 [src/Persistence/Entities/Raw/*.cs]
+# do not expose generic lists
 dotnet_diagnostic.CA1002.severity = none
+
 
 
