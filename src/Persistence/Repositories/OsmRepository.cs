@@ -41,6 +41,8 @@ public class OsmRepository : IOsmPort
     public async Task<IEnumerable<OsmPolygon>> GetPolygons(Geometry boundingBox) =>
         await context.OsmPolygons
             .Where(p => boundingBox.Intersects(p.Geometry))
-            .Select(p => new OsmPolygon(p.AreaId, p.Tags, p.Nodes, p.Geometry))
+            .Select(
+                p => new OsmPolygon(p.AreaId, p.Tags, p.Nodes, p.Geometry, p.GeometryAsLinestring)
+            )
             .ToListAsync();
 }

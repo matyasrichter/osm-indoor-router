@@ -1,18 +1,17 @@
-namespace GraphBuilding.Tests.LineProcessors;
+namespace GraphBuilding.Tests.Processors;
 
-using GraphBuilding.LineProcessors;
+using LineProcessors;
 using GraphBuilding.Parsers;
 using Microsoft.Extensions.Logging;
 using NetTopologySuite.Geometries;
-using OsmSharp.API;
 using Ports;
 using Xunit.Abstractions;
 
-public class GenericHighwayProcessorTests
+public class HighwayWayProcessorTests
 {
     private readonly ITestOutputHelper testOutputHelper;
 
-    public GenericHighwayProcessorTests(ITestOutputHelper testOutputHelper) =>
+    public HighwayWayProcessorTests(ITestOutputHelper testOutputHelper) =>
         this.testOutputHelper = testOutputHelper;
 
     public static TheoryData<
@@ -48,15 +47,15 @@ public class GenericHighwayProcessorTests
                     new(
                         0,
                         1,
-                        points[0].GetMetricDistance(points[1]),
-                        points[0].GetMetricDistance(points[1]),
+                        points[0].GetMetricDistance(points[1], 0),
+                        points[0].GetMetricDistance(points[1], 0),
                         123456
                     ),
                     new(
                         1,
                         2,
-                        points[1].GetMetricDistance(points[2]),
-                        points[1].GetMetricDistance(points[2]),
+                        points[1].GetMetricDistance(points[2], 0),
+                        points[1].GetMetricDistance(points[2], 0),
                         123456
                     )
                 }
@@ -96,43 +95,43 @@ public class GenericHighwayProcessorTests
                     new(
                         0,
                         1,
-                        points[0].GetMetricDistance(points[1]),
-                        points[0].GetMetricDistance(points[1]),
+                        points[0].GetMetricDistance(points[1], 0),
+                        points[0].GetMetricDistance(points[1], 0),
                         123456
                     ),
                     new(
                         1,
                         2,
-                        points[1].GetMetricDistance(points[2]),
-                        points[1].GetMetricDistance(points[2]),
+                        points[1].GetMetricDistance(points[2], 0),
+                        points[1].GetMetricDistance(points[2], 0),
                         123456
                     ),
                     new(
                         3,
                         4,
-                        points[0].GetMetricDistance(points[1]),
-                        points[0].GetMetricDistance(points[1]),
+                        points[0].GetMetricDistance(points[1], 0),
+                        points[0].GetMetricDistance(points[1], 0),
                         123456
                     ),
                     new(
                         4,
                         5,
-                        points[1].GetMetricDistance(points[2]),
-                        points[1].GetMetricDistance(points[2]),
+                        points[1].GetMetricDistance(points[2], 0),
+                        points[1].GetMetricDistance(points[2], 0),
                         123456
                     ),
                     new(
                         6,
                         7,
-                        points[0].GetMetricDistance(points[1]),
-                        points[0].GetMetricDistance(points[1]),
+                        points[0].GetMetricDistance(points[1], 0),
+                        points[0].GetMetricDistance(points[1], 0),
                         123456
                     ),
                     new(
                         7,
                         8,
-                        points[1].GetMetricDistance(points[2]),
-                        points[1].GetMetricDistance(points[2]),
+                        points[1].GetMetricDistance(points[2], 0),
+                        points[1].GetMetricDistance(points[2], 0),
                         123456
                     )
                 }
@@ -169,29 +168,29 @@ public class GenericHighwayProcessorTests
                     new(
                         0,
                         1,
-                        points[0].GetMetricDistance(points[1]),
-                        points[0].GetMetricDistance(points[1]),
+                        points[0].GetMetricDistance(points[1], 0),
+                        points[0].GetMetricDistance(points[1], 0),
                         123456
                     ),
                     new(
                         1,
                         2,
-                        points[1].GetMetricDistance(points[2]),
-                        points[1].GetMetricDistance(points[2]),
+                        points[1].GetMetricDistance(points[2], 0),
+                        points[1].GetMetricDistance(points[2], 0),
                         123456
                     ),
                     new(
                         3,
                         4,
-                        points[0].GetMetricDistance(points[1]),
-                        points[0].GetMetricDistance(points[1]),
+                        points[0].GetMetricDistance(points[1], 0),
+                        points[0].GetMetricDistance(points[1], 0),
                         123456
                     ),
                     new(
                         4,
                         5,
-                        points[1].GetMetricDistance(points[2]),
-                        points[1].GetMetricDistance(points[2]),
+                        points[1].GetMetricDistance(points[2], 0),
+                        points[1].GetMetricDistance(points[2], 0),
                         123456
                     )
                 }
@@ -227,29 +226,29 @@ public class GenericHighwayProcessorTests
                     new(
                         0,
                         1,
-                        points[0].GetMetricDistance(points[1]),
-                        points[0].GetMetricDistance(points[1]),
+                        points[0].GetMetricDistance(points[1], 0),
+                        points[0].GetMetricDistance(points[1], 0),
                         123456
                     ),
                     new(
                         1,
                         2,
-                        points[1].GetMetricDistance(points[2]),
-                        points[1].GetMetricDistance(points[2]),
+                        points[1].GetMetricDistance(points[2], 0),
+                        points[1].GetMetricDistance(points[2], 0),
                         123456
                     ),
                     new(
                         3,
                         4,
-                        points[0].GetMetricDistance(points[1]),
-                        points[0].GetMetricDistance(points[1]),
+                        points[0].GetMetricDistance(points[1], 0),
+                        points[0].GetMetricDistance(points[1], 0),
                         123456
                     ),
                     new(
                         4,
                         5,
-                        points[1].GetMetricDistance(points[2]),
-                        points[1].GetMetricDistance(points[2]),
+                        points[1].GetMetricDistance(points[2], 0),
+                        points[1].GetMetricDistance(points[2], 0),
                         123456
                     )
                 }
@@ -277,15 +276,15 @@ public class GenericHighwayProcessorTests
                     new(
                         0,
                         1,
-                        points[0].GetMetricDistance(points[1]),
-                        points[0].GetMetricDistance(points[1]),
+                        points[0].GetMetricDistance(points[1], 0),
+                        points[0].GetMetricDistance(points[1], 0),
                         123456
                     ),
                     new(
                         1,
                         2,
-                        points[1].GetMetricDistance(points[2]),
-                        points[1].GetMetricDistance(points[2]),
+                        points[1].GetMetricDistance(points[2], 0),
+                        points[1].GetMetricDistance(points[2], 0),
                         123456
                     )
                 }
@@ -331,15 +330,15 @@ public class GenericHighwayProcessorTests
                     new(
                         0,
                         1,
-                        points[0].GetMetricDistance(points[1]),
-                        points[0].GetMetricDistance(points[1]),
+                        points[0].GetMetricDistance(points[1], 0),
+                        points[0].GetMetricDistance(points[1], 0),
                         123456
                     ),
                     new(
                         1,
                         2,
-                        points[1].GetMetricDistance(points[2]),
-                        points[1].GetMetricDistance(points[2]),
+                        points[1].GetMetricDistance(points[2], 1),
+                        points[1].GetMetricDistance(points[2], 1),
                         123456
                     )
                 }
@@ -407,43 +406,43 @@ public class GenericHighwayProcessorTests
                     new(
                         0,
                         1,
-                        points[0].GetMetricDistance(points[1]),
-                        points[0].GetMetricDistance(points[1]),
+                        points[0].GetMetricDistance(points[1], 0),
+                        points[0].GetMetricDistance(points[1], 0),
                         123456
                     ),
                     new(
                         1,
                         2,
-                        points[1].GetMetricDistance(points[2]),
-                        points[1].GetMetricDistance(points[2]),
+                        points[1].GetMetricDistance(points[2], 1),
+                        points[1].GetMetricDistance(points[2], 1),
                         123456
                     ),
                     new(
                         3,
                         4,
-                        points[0].GetMetricDistance(points[1]),
-                        points[0].GetMetricDistance(points[1]),
+                        points[0].GetMetricDistance(points[1], 0),
+                        points[0].GetMetricDistance(points[1], 0),
                         123456
                     ),
                     new(
                         4,
                         5,
-                        points[1].GetMetricDistance(points[2]),
-                        points[1].GetMetricDistance(points[2]),
+                        points[1].GetMetricDistance(points[2], 1),
+                        points[1].GetMetricDistance(points[2], 1),
                         123456
                     ),
                     new(
                         6,
                         7,
-                        points[0].GetMetricDistance(points[1]),
-                        points[0].GetMetricDistance(points[1]),
+                        points[0].GetMetricDistance(points[1], 0),
+                        points[0].GetMetricDistance(points[1], 0),
                         123456
                     ),
                     new(
                         7,
                         8,
-                        points[1].GetMetricDistance(points[2]),
-                        points[1].GetMetricDistance(points[2]),
+                        points[1].GetMetricDistance(points[2], 1),
+                        points[1].GetMetricDistance(points[2], 1),
                         123456
                     )
                 }
@@ -471,10 +470,7 @@ public class GenericHighwayProcessorTests
                 (IEnumerable<long> osmIds) =>
                     Task.FromResult(osmIds.Select(points.GetValueOrDefault))
             );
-        var processor = new GenericHighwayProcessor(
-            osm.Object,
-            new(Mock.Of<ILogger<LevelParser>>())
-        );
+        var processor = new HighwayWayProcessor(osm.Object, new(Mock.Of<ILogger<LevelParser>>()));
 
         var result = await processor.Process(line);
         result.Should().BeEquivalentTo(expected);

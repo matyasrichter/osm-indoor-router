@@ -15,6 +15,9 @@ public record OsmPolygon
     [Column("geom", TypeName = "geometry")]
     public required Polygon Geometry { get; init; }
 
+    [Column("geom_linestring", TypeName = "geometry")]
+    public required LineString GeometryAsLinestring { get; init; }
+
     [Column("nodes", TypeName = "bigint[]")]
     public required List<long> Nodes { get; init; }
 

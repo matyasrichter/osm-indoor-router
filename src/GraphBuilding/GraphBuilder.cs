@@ -1,5 +1,6 @@
 namespace GraphBuilding;
 
+using System.Runtime.CompilerServices;
 using LineProcessors;
 using Parsers;
 using Ports;
@@ -20,19 +21,50 @@ public class GraphBuilder
 
     public async Task BuildGraph(GraphHolder holder, CancellationToken ct)
     {
+        await foreach (var r in ProcessLines(ct))
+            SaveResult(holder, r);
+        await foreach (var r in ProcessPolygons(ct))
+            SaveResult(holder, r);
+    }
+
+    private async IAsyncEnumerable<ProcessingResult> ProcessLines(
+        [EnumeratorCancellation] CancellationToken ct
+    )
+    {
         var lines = await osm.GetLines(settings.Bbox.AsRectangle());
         if (ct.IsCancellationRequested)
-            return;
-        var hwProcessor = new GenericHighwayProcessor(osm, levelParser);
+            yield break;
+        var hwProcessor = new HighwayWayProcessor(osm, levelParser);
         foreach (var line in lines)
         {
+            if (ct.IsCancellationRequested)
+                yield break;
             if (!line.Tags.ContainsKey("highway"))
                 continue;
-            SaveLine(holder, await hwProcessor.Process(line));
+            yield return await hwProcessor.Process(line);
         }
     }
 
-    private static void SaveLine(GraphHolder holder, ProcessingResult line)
+    private async IAsyncEnumerable<ProcessingResult> ProcessPolygons(
+        [EnumeratorCancellation] CancellationToken ct
+    )
+    {
+        var areas = await osm.GetPolygons(settings.Bbox.AsRectangle());
+        if (ct.IsCancellationRequested)
+            yield break;
+        var areaProcessor = new UnwalledAreaProcessor(osm, levelParser);
+        foreach (var area in areas)
+        {
+            if (ct.IsCancellationRequested)
+                yield break;
+            if (area.Tags.ContainsKey("indoor") && area.Tags["indoor"] is "area" or "corridor")
+                yield return await areaProcessor.Process(area);
+            else if (area.Tags.GetValueOrDefault("highway") is "pedestrian")
+                yield return await areaProcessor.Process(area);
+        }
+    }
+
+    private static void SaveResult(GraphHolder holder, ProcessingResult line)
     {
         var nodeIdMap = line.Nodes
             .Select(x => GetOrCreateNode(holder, x))

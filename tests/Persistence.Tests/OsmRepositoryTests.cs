@@ -31,9 +31,7 @@ public sealed class OsmRepositoryTests : DbTestClass
         };
 
         foreach (var p in points)
-        {
             await SavePoint(p, now);
-        }
 
         var result = await repo.GetPoints(
             gf.CreatePolygon(
@@ -66,9 +64,7 @@ public sealed class OsmRepositoryTests : DbTestClass
         };
 
         foreach (var p in points)
-        {
             await SavePoint(p, now);
-        }
 
         (await repo.GetPointByOsmId(1)).Should().BeEquivalentTo(points[0]);
         (await repo.GetPointByOsmId(123)).Should().BeNull();
@@ -94,17 +90,20 @@ public sealed class OsmRepositoryTests : DbTestClass
         };
 
         foreach (var p in points)
-        {
             await SavePoint(p, now);
-        }
 
-        (await repo.GetPointsByOsmIds(new long[] { 1, 2 })).Should().BeEquivalentTo(points);
+        (await repo.GetPointsByOsmIds(new long[] { 1, 2 }))
+            .Should()
+            .BeEquivalentTo(points, o => o.WithStrictOrdering());
+        (await repo.GetPointsByOsmIds(new long[] { 2, 1 }))
+            .Should()
+            .BeEquivalentTo(points.Reverse(), o => o.WithStrictOrdering());
         (await repo.GetPointsByOsmIds(new long[] { 3, 4 }))
             .Should()
-            .BeEquivalentTo(new OsmPoint?[] { null, null });
+            .BeEquivalentTo(new OsmPoint?[] { null, null }, o => o.WithStrictOrdering());
         (await repo.GetPointsByOsmIds(new long[] { 1, 4 }))
             .Should()
-            .BeEquivalentTo(new[] { points[0], null });
+            .BeEquivalentTo(new[] { points[0], null }, o => o.WithStrictOrdering());
     }
 
     [Fact]
@@ -133,9 +132,7 @@ public sealed class OsmRepositoryTests : DbTestClass
         };
 
         foreach (var p in points)
-        {
             await SavePoint(p, now);
-        }
 
         var result = await repo.GetPoints(
             gf.CreatePolygon(
@@ -170,9 +167,7 @@ public sealed class OsmRepositoryTests : DbTestClass
         };
 
         foreach (var p in lines)
-        {
             await SaveLine(p, now);
-        }
 
         var result = await repo.GetLines(
             gf.CreatePolygon(
@@ -217,9 +212,7 @@ public sealed class OsmRepositoryTests : DbTestClass
         };
 
         foreach (var p in lines)
-        {
             await SaveLine(p, now);
-        }
 
         var result = await repo.GetLines(
             gf.CreatePolygon(
@@ -243,20 +236,20 @@ public sealed class OsmRepositoryTests : DbTestClass
                 1,
                 CreateTags(new("amenity", "bicycle_parking"), new("bicycle_parking", "stands")),
                 new long[] { 1, 2, 3, 1 },
-                CreatePolygon((10, 15), (11, 16), (12, 16), (10, 15))
+                CreatePolygon((10, 15), (11, 16), (12, 16), (10, 15)),
+                CreateLineString((10, 15), (11, 16), (12, 16), (10, 15))
             ),
             new(
                 2,
                 CreateTags(new KeyValuePair<string, string>("amenity", "vending_machine")),
                 new long[] { 4, 1, 5, 4 },
-                CreatePolygon((10, 16), (12, 13), (10, 15), (18, 19), (10, 16))
+                CreatePolygon((10, 16), (12, 13), (10, 15), (18, 19), (10, 16)),
+                CreateLineString((10, 16), (12, 13), (10, 15), (18, 19), (10, 16))
             )
         };
 
         foreach (var p in polygons)
-        {
             await SavePolygon(p, now);
-        }
 
         var result = await repo.GetPolygons(
             gf.CreatePolygon(
@@ -282,35 +275,37 @@ public sealed class OsmRepositoryTests : DbTestClass
                 0,
                 CreateTags(new KeyValuePair<string, string>("amenity", "vending_machine")),
                 new long[] { 123, 124, 125, 126, 123 },
-                CreatePolygon((0, 0), (0, 50), (50, 50), (50, 0), (0, 0))
+                CreatePolygon((0, 0), (0, 50), (50, 50), (50, 0), (0, 0)),
+                CreateLineString((0, 0), (0, 50), (50, 50), (50, 0), (0, 0))
             ),
             // only one point inside
             new(
                 1,
                 CreateTags(new KeyValuePair<string, string>("amenity", "vending_machine")),
                 new long[] { 123, 127, 128, 123 },
-                CreatePolygon((10, 10), (-10, -20), (-20, -20), (10, 10))
+                CreatePolygon((10, 10), (-10, -20), (-20, -20), (10, 10)),
+                CreateLineString((10, 10), (-10, -20), (-20, -20), (10, 10))
             ),
             // completely outside
             new(
                 2,
                 CreateTags(new KeyValuePair<string, string>("amenity", "vending_machine")),
                 new long[] { 129, 128, 130, 129 },
-                CreatePolygon((-10, -10), (-20, -20), (-30, -20), (-10, -10))
+                CreatePolygon((-10, -10), (-20, -20), (-30, -20), (-10, -10)),
+                CreateLineString((-10, -10), (-20, -20), (-30, -20), (-10, -10))
             ),
             // completely outside but overlaps
             new(
                 3,
                 CreateTags(new KeyValuePair<string, string>("amenity", "vending_machine")),
                 new long[] { 987, 986, 985, 984, 987 },
-                CreatePolygon((-10, 20), (-10, 40), (60, 35), (60, 26), (-10, 20))
+                CreatePolygon((-10, 20), (-10, 40), (60, 35), (60, 26), (-10, 20)),
+                CreateLineString((-10, 20), (-10, 40), (60, 35), (60, 26), (-10, 20))
             )
         };
 
         foreach (var p in polygons)
-        {
             await SavePolygon(p, now);
-        }
 
         var result = await repo.GetPolygons(
             gf.CreatePolygon(
@@ -359,10 +354,11 @@ public sealed class OsmRepositoryTests : DbTestClass
 
     private async Task SavePolygon(OsmPolygon p, DateTime now) =>
         await DbContext.Database.ExecuteSqlRawAsync(
-            "INSERT INTO osm_polygons (area_id, tags, geom, nodes, updated_at) VALUES (@p0, @p1::jsonb, @p2, @p3, @p4)",
+            "INSERT INTO osm_polygons (area_id, tags, geom, geom_linestring, nodes, updated_at) VALUES (@p0, @p1::jsonb, @p2, @p3, @p4, @p5)",
             p.AreaId,
             p.Tags,
             p.Geometry,
+            p.GeometryAsLinestring,
             p.Nodes,
             now
         );

@@ -58,7 +58,7 @@ public class CachingOsmPortWrapperTests
         var wrapper = new CachingOsmPortWrapper(osmPort.Object);
         (await wrapper.GetPointsByOsmIds(new[] { 123L, 456, 789 }))
             .Should()
-            .BeEquivalentTo(points.Take(3));
+            .BeEquivalentTo(points.Take(3), o => o.WithStrictOrdering());
         osmPort.Verify();
 
         // second call should be cached
@@ -73,7 +73,7 @@ public class CachingOsmPortWrapperTests
             .Verifiable();
         (await wrapper.GetPointsByOsmIds(new[] { 789L, 101112 }))
             .Should()
-            .BeEquivalentTo(points.Skip(2));
+            .BeEquivalentTo(points.Skip(2), o => o.WithStrictOrdering());
         osmPort.Verify();
 
         // third call should be cached
@@ -88,7 +88,7 @@ public class CachingOsmPortWrapperTests
             .Verifiable();
         (await wrapper.GetPointsByOsmIds(new[] { 101112L, 987 }))
             .Should()
-            .BeEquivalentTo(points.Skip(3).Append(null));
+            .BeEquivalentTo(points.Skip(3).Append(null), o => o.WithStrictOrdering());
         osmPort.Verify();
 
         osmPort.VerifyNoOtherCalls();

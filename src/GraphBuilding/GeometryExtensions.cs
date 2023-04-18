@@ -1,6 +1,5 @@
 namespace GraphBuilding;
 
-using System.Diagnostics;
 using NetTopologySuite.Geometries;
 
 public static class GeometryExtensions
@@ -8,9 +7,30 @@ public static class GeometryExtensions
     /// <summary>
     /// Get distance in meters using the Haversine formula for great circle distance.
     /// </summary>
-    public static double GetMetricDistance(this Point a, Point b)
+    public static double GetMetricDistance(this Point a, Point b, decimal levelDelta) =>
+        GetMetricDistance(a.Coordinate, b.Coordinate, levelDelta);
+
+    /// <summary>
+    /// Get distance in meters using the Haversine formula for great circle distance.
+    /// </summary>
+    public static double GetMetricDistance(this Coordinate a, Coordinate b, decimal levelDelta)
     {
-        Debug.Assert(a.SRID == 4326 && b.SRID == 4326, "SRID must be 4326");
+        var distance = Get2DDistance(a, b);
+        if (levelDelta != 0)
+        {
+            // This is a very rough estimate,
+            // but hopefully good enough to de-prioritize unnecessary level connections.
+            // We're pretending that the level connection is the hypotenuse of a triangle.
+            const double levelVerticalDistance = 3.0;
+            var totalVerticalDistance = levelVerticalDistance * (double)Math.Abs(levelDelta);
+            distance = Math.Sqrt(Math.Pow(distance, 2) + Math.Pow(totalVerticalDistance, 2));
+        }
+
+        return distance;
+    }
+
+    private static double Get2DDistance(Coordinate a, Coordinate b)
+    {
         const double radius = 6371e3;
 
         var deltaLat = ToRadians(b.Y - a.Y);

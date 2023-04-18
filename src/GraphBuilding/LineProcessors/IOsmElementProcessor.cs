@@ -1,10 +1,8 @@
 namespace GraphBuilding.LineProcessors;
 
-using Ports;
-
 public record ProcessingResult(List<InMemoryNode> Nodes, List<InMemoryEdge> Edges);
 
-public interface ILineProcessor
+public interface IOsmElementProcessor<in T>
 {
-    public Task<ProcessingResult> Process(OsmLine source);
+    public Task<ProcessingResult> Process(T source);
 }

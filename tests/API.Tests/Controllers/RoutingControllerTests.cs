@@ -79,7 +79,8 @@ public class RoutingControllerTests : ControllerTestBase
                         nodes[2].Level,
                         nodes[2].IsLevelConnection
                     )
-                }
+                },
+                o => o.WithStrictOrdering()
             );
     }
 

@@ -23,6 +23,7 @@ tables.lines = osm2pgsql.define_way_table('osm_lines', {
 tables.polygons = osm2pgsql.define_area_table('osm_polygons', {
     { column = 'tags', type = 'jsonb' },
     { column = 'geom', type = 'geometry', projection = srid, not_null = true },
+    { column = 'geom_linestring', type = 'geometry', projection = srid, not_null = true },
     { column = 'nodes', sql_type = 'bigint[]', not_null = true },
     { column = 'updated_at', sql_type = 'timestamp' },
 })
@@ -245,6 +246,7 @@ function osm2pgsql.process_way(object)
         tables.polygons:insert({
             tags = object.tags,
             geom = object:as_polygon(),
+            geom_linestring = object:as_linestring(),
             nodes = '{' .. table.concat(object.nodes,",") .. '}',
             updated_at = now
         })
@@ -279,6 +281,7 @@ function osm2pgsql.process_relation(object)
         tables.polygons:insert({
             tags = object.tags,
             geom = object:as_multipolygon(),
+            geom_linestring = object:as_multilinestring(),
             members = object.members,
             updated_at = now
         })

@@ -15,7 +15,8 @@ public record OsmPolygon(
     long AreaId,
     IReadOnlyDictionary<string, string> Tags,
     ICollection<long> Nodes,
-    Polygon Geometry
+    Polygon Geometry,
+    LineString GeometryAsLinestring
 );
 
 public interface IOsmPort
