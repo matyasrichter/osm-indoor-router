@@ -25,7 +25,7 @@ public class UnwalledAreaProcessor : BaseOsmProcessor, IOsmElementProcessor<OsmP
         var coords = source.GeometryAsLinestring.Coordinates
             .Zip(idsWithPoints)
             .Select(x => (Coord: x.First, IdWithPoint: x.Second));
-        var nodeIds = new Dictionary<long, (int, decimal)>();
+        var nodeIds = new Dictionary<long, int>();
         foreach (
             var (from, to) in GetPairs(coords)
                 .Where(x => x.Item1.IdWithPoint.OsmId != x.Item2.IdWithPoint.OsmId)
@@ -34,18 +34,18 @@ public class UnwalledAreaProcessor : BaseOsmProcessor, IOsmElementProcessor<OsmP
             var lineGeometry = Gf.CreateLineString(new[] { from.Coord, to.Coord });
             if (!lineGeometry.CoveredBy(source.Geometry))
                 continue;
-            var (fromId, fromLevel) = GetNodeIdAndLevel(nodes, nodeIds, from, level);
-            var (toId, toLevel) = GetNodeIdAndLevel(nodes, nodeIds, to, level);
-            var distance = from.Coord.GetMetricDistance(to.Coord, fromLevel - toLevel);
+            var fromId = GetNodeId(nodes, nodeIds, from, level);
+            var toId = GetNodeId(nodes, nodeIds, to, level);
+            var distance = from.Coord.GetMetricDistance(to.Coord, 0);
             edges.Add(new(fromId, toId, distance, distance, source.AreaId));
         }
 
         return new(nodes, edges);
     }
 
-    private (int, decimal) GetNodeIdAndLevel(
+    private static int GetNodeId(
         IList<InMemoryNode> result,
-        Dictionary<long, (int, decimal)> nodeIds,
+        Dictionary<long, int> nodeIds,
         (Coordinate First, (long First, OsmPoint? Second) Second) node,
         decimal level
     )
@@ -53,16 +53,9 @@ public class UnwalledAreaProcessor : BaseOsmProcessor, IOsmElementProcessor<OsmP
         var sourceId = node.Second.First;
         if (!nodeIds.ContainsKey(node.Second.First))
         {
-            var nodeLevel = node.Second.Second?.Tags is not null
-                ? ExtractNodeLevelInformation(node.Second.Second.Tags)
-                : null;
-            var fromNode = new InMemoryNode(
-                Gf.CreatePoint(node.First),
-                nodeLevel ?? level,
-                sourceId
-            );
+            var fromNode = new InMemoryNode(Gf.CreatePoint(node.First), level, sourceId);
             result.Add(fromNode);
-            nodeIds[sourceId] = (result.Count - 1, fromNode.Level);
+            nodeIds[sourceId] = result.Count - 1;
         }
 
         return nodeIds[sourceId];
