@@ -269,3 +269,7 @@ dotnet_diagnostic.CA1506.severity = none
 [src/Persistence/Migrations/*.cs]
 dotnet_analyzer_diagnostic.severity = none
 
+[src/Persistence/Entities/Raw/*.cs]
+dotnet_diagnostic.CA1002.severity = none
+
+
