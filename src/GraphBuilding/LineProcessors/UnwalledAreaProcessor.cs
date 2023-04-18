@@ -18,7 +18,8 @@ public class UnwalledAreaProcessor : BaseOsmProcessor, IOsmElementProcessor<OsmP
 
     private async Task<ProcessingResult> ProcessSingleLevel(OsmPolygon source, decimal level)
     {
-        var result = new ProcessingResult(new(), new());
+        var nodes = new List<InMemoryNode>();
+        var edges = new List<InMemoryEdge>();
         var points = await Osm.GetPointsByOsmIds(source.Nodes);
         var idsWithPoints = source.Nodes.Zip(points).Select(x => (OsmId: x.First, Point: x.Second));
         var coords = source.GeometryAsLinestring.Coordinates
@@ -33,17 +34,17 @@ public class UnwalledAreaProcessor : BaseOsmProcessor, IOsmElementProcessor<OsmP
             var lineGeometry = Gf.CreateLineString(new[] { from.Coord, to.Coord });
             if (!lineGeometry.CoveredBy(source.Geometry))
                 continue;
-            var (fromId, fromLevel) = GetNodeIdAndLevel(result, nodeIds, from, level);
-            var (toId, toLevel) = GetNodeIdAndLevel(result, nodeIds, to, level);
+            var (fromId, fromLevel) = GetNodeIdAndLevel(nodes, nodeIds, from, level);
+            var (toId, toLevel) = GetNodeIdAndLevel(nodes, nodeIds, to, level);
             var distance = from.Coord.GetMetricDistance(to.Coord, fromLevel - toLevel);
-            result.Edges.Add(new(fromId, toId, distance, distance, source.AreaId));
+            edges.Add(new(fromId, toId, distance, distance, source.AreaId));
         }
 
-        return result;
+        return new(nodes, edges);
     }
 
     private (int, decimal) GetNodeIdAndLevel(
-        ProcessingResult result,
+        IList<InMemoryNode> result,
         Dictionary<long, (int, decimal)> nodeIds,
         (Coordinate First, (long First, OsmPoint? Second) Second) node,
         decimal level
@@ -60,8 +61,8 @@ public class UnwalledAreaProcessor : BaseOsmProcessor, IOsmElementProcessor<OsmP
                 nodeLevel ?? level,
                 sourceId
             );
-            result.Nodes.Add(fromNode);
-            nodeIds[sourceId] = (result.Nodes.Count - 1, fromNode.Level);
+            result.Add(fromNode);
+            nodeIds[sourceId] = (result.Count - 1, fromNode.Level);
         }
 
         return nodeIds[sourceId];

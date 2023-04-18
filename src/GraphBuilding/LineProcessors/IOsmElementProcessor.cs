@@ -1,6 +1,9 @@
 namespace GraphBuilding.LineProcessors;
 
-public record ProcessingResult(List<InMemoryNode> Nodes, List<InMemoryEdge> Edges);
+public record ProcessingResult(
+    IReadOnlyList<InMemoryNode> Nodes,
+    IReadOnlyList<InMemoryEdge> Edges
+);
 
 public interface IOsmElementProcessor<in T>
 {

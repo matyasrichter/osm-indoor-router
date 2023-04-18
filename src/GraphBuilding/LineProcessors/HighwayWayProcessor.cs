@@ -22,7 +22,8 @@ public class HighwayWayProcessor : BaseOsmProcessor, IOsmElementProcessor<OsmLin
         decimal maxLevelOffset
     )
     {
-        var result = new ProcessingResult(new(), new());
+        var nodes = new List<InMemoryNode>();
+        var edges = new List<InMemoryEdge>();
         InMemoryNode? prev = null;
         var currLevel = level;
         var points = await Osm.GetPointsByOsmIds(source.Nodes);
@@ -46,21 +47,13 @@ public class HighwayWayProcessor : BaseOsmProcessor, IOsmElementProcessor<OsmLin
                     node.Coordinates.Coordinate,
                     prev.Level - node.Level
                 );
-                result.Edges.Add(
-                    new(
-                        result.Nodes.Count - 1,
-                        result.Nodes.Count,
-                        distance,
-                        distance,
-                        source.WayId
-                    )
-                );
+                edges.Add(new(nodes.Count - 1, nodes.Count, distance, distance, source.WayId));
             }
 
-            result.Nodes.Add(node);
+            nodes.Add(node);
             prev = node;
         }
 
-        return result;
+        return new(nodes, edges);
     }
 }

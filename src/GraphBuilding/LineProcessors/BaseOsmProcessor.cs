@@ -63,18 +63,17 @@ public abstract class BaseOsmProcessor
         decimal ogLevel
     )
     {
-        var result = new ProcessingResult(new(), new());
-        result.Nodes.AddRange(ogResult.Nodes);
-        result.Edges.AddRange(ogResult.Edges);
+        var nodes = new List<InMemoryNode>();
+        var edges = new List<InMemoryEdge>();
+        nodes.AddRange(ogResult.Nodes);
+        edges.AddRange(ogResult.Edges);
 
-        var nodeOffset = result.Nodes.Count;
+        var nodeOffset = nodes.Count;
         foreach (var l in repeatOnLevels)
         {
             var levelOffset = l - ogLevel;
-            result.Nodes.AddRange(
-                ogResult.Nodes.Select(x => x with { Level = x.Level + levelOffset })
-            );
-            result.Edges.AddRange(
+            nodes.AddRange(ogResult.Nodes.Select(x => x with { Level = x.Level + levelOffset }));
+            edges.AddRange(
                 ogResult.Edges.Select(
                     x => x with { FromId = x.FromId + nodeOffset, ToId = x.ToId + nodeOffset }
                 )
@@ -82,6 +81,6 @@ public abstract class BaseOsmProcessor
             nodeOffset += ogResult.Nodes.Count;
         }
 
-        return result;
+        return new(nodes, edges);
     }
 }
