@@ -59,7 +59,7 @@ public abstract class BaseOsmProcessor
 
     protected static ProcessingResult CreateReplicatedResult(
         ProcessingResult ogResult,
-        List<decimal> repeatOnLevels,
+        IList<decimal> repeatOnLevels,
         decimal ogLevel
     )
     {
