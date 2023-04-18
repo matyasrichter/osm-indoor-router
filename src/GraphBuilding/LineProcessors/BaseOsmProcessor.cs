@@ -20,7 +20,7 @@ public abstract class BaseOsmProcessor
     protected (
         decimal OgLevel,
         decimal LevelDiff,
-        List<decimal> RepeatOnLevels
+        IList<decimal> RepeatOnLevels
     ) ExtractLevelInformation(IReadOnlyDictionary<string, string> tags)
     {
         var levelTag = tags.GetValueOrDefault("level");
