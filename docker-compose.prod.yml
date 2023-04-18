@@ -66,6 +66,19 @@ services:
         - "swarm.cronjob.registry-auth=true"
       restart_policy:
         condition: none
+  # run this manually once
+  import-init:
+    image: "gitlab.fit.cvut.cz:5000/richtm12/bp-code/osm2pgsql"
+    command: ./import/initial.sh
+    env_file:
+      - .env.import
+    volumes:
+      - "./import-data:/app/data"
+    deploy:
+      mode: replicated
+      replicas: 0
+      restart_policy:
+        condition: none
   import:
     image: "gitlab.fit.cvut.cz:5000/richtm12/bp-code/osm2pgsql"
     command: ./import/update.sh
