@@ -56,7 +56,7 @@
 				} catch (e) {
 					console.error(e);
 				}
-			})
+			});
 			map?.addControl(indoorEqual as IControl);
 			map?.addSource('empty', {
 				type: 'geojson',

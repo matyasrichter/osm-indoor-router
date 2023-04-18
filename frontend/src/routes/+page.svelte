@@ -2,7 +2,7 @@
 	import { onDestroy, onMount } from 'svelte';
 	import type { RoutingConfig } from '../routing-api-client';
 	import 'maplibre-gl/dist/maplibre-gl.css';
-	import IndoorEqual from 'mapbox-gl-indoorequal';
+	import type IndoorEqual from 'mapbox-gl-indoorequal';
 	import {
 		FullscreenControl,
 		type IControl,
@@ -45,7 +45,7 @@
 </script>
 
 <div id="map" bind:this={mapContainer} />
-<RoutingPickerControl {map} graphVersion={data.graphVersion}/>
+<RoutingPickerControl {map} graphVersion={data.graphVersion} />
 
 <style>
 	#map {
