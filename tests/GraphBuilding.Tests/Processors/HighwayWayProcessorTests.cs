@@ -1,6 +1,6 @@
 namespace GraphBuilding.Tests.Processors;
 
-using LineProcessors;
+using ElementProcessors;
 using GraphBuilding.Parsers;
 using Microsoft.Extensions.Logging;
 using NetTopologySuite.Geometries;

@@ -1,7 +1,7 @@
 namespace GraphBuilding;
 
 using System.Runtime.CompilerServices;
-using LineProcessors;
+using ElementProcessors;
 using Parsers;
 using Ports;
 using Settings;
@@ -23,7 +23,7 @@ public class GraphBuilder
     {
         await foreach (var r in ProcessLines(ct))
             SaveResult(holder, r);
-        await foreach (var r in ProcessPolygons(ct))
+        await foreach (var r in ProcessPolygons(holder, ct))
             SaveResult(holder, r);
     }
 
@@ -46,6 +46,7 @@ public class GraphBuilder
     }
 
     private async IAsyncEnumerable<ProcessingResult> ProcessPolygons(
+        GraphHolder holder,
         [EnumeratorCancellation] CancellationToken ct
     )
     {
@@ -58,9 +59,15 @@ public class GraphBuilder
             if (ct.IsCancellationRequested)
                 yield break;
             if (area.Tags.ContainsKey("indoor") && area.Tags["indoor"] is "area" or "corridor")
-                yield return await areaProcessor.Process(area);
+                yield return await areaProcessor.Process(
+                    area,
+                    holder.GetNodesInArea(area.Geometry.EnvelopeInternal)
+                );
             else if (area.Tags.GetValueOrDefault("highway") is "pedestrian")
-                yield return await areaProcessor.Process(area);
+                yield return await areaProcessor.Process(
+                    area,
+                    holder.GetNodesInArea(area.Geometry.EnvelopeInternal)
+                );
         }
     }
 

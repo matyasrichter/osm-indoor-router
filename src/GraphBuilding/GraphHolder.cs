@@ -1,15 +1,11 @@
 namespace GraphBuilding;
 
-public interface IGraphHolder
-{
-    InMemoryNode? GetNode(int id);
-    (int Id, InMemoryNode Node)? GetNodeBySourceId(long sourceId, decimal level);
-    int AddNode(InMemoryNode inMemoryNode);
-    void AddEdge(InMemoryEdge inMemoryEdge);
-}
+using NetTopologySuite.Geometries;
+using NetTopologySuite.Index.KdTree;
 
-public class GraphHolder : IGraphHolder
+public class GraphHolder
 {
+    private KdTree<InMemoryNode> NodesIndex { get; } = new();
     public IList<InMemoryNode> Nodes { get; } = new List<InMemoryNode>();
     public IList<InMemoryEdge> Edges { get; } = new List<InMemoryEdge>();
 
@@ -17,6 +13,9 @@ public class GraphHolder : IGraphHolder
     private readonly Dictionary<(long SourceId, decimal Level), int> sourceIdToNodeId = new();
 
     public InMemoryNode? GetNode(int id) => Nodes.Count < id ? null : Nodes[id];
+
+    public IEnumerable<InMemoryNode> GetNodesInArea(Envelope area) =>
+        NodesIndex.Query(area).Select(x => x.Data);
 
     public (int Id, InMemoryNode Node)? GetNodeBySourceId(long sourceId, decimal level) =>
         sourceIdToNodeId.TryGetValue((sourceId, level), out var id) ? (id, Nodes[id]) : null;
@@ -30,6 +29,7 @@ public class GraphHolder : IGraphHolder
             {
                 var id = Nodes.Count;
                 Nodes.Add(inMemoryNode);
+                _ = NodesIndex.Insert(inMemoryNode.Coordinates.Coordinate, inMemoryNode);
                 sourceIdToNodeId[key] = id;
                 return id;
             }
@@ -40,6 +40,7 @@ public class GraphHolder : IGraphHolder
         {
             var id = Nodes.Count;
             Nodes.Add(inMemoryNode);
+            _ = NodesIndex.Insert(inMemoryNode.Coordinates.Coordinate, inMemoryNode);
             return id;
         }
     }

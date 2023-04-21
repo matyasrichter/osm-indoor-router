@@ -1,9 +1,9 @@
-namespace GraphBuilding.LineProcessors;
+namespace GraphBuilding.ElementProcessors;
 
-using Parsers;
-using Ports;
+using GraphBuilding.Parsers;
+using GraphBuilding.Ports;
 
-public class HighwayWayProcessor : BaseOsmProcessor, IOsmElementProcessor<OsmLine>
+public class HighwayWayProcessor : BaseOsmProcessor
 {
     public HighwayWayProcessor(IOsmPort osm, LevelParser levelParser)
         : base(osm, levelParser) { }
@@ -12,8 +12,11 @@ public class HighwayWayProcessor : BaseOsmProcessor, IOsmElementProcessor<OsmLin
     {
         var (ogLevel, levelDiff, repeatOnLevels) = ExtractLevelInformation(source.Tags);
         var ogLevelLine = await ProcessSingleLevel(source, ogLevel, levelDiff);
-
-        return CreateReplicatedResult(ogLevelLine, repeatOnLevels, ogLevel);
+        if (repeatOnLevels.Count > 0)
+            return JoinResults(
+                DuplicateResults(ogLevelLine, repeatOnLevels, ogLevel).Select(x => x.Result)
+            );
+        return ogLevelLine;
     }
 
     private async Task<ProcessingResult> ProcessSingleLevel(

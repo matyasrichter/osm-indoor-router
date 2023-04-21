@@ -3,6 +3,7 @@ namespace GraphBuilding.Tests;
 using GraphBuilding.Parsers;
 using Microsoft.Extensions.Logging;
 using NetTopologySuite.Geometries;
+using NetTopologySuite.Planargraph;
 using Ports;
 using Settings;
 
@@ -186,6 +187,112 @@ public class GraphBuilderTests
             .Where(x => x.ToId == l1id || x.FromId == l1id)
             .Should()
             .HaveCount(3, "there are two edges on level 2 and one on stairs");
+    }
+
+    /// <summary>
+    /// Tests for a situation like this (x's are nodes):
+    /// <code>
+    /// x---------x
+    /// |         |
+    /// |      x--+--x
+    /// x---------x
+    /// </code>
+    /// </summary>
+    [Fact]
+    public async Task CanHandleRoutableNodeInsidePolygon()
+    {
+        var osm = new Mock<IOsmPort>();
+        var builder = new GraphBuilder(osm.Object, Settings, new(Mock.Of<ILogger<LevelParser>>()));
+        var points = new List<KeyValuePair<long, Point>>()
+        {
+            new(2911907727, gf.CreatePoint(new Coordinate(14.3896986, 50.1043596))),
+            new(10779255894, gf.CreatePoint(new Coordinate(14.3895723, 50.1042648))),
+            new(9566779413, gf.CreatePoint(new Coordinate(14.3897029, 50.1042739))),
+            new(3776391910, gf.CreatePoint(new Coordinate(14.3897692, 50.1043239))),
+            new(563250924, gf.CreatePoint(new Coordinate(14.3896805, 50.1043039))),
+            new(563250921, gf.CreatePoint(new Coordinate(14.3896792, 50.1041176))),
+        };
+
+        osm.Setup(x => x.GetPolygons(It.IsAny<Geometry>()))
+            .ReturnsAsync(
+                new[]
+                {
+                    new OsmPolygon(
+                        374272471,
+                        new Dictionary<string, string>()
+                        {
+                            { "highway", "pedestrian" },
+                            { "area", "yes" }
+                        },
+                        points.Take(4).Append(points[0]).Select(x => x.Key).ToList(),
+                        new(
+                            new(
+                                points
+                                    .Take(4)
+                                    .Append(points[0])
+                                    .Select(x => x.Value.Coordinate)
+                                    .ToArray()
+                            )
+                        ),
+                        new(
+                            points
+                                .Take(4)
+                                .Append(points[0])
+                                .Select(x => x.Value.Coordinate)
+                                .ToArray()
+                        )
+                    ),
+                }
+            );
+        osm.Setup(x => x.GetLines(It.IsAny<Geometry>()))
+            .ReturnsAsync(
+                new[]
+                {
+                    new OsmLine(
+                        44328671,
+                        new Dictionary<string, string>() { { "highway", "footway" } },
+                        points.TakeLast(2).Select(x => x.Key).ToList(),
+                        new(points.TakeLast(2).Select(x => x.Value.Coordinate).ToArray())
+                    )
+                }
+            );
+        osm.Setup(x => x.GetPointByOsmId(It.IsAny<long>())).ReturnsAsync((OsmPoint?)null);
+        osm.Setup(x => x.GetPointsByOsmIds(It.IsAny<IEnumerable<long>>()))
+            .ReturnsAsync((IEnumerable<long> osmIds) => osmIds.Select(_ => (OsmPoint?)null));
+
+        var holder = new GraphHolder();
+        await builder.BuildGraph(holder, CancellationToken.None);
+
+        holder.Nodes
+            .Where(x => x.SourceId == 563250924)
+            .Should()
+            .HaveCount(1, "there are no levels");
+        holder.Edges
+            .Join(
+                holder.Nodes.Select((x, i) => (x, i)),
+                x => x.FromId,
+                x => x.i,
+                (x, y) => (Edge: x, FromSId: y.x.SourceId)
+            )
+            .Join(
+                holder.Nodes.Select((x, i) => (x, i)),
+                x => x.Edge.ToId,
+                x => x.i,
+                (x, y) => (x.Edge, x.FromSId, ToSId: y.x.SourceId)
+            )
+            .Where(x => x.FromSId == 563250924 || x.ToSId == 563250924)
+            .Select(x => (new HashSet<long?>() { x.FromSId, x.ToSId }, x.Edge.SourceId))
+            .Should()
+            .BeEquivalentTo(
+                new (HashSet<long>, long?)[]
+                {
+                    (new() { 563250924, 563250921 }, 44328671),
+                    (new() { 563250924, 2911907727 }, 374272471),
+                    (new() { 563250924, 10779255894 }, 374272471),
+                    (new() { 563250924, 9566779413 }, 374272471),
+                    (new() { 563250924, 3776391910 }, 374272471),
+                }
+            );
     }
 
     private static readonly AppSettings Settings =

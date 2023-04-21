@@ -1,8 +1,8 @@
-namespace GraphBuilding.LineProcessors;
+namespace GraphBuilding.ElementProcessors;
 
+using GraphBuilding.Parsers;
+using GraphBuilding.Ports;
 using NetTopologySuite.Geometries;
-using Parsers;
-using Ports;
 
 public abstract class BaseOsmProcessor
 {
@@ -57,28 +57,43 @@ public abstract class BaseOsmProcessor
                 : null;
     }
 
-    protected static ProcessingResult CreateReplicatedResult(
+    protected static IEnumerable<(decimal LowestLevel, ProcessingResult Result)> DuplicateResults(
         ProcessingResult ogResult,
         IList<decimal> repeatOnLevels,
         decimal ogLevel
-    )
+    ) =>
+        repeatOnLevels
+            .Select(
+                l =>
+                    (
+                        l,
+                        new ProcessingResult(
+                            ogResult.Nodes
+                                .Select(x => x with { Level = x.Level + l - ogLevel })
+                                .ToList(),
+                            ogResult.Edges
+                                .Select(x => x with { FromId = x.FromId, ToId = x.ToId })
+                                .ToList()
+                        )
+                    )
+            )
+            .Prepend((ogLevel, ogResult));
+
+    protected static ProcessingResult JoinResults(IEnumerable<ProcessingResult> results)
     {
         var nodes = new List<InMemoryNode>();
         var edges = new List<InMemoryEdge>();
-        nodes.AddRange(ogResult.Nodes);
-        edges.AddRange(ogResult.Edges);
 
         var nodeOffset = nodes.Count;
-        foreach (var l in repeatOnLevels)
+        foreach (var result in results)
         {
-            var levelOffset = l - ogLevel;
-            nodes.AddRange(ogResult.Nodes.Select(x => x with { Level = x.Level + levelOffset }));
+            nodes.AddRange(result.Nodes);
             edges.AddRange(
-                ogResult.Edges.Select(
+                result.Edges.Select(
                     x => x with { FromId = x.FromId + nodeOffset, ToId = x.ToId + nodeOffset }
                 )
             );
-            nodeOffset += ogResult.Nodes.Count;
+            nodeOffset += result.Nodes.Count;
         }
 
         return new(nodes, edges);
