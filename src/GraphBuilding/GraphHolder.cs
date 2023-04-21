@@ -14,36 +14,34 @@ public class GraphHolder : IGraphHolder
     public IList<InMemoryEdge> Edges { get; } = new List<InMemoryEdge>();
 
     // sourceId -> level -> nodes index
-    private readonly Dictionary<long, Dictionary<decimal, int>> sourceIdToNodeId = new();
+    private readonly Dictionary<(long SourceId, decimal Level), int> sourceIdToNodeId = new();
 
     public InMemoryNode? GetNode(int id) => Nodes.Count < id ? null : Nodes[id];
 
-    public (int Id, InMemoryNode Node)? GetNodeBySourceId(long sourceId, decimal level)
-    {
-        var ids = sourceIdToNodeId.GetValueOrDefault(sourceId);
-        if (ids == default)
-            return null;
-
-        var id = ids.GetValueOrDefault(level);
-        if (id == default)
-            return null;
-
-        return (id, Nodes[id]);
-    }
+    public (int Id, InMemoryNode Node)? GetNodeBySourceId(long sourceId, decimal level) =>
+        sourceIdToNodeId.TryGetValue((sourceId, level), out var id) ? (id, Nodes[id]) : null;
 
     public int AddNode(InMemoryNode inMemoryNode)
     {
-        var id = Nodes.Count;
-        Nodes.Add(inMemoryNode);
-        if (inMemoryNode.SourceId is { } sourceId)
+        if (inMemoryNode is { SourceId: { } sid, Level: var level })
         {
-            if (!sourceIdToNodeId.ContainsKey(sourceId))
-                sourceIdToNodeId[sourceId] = new() { { inMemoryNode.Level, id } };
+            var key = (sid, level);
+            if (!sourceIdToNodeId.ContainsKey(key))
+            {
+                var id = Nodes.Count;
+                Nodes.Add(inMemoryNode);
+                sourceIdToNodeId[key] = id;
+                return id;
+            }
             else
-                _ = sourceIdToNodeId[sourceId][inMemoryNode.Level] = id;
+                return sourceIdToNodeId[key];
         }
-
-        return id;
+        else
+        {
+            var id = Nodes.Count;
+            Nodes.Add(inMemoryNode);
+            return id;
+        }
     }
 
     public void AddEdge(InMemoryEdge inMemoryEdge) => Edges.Add(inMemoryEdge);
