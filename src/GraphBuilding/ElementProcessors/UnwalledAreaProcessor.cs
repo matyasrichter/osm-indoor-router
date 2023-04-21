@@ -1,19 +1,37 @@
-namespace GraphBuilding.LineProcessors;
+namespace GraphBuilding.ElementProcessors;
 
+using GraphBuilding.Parsers;
+using GraphBuilding.Ports;
 using NetTopologySuite.Geometries;
-using Parsers;
-using Ports;
 
-public class UnwalledAreaProcessor : BaseOsmProcessor, IOsmElementProcessor<OsmPolygon>
+public class UnwalledAreaProcessor : BaseOsmProcessor
 {
     public UnwalledAreaProcessor(IOsmPort osm, LevelParser levelParser)
         : base(osm, levelParser) { }
 
-    public async Task<ProcessingResult> Process(OsmPolygon source)
+    public async Task<ProcessingResult> Process(
+        OsmPolygon source,
+        IEnumerable<InMemoryNode> nodesInEnvelope
+    )
     {
         var (ogLevel, _, repeatOnLevels) = ExtractLevelInformation(source.Tags);
-        var ogLevelResult = await ProcessSingleLevel(source, ogLevel);
-        return CreateReplicatedResult(ogLevelResult, repeatOnLevels, ogLevel);
+        var resultsWithLevels = DuplicateResults(
+            await ProcessSingleLevel(source, ogLevel),
+            repeatOnLevels,
+            ogLevel
+        );
+        var nodeCandidatesToAdd = nodesInEnvelope
+            .Where(x => source.Geometry.Covers(x.Coordinates))
+            .ToList();
+        var results = resultsWithLevels.Select(
+            x =>
+                AddNodesFromEnvelope(
+                    x.Result,
+                    nodeCandidatesToAdd.Where(n => n.Level == x.LowestLevel),
+                    source
+                )
+        );
+        return JoinResults(results);
     }
 
     private async Task<ProcessingResult> ProcessSingleLevel(OsmPolygon source, decimal level)
@@ -41,6 +59,35 @@ public class UnwalledAreaProcessor : BaseOsmProcessor, IOsmElementProcessor<OsmP
         }
 
         return new(nodes, edges);
+    }
+
+    private static ProcessingResult AddNodesFromEnvelope(
+        ProcessingResult result,
+        IEnumerable<InMemoryNode> nodeCandidates,
+        OsmPolygon source
+    )
+    {
+        foreach (var node in nodeCandidates)
+        {
+            var count = result.Nodes.Count;
+            result.Nodes.Add(node);
+            for (var i = 0; i < count; i++)
+            {
+                var existingNode = result.Nodes[i];
+                var lineGeometry = Gf.CreateLineString(
+                    new[] { node.Coordinates.Coordinate, existingNode.Coordinates.Coordinate }
+                );
+                if (!lineGeometry.CoveredBy(source.Geometry))
+                    continue;
+                var distance = node.Coordinates.GetMetricDistance(
+                    existingNode.Coordinates,
+                    Math.Abs(node.Level - existingNode.Level)
+                );
+                result.Edges.Add(new(i, result.Nodes.Count - 1, distance, distance, source.AreaId));
+            }
+        }
+
+        return result;
     }
 
     private static int GetNodeId(

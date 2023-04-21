@@ -1,15 +1,17 @@
 namespace GraphBuilding.Tests.Processors;
 
-using LineProcessors;
+using ElementProcessors;
 using GraphBuilding.Parsers;
 using Microsoft.Extensions.Logging;
 using NetTopologySuite.Geometries;
 using Ports;
 using Xunit.Abstractions;
 
+# pragma warning disable CA1506
 public class AreaPolygonProcessorTests
 {
     private readonly ITestOutputHelper testOutputHelper;
+    private static readonly GeometryFactory Gf = new(new(), 4326);
 
     public AreaPolygonProcessorTests(ITestOutputHelper testOutputHelper) =>
         this.testOutputHelper = testOutputHelper;
@@ -22,7 +24,6 @@ public class AreaPolygonProcessorTests
         HashSet<(Point, Point)>
     > ProcessingTestData()
     {
-        var gf = new GeometryFactory(new(), 4326);
         var data =
             new TheoryData<
                 string,
@@ -34,10 +35,10 @@ public class AreaPolygonProcessorTests
 
         var points = new List<Point>()
         {
-            gf.CreatePoint(new Coordinate(1, 1)),
-            gf.CreatePoint(new Coordinate(1, 2)),
-            gf.CreatePoint(new Coordinate(2, 2)),
-            gf.CreatePoint(new Coordinate(2, 1))
+            Gf.CreatePoint(new Coordinate(1, 1)),
+            Gf.CreatePoint(new Coordinate(1, 2)),
+            Gf.CreatePoint(new Coordinate(2, 2)),
+            Gf.CreatePoint(new Coordinate(2, 1))
         };
 
         data.Add(
@@ -46,8 +47,8 @@ public class AreaPolygonProcessorTests
                 123456,
                 new Dictionary<string, string>() { { "highway", "pedestrian" }, { "area", "yes" } },
                 new List<long>() { 1, 2, 3, 4, 1 },
-                gf.CreatePolygon(points.Append(points[0]).Select(x => x.Coordinate).ToArray()),
-                gf.CreateLineString(points.Append(points[0]).Select(x => x.Coordinate).ToArray())
+                Gf.CreatePolygon(points.Append(points[0]).Select(x => x.Coordinate).ToArray()),
+                Gf.CreateLineString(points.Append(points[0]).Select(x => x.Coordinate).ToArray())
             ),
             new(),
             new()
@@ -70,11 +71,11 @@ public class AreaPolygonProcessorTests
 
         points = new()
         {
-            gf.CreatePoint(new Coordinate(1, 1)),
-            gf.CreatePoint(new Coordinate(1, 2)),
-            gf.CreatePoint(new Coordinate(1, 3)),
-            gf.CreatePoint(new Coordinate(2, 1)),
-            gf.CreatePoint(new Coordinate(1.5, 1.5))
+            Gf.CreatePoint(new Coordinate(1, 1)),
+            Gf.CreatePoint(new Coordinate(1, 2)),
+            Gf.CreatePoint(new Coordinate(1, 3)),
+            Gf.CreatePoint(new Coordinate(2, 1)),
+            Gf.CreatePoint(new Coordinate(1.5, 1.5))
         };
         data.Add(
             "l-shaped",
@@ -82,12 +83,12 @@ public class AreaPolygonProcessorTests
                 123456,
                 new Dictionary<string, string>() { { "highway", "pedestrian" }, { "area", "yes" } },
                 new List<long>() { 1, 2, 3, 4, 5, 1 },
-                gf.CreatePolygon(
+                Gf.CreatePolygon(
                     new[] { points[0], points[1], points[2], points[3], points[4], points[0] }
                         .Select(x => x.Coordinate)
                         .ToArray()
                 ),
-                gf.CreateLineString(
+                Gf.CreateLineString(
                     new[] { points[0], points[1], points[2], points[3], points[4], points[0] }
                         .Select(x => x.Coordinate)
                         .ToArray()
@@ -139,7 +140,7 @@ public class AreaPolygonProcessorTests
             );
         var processor = new UnwalledAreaProcessor(osm.Object, new(Mock.Of<ILogger<LevelParser>>()));
 
-        var result = await processor.Process(polygon);
+        var result = await processor.Process(polygon, Enumerable.Empty<InMemoryNode>());
         result.Nodes.Should().BeEquivalentTo(expectedNodes);
         var edgePairs = result.Edges
             .Select(
@@ -154,4 +155,59 @@ public class AreaPolygonProcessorTests
                 .Should()
                 .BeTrue("result should have edge {0} or {1}", (expFrom, expTo), (expTo, expFrom));
     }
+
+    [Fact]
+    public async Task CanHandleNodeInsideEnvelope()
+    {
+        var points = new List<KeyValuePair<long, Point>>()
+        {
+            new(2911907727, Gf.CreatePoint(new Coordinate(14.3896986, 50.1043596))),
+            new(10779255894, Gf.CreatePoint(new Coordinate(14.3895723, 50.1042648))),
+            new(9566779413, Gf.CreatePoint(new Coordinate(14.3897029, 50.1042739))),
+            new(3776391910, Gf.CreatePoint(new Coordinate(14.3897692, 50.1043239))),
+            new(563250924, Gf.CreatePoint(new Coordinate(14.3896805, 50.1043039))),
+        };
+        var osm = new Mock<IOsmPort>();
+        osm.Setup(x => x.GetPointByOsmId(It.IsAny<long>())).ReturnsAsync((OsmPoint?)null);
+        osm.Setup(x => x.GetPointsByOsmIds(It.IsAny<IEnumerable<long>>()))
+            .ReturnsAsync((IEnumerable<long> osmIds) => osmIds.Select<long, OsmPoint?>(_ => null));
+
+        var polygon = new OsmPolygon(
+            374272471,
+            new Dictionary<string, string>() { { "highway", "pedestrian" }, { "area", "yes" } },
+            points.Take(4).Append(points[0]).Select(x => x.Key).ToList(),
+            new(new(points.Take(4).Append(points[0]).Select(x => x.Value.Coordinate).ToArray())),
+            new(points.Take(4).Append(points[0]).Select(x => x.Value.Coordinate).ToArray())
+        );
+        var processor = new UnwalledAreaProcessor(osm.Object, new(Mock.Of<ILogger<LevelParser>>()));
+
+        var existingNode = new InMemoryNode(points.Last().Value, 0, 563250924);
+        var result = await processor.Process(polygon, new[] { existingNode });
+        result.Edges
+            .Join(
+                result.Nodes.Select((x, i) => (x, i)),
+                x => x.FromId,
+                x => x.i,
+                (x, y) => (Edge: x, FromSId: y.x.SourceId)
+            )
+            .Join(
+                result.Nodes.Select((x, i) => (x, i)),
+                x => x.Edge.ToId,
+                x => x.i,
+                (x, y) => (x.Edge, x.FromSId, ToSId: y.x.SourceId)
+            )
+            .Where(x => x.FromSId == 563250924 || x.ToSId == 563250924)
+            .Select(x => new HashSet<long?>() { x.FromSId, x.ToSId })
+            .Should()
+            .BeEquivalentTo(
+                new HashSet<long>[]
+                {
+                    new() { 563250924, 2911907727 },
+                    new() { 563250924, 10779255894 },
+                    new() { 563250924, 9566779413 },
+                    new() { 563250924, 3776391910 },
+                }
+            );
+    }
 }
+# pragma warning restore CA1506
