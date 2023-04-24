@@ -19,6 +19,8 @@
 	import { Button } from '@svelteuidev/core';
 	import { env } from '$env/dynamic/public';
 	import IndoorEqual from 'mapbox-gl-indoorequal';
+	import FaAngleDoubleUp from 'svelte-icons/fa/FaAngleDoubleUp.svelte';
+	import FaAngleDoubleDown from 'svelte-icons/fa/FaAngleDoubleDown.svelte';
 
 	// this is necessary because maplibre is a CommonJs module
 	const { LngLatBounds } = maplibre;
@@ -37,6 +39,7 @@
 	let targetNode: RouteNode | null = null;
 
 	let route: Route | null = null;
+	let routeMarkers: maplibregl.Marker[] = [];
 
 	let pickingStart = false;
 	let pickingTarget = false;
@@ -103,13 +106,14 @@
 		removeRoutePoint('target');
 	}
 	const onFirstRouteAdd = async (route: Route) => {
-		console.log('onFirstRouteAdd', level);
 		indoorEqual.setLevel(route.nodes[0].level.toString());
 		zoomToRoute(route.nodes);
 	};
 	const onLevelChange = (valueToSet: number) => {
-		console.log('onLevelChange', level, valueToSet);
 		level = valueToSet;
+		if (indoorEqual.level != level.toString()) {
+			indoorEqual.setLevel(level.toString());
+		}
 		if (route != null) {
 			addOrReplaceRoute(route.nodes);
 		}
@@ -172,19 +176,23 @@
 	const addOrReplaceRoute = (coordinates: Array<RouteNode>) => {
 		console.log('addOrReplaceRoute');
 		removeRoute();
-		const segments: { level: number; nodes: RouteNode[] }[] = [];
+		const segments: { level: number; nextLevel: number | null; nodes: RouteNode[] }[] = [];
 		let currentSegment: RouteNode[] = [];
 		let prev: RouteNode | null = null;
 		for (const coord of coordinates) {
 			currentSegment.push(coord);
 			if (prev?.level != null && prev?.level !== coord?.level) {
-				segments.push({ level: prev.level, nodes: currentSegment });
+				segments.push({ level: prev.level, nextLevel: coord.level, nodes: currentSegment });
 				currentSegment = [coord];
 			}
 			prev = coord;
 		}
 		if (currentSegment.length > 0) {
-			segments.push({ level: currentSegment.at(-1)!.level, nodes: currentSegment });
+			segments.push({
+				level: currentSegment.at(-1)!.level,
+				nextLevel: null,
+				nodes: currentSegment
+			});
 		}
 
 		map?.addSource(routeSourceName, {
@@ -228,6 +236,50 @@
 			},
 			zIndex1
 		);
+		if (segments.length > 1) {
+			// iterating twice shouldn't hurt that much and we need to add the current level last for it to be on top
+			segments
+				.filter((x) => x.nextLevel != null && x.level != level)
+				.forEach((s) => addMarker(s));
+			segments
+				.filter((x) => x.nextLevel != null && x.level == level)
+				.forEach((s) => addMarker(s));
+		}
+	};
+
+	const addMarker = (s: { level: number; nextLevel: number | null; nodes: RouteNode[] }) => {
+		var element = document.createElement('div');
+		var elementChild = document.createElement('div');
+		element.appendChild(elementChild);
+		elementChild.style.width = '25px';
+		elementChild.style.height = '25px';
+		elementChild.style.borderRadius = '15px';
+		elementChild.style.padding = '5px';
+		elementChild.style.backgroundColor = 'white';
+		elementChild.style.border = '0.1px solid black';
+		if (s.level != level) {
+			elementChild.style.opacity = '0.5';
+		} else {
+			element.onclick = () => onLevelChange(s.nextLevel!);
+			element.onmouseenter = () => (elementChild.style.borderWidth = '2px');
+			element.onmouseleave = () => (elementChild.style.borderWidth = '0.1px');
+		}
+		if (s.nextLevel == level) {
+			element.onclick = () => onLevelChange(s.level);
+			element.onmouseenter = () => (elementChild.style.borderWidth = '2px');
+			element.onmouseleave = () => (elementChild.style.borderWidth = '0.1px');
+		}
+		var component =
+			s.level > s.nextLevel!
+				? new FaAngleDoubleDown({ target: elementChild })
+				: new FaAngleDoubleUp({ target: elementChild });
+		if (map != null) {
+			routeMarkers = routeMarkers.concat(
+				new maplibre.Marker(element)
+					.setLngLat([s.nodes.at(-1)!.longitude, s.nodes.at(-1)!.latitude])
+					.addTo(map)
+			);
+		}
 	};
 
 	const removeRoute = () => {
@@ -237,6 +289,8 @@
 		if (map?.getSource(routeSourceName)) {
 			map?.removeSource(routeSourceName);
 		}
+		routeMarkers.forEach((marker) => marker.remove());
+		routeMarkers = [];
 	};
 
 	const zoomToRoute = (coordinates: RouteNode[]) => {
