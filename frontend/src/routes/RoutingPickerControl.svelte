@@ -258,6 +258,7 @@
 	};
 	const removeRoutePoint = (name: string) => {
 		removeRoute();
+		route = null;
 		if (map?.getLayer(name)) {
 			map?.removeLayer(name);
 		}
@@ -307,6 +308,24 @@
 			<Button disabled={!startNode || !targetNode} on:click={getRoute}>Find route</Button>
 		</div>
 	</div>
+	{#if route}
+		<div class="route-info">
+			Found route:
+			<div>
+				<div>
+					<strong>From:</strong> ({route.nodes.at(0)?.longitude}, {route.nodes.at(0)
+						?.longitude}), floor: {route.nodes.at(0)?.level}
+				</div>
+				<div>
+					<strong>To:</strong> ({route.nodes.at(-1)?.longitude}, {route.nodes.at(-1)
+						?.longitude}), floor: {route.nodes.at(-1)?.level}
+				</div>
+				<div>
+					<strong>Total distance:</strong> {route.totalDistanceInMeters.toFixed(0)} m
+				</div>
+			</div>
+		</div>
+	{/if}
 </div>
 
 <style lang="scss">
@@ -348,5 +367,8 @@
 			display: flex;
 			justify-content: center;
 		}
+	}
+	.route-info {
+		padding: 1em;
 	}
 </style>
