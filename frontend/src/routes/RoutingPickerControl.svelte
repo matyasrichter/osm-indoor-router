@@ -1,5 +1,12 @@
 <script lang="ts">
-	import type { Map, ControlPosition, IControl, LngLat, LngLatLike, MapMouseEvent } from 'maplibre-gl';
+	import type {
+		Map,
+		ControlPosition,
+		IControl,
+		LngLat,
+		LngLatLike,
+		MapMouseEvent
+	} from 'maplibre-gl';
 	import maplibre from 'maplibre-gl';
 	import {
 		Configuration,
@@ -12,7 +19,7 @@
 	import { Button } from '@svelteuidev/core';
 	import { env } from '$env/dynamic/public';
 	import IndoorEqual from 'mapbox-gl-indoorequal';
-	
+
 	// this is necessary because maplibre is a CommonJs module
 	const { LngLatBounds } = maplibre;
 
@@ -157,7 +164,7 @@
 		let prev: RouteNode | null = null;
 		for (const coord of coordinates) {
 			currentSegment.push(coord);
-			if (prev?.level && prev?.level !== coord?.level) {
+			if (prev?.level != null && prev?.level !== coord?.level) {
 				segments.push({ level: prev.level, nodes: currentSegment });
 				currentSegment = [coord];
 			}
@@ -324,7 +331,8 @@
 						?.longitude}), floor: {route.nodes.at(-1)?.level}
 				</div>
 				<div>
-					<strong>Total distance:</strong> {route.totalDistanceInMeters.toFixed(0)} m
+					<strong>Total distance:</strong>
+					{route.totalDistanceInMeters.toFixed(0)} m
 				</div>
 			</div>
 		</div>
