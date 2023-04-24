@@ -183,30 +183,11 @@ public class AreaPolygonProcessorTests
 
         var existingNode = new InMemoryNode(points.Last().Value, 0, 563250924);
         var result = await processor.Process(polygon, new[] { existingNode });
-        result.Edges
-            .Join(
-                result.Nodes.Select((x, i) => (x, i)),
-                x => x.FromId,
-                x => x.i,
-                (x, y) => (Edge: x, FromSId: y.x.SourceId)
-            )
-            .Join(
-                result.Nodes.Select((x, i) => (x, i)),
-                x => x.Edge.ToId,
-                x => x.i,
-                (x, y) => (x.Edge, x.FromSId, ToSId: y.x.SourceId)
-            )
-            .Where(x => x.FromSId == 563250924 || x.ToSId == 563250924)
-            .Select(x => new HashSet<long?>() { x.FromSId, x.ToSId })
+        result
             .Should()
-            .BeEquivalentTo(
-                new HashSet<long>[]
-                {
-                    new() { 563250924, 2911907727 },
-                    new() { 563250924, 10779255894 },
-                    new() { 563250924, 9566779413 },
-                    new() { 563250924, 3776391910 },
-                }
+            .HaveEdgesBetweenSourceIds(
+                563250924,
+                new[] { 2911907727, 10779255894, 9566779413, 3776391910, }
             );
     }
 }
