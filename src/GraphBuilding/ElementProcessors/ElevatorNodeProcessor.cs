@@ -41,7 +41,7 @@ public class ElevatorNodeProcessor : BaseOsmProcessor
                         levelVerticalDistance,
                         levelVerticalDistance,
                         source.NodeId,
-                        levelVerticalDistance
+                        0
                     )
                 );
 
