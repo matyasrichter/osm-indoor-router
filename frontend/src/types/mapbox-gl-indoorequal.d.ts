@@ -22,7 +22,6 @@ export default class IndoorEqual {
 	map: Map;
 	levels: string[];
 	level: string;
-	events: {};
 	/**
 	 * Remove any layers, source and listeners and controls
 	 */
@@ -32,19 +31,19 @@ export default class IndoorEqual {
 	 * @param {string} name the name of the event
 	 * @param {function} fn the function to be called when the event is emitted
 	 */
-	on(name: string, fn: Function): void;
+	on(name: string, fn: () => void): void;
 	/**
 	 * Remove an event listener.
 	 * @param {string} name the name of the event
 	 * @param {function} fn the same function when on() was called
 	 */
-	off(name: string, fn: Function): void;
+	off(name: string, fn: () => void): void;
 	/**
 	 * Add the level control to the map
 	 * Used when adding the control via the map instance: map.addControl(indoorEqual)
 	 */
-	onAdd(): any;
-	_control: any;
+	onAdd(): () => void;
+	_control: unknown;
 	/**
 	 * Remove the level control
 	 * Used when removing the control via the map instance: map.removeControl(indoorEqual)
@@ -75,26 +74,18 @@ export default class IndoorEqual {
 		options?: {
 			update?: boolean;
 		}
-	): Promise<any>;
+	): Promise<unknown>;
 	/**
 	 * Change the heatmap layer visibility
 	 * @param {boolean} visible True to make it visible, false to hide it
 	 */
 	setHeatmapVisible(visible: boolean): void;
-	_init(): void;
-	_updateLevelsDebounce: any;
-	_updateFilters(): void;
-	_refreshAfterLevelsUpdate(): void;
-	_updateLevels(): void;
-	_emitLevelsChange(): void;
-	_emitLevelChange(): void;
-	_emitEvent(eventName: any, ...args: any[]): void;
 }
 declare class GeoJSONSource {
-	constructor(map: Map, options?: {});
+	constructor(map: Map, options?: unknown);
 	map: Map;
-	geojson: {};
-	layers: any;
+	geojson: object?;
+	layers: unknown;
 	baseSourceId: string;
 	sourceId: string;
 	addSource(): void;
@@ -102,11 +93,11 @@ declare class GeoJSONSource {
 	remove(): void;
 }
 declare class VectorTileSource {
-	constructor(map: Map, options?: {});
+	constructor(map: Map, options?: unknown);
 	map: Map;
 	url: string;
-	apiKey: any;
-	layers: any;
+	apiKey: string;
+	layers: unknown;
 	sourceId: string;
 	addSource(): void;
 	addLayers(): void;
@@ -116,7 +107,7 @@ declare interface IndoorEqualOpts {
 	url?: string;
 	geojson?: object;
 	apiKey?: string;
-	layers?: any[];
+	layers?: unknown[];
 	heatmap?: boolean;
 }
 export {};

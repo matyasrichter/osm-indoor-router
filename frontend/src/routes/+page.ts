@@ -1,8 +1,9 @@
 import { ConfigApi, Configuration, type RoutingConfig } from '../routing-api-client';
 import { error } from '@sveltejs/kit';
 import { env } from '$env/dynamic/public';
+import type { PageLoad } from './$types';
 
-export async function load({ fetch }): Promise<RoutingConfig> {
+export const load = (async ({ fetch }): Promise<RoutingConfig> => {
 	const api = new ConfigApi(
 		new Configuration({
 			fetchApi: fetch,
@@ -14,4 +15,4 @@ export async function load({ fetch }): Promise<RoutingConfig> {
 		console.error(e);
 		throw error(500, 'Something went wrong.');
 	});
-}
+}) satisfies PageLoad;
