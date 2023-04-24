@@ -62,12 +62,13 @@
 			indoorEqual.loadSprite('/indoorequal/indoorequal');
 			indoorEqual?.on('levelchange', (e: string) => {
 				try {
-					level = parseFloat(e);
+					const levelNum = parseFloat(e);
+					onLevelChange(levelNum);
 				} catch (e) {
 					console.error(e);
 				}
 			});
-			map?.addControl(indoorEqual as IControl);
+			map?.addControl(indoorEqual as unknown as IControl);
 			map?.addSource('empty', {
 				type: 'geojson',
 				data: { type: 'FeatureCollection', features: [] }
@@ -101,8 +102,18 @@
 	} else {
 		removeRoutePoint('target');
 	}
-	$: [route, level] && route != null && addOrReplaceRoute(route.nodes);
-	$: route != null && zoomToRoute(route.nodes);
+	const onFirstRouteAdd = async (route: Route) => {
+		console.log('onFirstRouteAdd', level);
+		indoorEqual.setLevel(route.nodes[0].level.toString());
+		zoomToRoute(route.nodes);
+	};
+	const onLevelChange = (valueToSet: number) => {
+		console.log('onLevelChange', level, valueToSet);
+		level = valueToSet;
+		if (route != null) {
+			addOrReplaceRoute(route.nodes);
+		}
+	};
 
 	class RoutingPickerControl implements IControl {
 		getDefaultPosition(): ControlPosition {
@@ -148,8 +159,9 @@
 		}
 		await routingApi
 			.routeGet({ from: startNode.id, to: targetNode.id, graphVersion: graphVersion })
-			.then((data) => {
+			.then(async (data) => {
 				route = data;
+				await onFirstRouteAdd(data);
 			})
 			.catch((error) => console.error(error));
 	}
@@ -158,6 +170,7 @@
 	const routeSourceName = 'route';
 
 	const addOrReplaceRoute = (coordinates: Array<RouteNode>) => {
+		console.log('addOrReplaceRoute');
 		removeRoute();
 		const segments: { level: number; nodes: RouteNode[] }[] = [];
 		let currentSegment: RouteNode[] = [];

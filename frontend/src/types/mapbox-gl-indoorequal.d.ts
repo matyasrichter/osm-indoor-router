@@ -31,13 +31,13 @@ export default class IndoorEqual {
 	 * @param {string} name the name of the event
 	 * @param {function} fn the function to be called when the event is emitted
 	 */
-	on(name: string, fn: () => void): void;
+	on(name: string, fn: unknown): void;
 	/**
 	 * Remove an event listener.
 	 * @param {string} name the name of the event
 	 * @param {function} fn the same function when on() was called
 	 */
-	off(name: string, fn: () => void): void;
+	off(name: string, fn: unknown): void;
 	/**
 	 * Add the level control to the map
 	 * Used when adding the control via the map instance: map.addControl(indoorEqual)
