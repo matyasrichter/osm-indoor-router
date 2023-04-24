@@ -151,13 +151,14 @@
 		removeRoute();
 		const segments: { level: number; nodes: RouteNode[] }[] = [];
 		let currentSegment: RouteNode[] = [];
+		let prev: RouteNode | null = null;
 		for (const coord of coordinates) {
-			const prev = currentSegment.at(-1);
 			currentSegment.push(coord);
-			if (prev !== undefined && prev.level !== coord.level) {
+			if (prev?.level && prev?.level !== coord?.level) {
 				segments.push({ level: prev.level, nodes: currentSegment });
 				currentSegment = [coord];
 			}
+			prev = coord;
 		}
 		if (currentSegment.length > 0) {
 			segments.push({ level: currentSegment.at(-1)!.level, nodes: currentSegment });
