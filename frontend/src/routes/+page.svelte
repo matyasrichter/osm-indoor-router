@@ -3,17 +3,13 @@
 	import type { RoutingConfig } from '../routing-api-client';
 	import 'maplibre-gl/dist/maplibre-gl.css';
 	import type IndoorEqual from 'mapbox-gl-indoorequal';
-	import {
-		FullscreenControl,
-		type IControl,
-		LngLat,
-		LngLatBounds,
-		Map,
-		NavigationControl,
-		ScaleControl
-	} from 'maplibre-gl';
+	import type { Map } from 'maplibre-gl';
+	import maplibre from 'maplibre-gl';
 	import RoutingPickerControl from './RoutingPickerControl.svelte';
 	import { env } from '$env/dynamic/public';
+
+	const { FullscreenControl, LngLat, LngLatBounds, Map, NavigationControl, ScaleControl } =
+		maplibre;
 
 	export let data: RoutingConfig;
 

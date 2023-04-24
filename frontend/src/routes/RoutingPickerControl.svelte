@@ -1,6 +1,6 @@
 <script lang="ts">
-	import type { Map, ControlPosition, IControl, LngLat, LngLatLike } from 'maplibre-gl';
-	import { LngLatBounds, MapMouseEvent } from 'maplibre-gl';
+	import type { Map, ControlPosition, IControl, LngLat, LngLatLike, MapMouseEvent } from 'maplibre-gl';
+	import maplibre from 'maplibre-gl';
 	import {
 		Configuration,
 		type RouteNode,
@@ -12,6 +12,9 @@
 	import { Button } from '@svelteuidev/core';
 	import { env } from '$env/dynamic/public';
 	import IndoorEqual from 'mapbox-gl-indoorequal';
+	
+	// this is necessary because maplibre is a CommonJs module
+	const { LngLatBounds } = maplibre;
 
 	export let map: Map | undefined;
 	export let graphVersion: number;
