@@ -75,7 +75,8 @@ public class PgRoutingRepository : IRoutingPort
     {
         const double latFactor = 111_111;
         var centerLat = (settings.Bbox.SouthWest.Latitude + settings.Bbox.NorthEast.Latitude) / 2;
+        var centerLatRad = centerLat * (Math.PI / 180.0);
         // rough estimate but good enough for small distances
-        return Math.Cos(centerLat) * latFactor;
+        return Math.Cos(centerLatRad) * latFactor;
     }
 }
