@@ -16,5 +16,6 @@ public class RoutingEdge
     public RoutingNode To { get; init; } = default!;
     public double Cost { get; set; }
     public double ReverseCost { get; set; }
+    public double Distance { get; set; }
     public long? SourceId { get; init; }
 }

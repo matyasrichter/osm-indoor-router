@@ -28,6 +28,12 @@ export interface Route {
 	 * @memberof Route
 	 */
 	nodes: Array<RouteNode>;
+	/**
+	 *
+	 * @type {number}
+	 * @memberof Route
+	 */
+	totalDistanceInMeters: number;
 }
 
 /**
@@ -36,6 +42,7 @@ export interface Route {
 export function instanceOfRoute(value: object): boolean {
 	let isInstance = true;
 	isInstance = isInstance && 'nodes' in value;
+	isInstance = isInstance && 'totalDistanceInMeters' in value;
 
 	return isInstance;
 }
@@ -49,7 +56,8 @@ export function RouteFromJSONTyped(json: any, ignoreDiscriminator: boolean): Rou
 		return json;
 	}
 	return {
-		nodes: (json['nodes'] as Array<any>).map(RouteNodeFromJSON)
+		nodes: (json['nodes'] as Array<any>).map(RouteNodeFromJSON),
+		totalDistanceInMeters: json['totalDistanceInMeters']
 	};
 }
 
@@ -61,6 +69,7 @@ export function RouteToJSON(value?: Route | null): any {
 		return null;
 	}
 	return {
-		nodes: (value.nodes as Array<any>).map(RouteNodeToJSON)
+		nodes: (value.nodes as Array<any>).map(RouteNodeToJSON),
+		totalDistanceInMeters: value.totalDistanceInMeters
 	};
 }

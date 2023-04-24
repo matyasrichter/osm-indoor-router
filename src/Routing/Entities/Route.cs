@@ -4,7 +4,7 @@ using NetTopologySuite.Geometries;
 
 public record Node(long Id, Point Coordinates, decimal Level, bool IsLevelConnection);
 
-public record Edge(long Id, double Cost);
+public record Edge(long Id, double Cost, double Distance);
 
 public record RouteSegment(Node Node, Edge? Edge, double AggregatedCost);
 
@@ -16,4 +16,4 @@ public record RouteNode(
     bool IsLevelConnection
 );
 
-public record Route(IReadOnlyCollection<RouteNode> Nodes);
+public record Route(IReadOnlyCollection<RouteNode> Nodes, double TotalDistanceInMeters);

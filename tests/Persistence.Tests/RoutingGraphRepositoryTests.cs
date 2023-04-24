@@ -54,8 +54,8 @@ public sealed class RoutingGraphRepositoryTests : DbTestClass
         ).First();
         var toInsert = new HashSet<InMemoryEdge>()
         {
-            new(100, nodeId, 2, 1, null),
-            new(nodeId, 100, 1, 3, null)
+            new(100, nodeId, 2, 1, null, 1),
+            new(nodeId, 100, 1, 3, null, 1)
         };
 
         var saving = async () => await repo.SaveEdges(toInsert, version);
@@ -86,13 +86,40 @@ public sealed class RoutingGraphRepositoryTests : DbTestClass
         ).ToList();
         var toInsert = new HashSet<InMemoryEdge>()
         {
-            new(nodeIds[0], nodeIds[1], 1, 3, null),
-            new(nodeIds[0], nodeIds[2], 1, 3, null)
+            new(nodeIds[0], nodeIds[1], 1, 3, null, 1),
+            new(nodeIds[0], nodeIds[2], 3, 1, 654, 2)
         };
 
         await repo.SaveEdges(toInsert, version);
 
-        (await DbContext.RoutingEdges.CountAsync()).Should().Be(2);
+        (await DbContext.RoutingEdges.ToListAsync())
+            .Should()
+            .BeEquivalentTo(
+                new RoutingEdge[]
+                {
+                    new()
+                    {
+                        Version = version,
+                        FromId = nodeIds[0],
+                        ToId = nodeIds[1],
+                        Cost = 1,
+                        ReverseCost = 3,
+                        SourceId = null,
+                        Distance = 1
+                    },
+                    new()
+                    {
+                        Version = version,
+                        FromId = nodeIds[0],
+                        ToId = nodeIds[2],
+                        Cost = 3,
+                        ReverseCost = 1,
+                        SourceId = 654,
+                        Distance = 2
+                    }
+                },
+                o => o.Excluding(x => x.Id).Excluding(x => x.From).Excluding(x => x.To)
+            );
     }
 
     public static TheoryData<

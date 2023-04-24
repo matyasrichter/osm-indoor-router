@@ -41,7 +41,7 @@ public partial class RoutingService
                     )
             )
             .ToList();
-        return new(route);
+        return new(route, routeNodes.Sum(x => x.Edge?.Distance ?? 0));
     }
 
     [LoggerMessage(Level = LogLevel.Debug, Message = "Starting routing from {From} to {To}")]

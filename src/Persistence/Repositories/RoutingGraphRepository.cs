@@ -51,7 +51,8 @@ public class RoutingGraphRepository : IGraphSavingPort, IGraphVersionProvider, I
                         ToId = e.ToId,
                         Cost = e.Cost,
                         ReverseCost = e.ReverseCost,
-                        SourceId = e.SourceId
+                        SourceId = e.SourceId,
+                        Distance = e.Distance
                     }
             )
             .ToList();

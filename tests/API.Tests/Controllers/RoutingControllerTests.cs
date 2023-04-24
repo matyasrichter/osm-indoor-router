@@ -39,8 +39,8 @@ public class RoutingControllerTests : ControllerTestBase
         await repo.SaveEdges(
             new InMemoryEdge[]
             {
-                new(nodeIds[0], nodeIds[1], 100, 200, 123456),
-                new(nodeIds[1], nodeIds[2], 100, 200, 123457)
+                new(nodeIds[0], nodeIds[1], 100, 200, 123456, 100),
+                new(nodeIds[1], nodeIds[2], 100, 200, 123457, 100)
             },
             version
         );
@@ -82,6 +82,7 @@ public class RoutingControllerTests : ControllerTestBase
                 },
                 o => o.WithStrictOrdering()
             );
+        route.TotalDistanceInMeters.Should().Be(200);
     }
 
     public RoutingControllerTests(IntegrationTestFactory factory)
