@@ -21,10 +21,32 @@ public class GraphBuilder
 
     public async Task BuildGraph(GraphHolder holder, CancellationToken ct)
     {
+        await foreach (var r in ProcessPoints(ct))
+            SaveResult(holder, r);
         await foreach (var r in ProcessLines(ct))
             SaveResult(holder, r);
         await foreach (var r in ProcessPolygons(holder, ct))
             SaveResult(holder, r);
+    }
+
+    private async IAsyncEnumerable<ProcessingResult> ProcessPoints(
+        [EnumeratorCancellation] CancellationToken ct
+    )
+    {
+        var points = await osm.GetPoints(settings.Bbox.AsRectangle());
+        if (ct.IsCancellationRequested)
+            yield break;
+        var elevatorProcessor = new ElevatorNodeProcessor(osm, levelParser);
+        foreach (var point in points)
+        {
+            if (ct.IsCancellationRequested)
+                yield break;
+            if (
+                point.Tags.GetValueOrDefault("elevator") is "yes"
+                || point.Tags.GetValueOrDefault("highway") is "elevator"
+            )
+                yield return elevatorProcessor.Process(point);
+        }
     }
 
     private async IAsyncEnumerable<ProcessingResult> ProcessLines(
