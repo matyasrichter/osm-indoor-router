@@ -50,7 +50,9 @@ public class HighwayWayProcessor : BaseOsmProcessor
                     node.Coordinates.Coordinate,
                     prev.Level - node.Level
                 );
-                edges.Add(new(nodes.Count - 1, nodes.Count, distance, distance, source.WayId));
+                edges.Add(
+                    new(nodes.Count - 1, nodes.Count, distance, distance, source.WayId, distance)
+                );
             }
 
             nodes.Add(node);

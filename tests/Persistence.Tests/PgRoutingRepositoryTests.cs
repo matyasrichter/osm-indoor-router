@@ -40,7 +40,11 @@ public class PgRoutingRepositoryTests : DbTestClass
         var route = await repo.FindRoute(nodeA.Id, nodeB.Id, 10);
         var expected = new List<RouteSegment>()
         {
-            new(new(nodeA.Id, nodeA.Coordinates, nodeA.Level, false), new(edge.Id, edge.Cost), 0),
+            new(
+                new(nodeA.Id, nodeA.Coordinates, nodeA.Level, false),
+                new(edge.Id, edge.Cost, edge.Distance),
+                0
+            ),
             new(new(nodeB.Id, nodeB.Coordinates, nodeB.Level, false), null, 100)
         };
         route.Should().BeEquivalentTo(expected);
@@ -56,7 +60,7 @@ public class PgRoutingRepositoryTests : DbTestClass
         {
             new(
                 new(nodeB.Id, nodeB.Coordinates, nodeB.Level, false),
-                new(edge.Id, edge.ReverseCost),
+                new(edge.Id, edge.ReverseCost, edge.Distance),
                 0
             ),
             new(new(nodeA.Id, nodeA.Coordinates, nodeA.Level, false), null, 50)

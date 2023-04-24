@@ -1,3 +1,10 @@
 namespace GraphBuilding;
 
-public record InMemoryEdge(long FromId, long ToId, double Cost, double ReverseCost, long? SourceId);
+public record InMemoryEdge(
+    long FromId,
+    long ToId,
+    double Cost,
+    double ReverseCost,
+    long? SourceId,
+    double Distance
+);

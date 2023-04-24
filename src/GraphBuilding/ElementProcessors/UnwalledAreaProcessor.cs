@@ -55,7 +55,7 @@ public class UnwalledAreaProcessor : BaseOsmProcessor
             var fromId = GetNodeId(nodes, nodeIds, from, level);
             var toId = GetNodeId(nodes, nodeIds, to, level);
             var distance = from.Coord.GetMetricDistance(to.Coord, 0);
-            edges.Add(new(fromId, toId, distance, distance, source.AreaId));
+            edges.Add(new(fromId, toId, distance, distance, source.AreaId, distance));
         }
 
         return new(nodes, edges);
@@ -83,7 +83,9 @@ public class UnwalledAreaProcessor : BaseOsmProcessor
                     existingNode.Coordinates,
                     Math.Abs(node.Level - existingNode.Level)
                 );
-                result.Edges.Add(new(i, result.Nodes.Count - 1, distance, distance, source.AreaId));
+                result.Edges.Add(
+                    new(i, result.Nodes.Count - 1, distance, distance, source.AreaId, distance)
+                );
             }
         }
 

@@ -56,14 +56,16 @@ public class HighwayWayProcessorTests
                     1,
                     points[0].GetMetricDistance(points[1], 0),
                     points[0].GetMetricDistance(points[1], 0),
-                    123456
+                    123456,
+                    points[0].GetMetricDistance(points[1], 0)
                 ),
                 new(
                     1,
                     2,
                     points[1].GetMetricDistance(points[2], 0),
                     points[1].GetMetricDistance(points[2], 0),
-                    123456
+                    123456,
+                    points[1].GetMetricDistance(points[2], 0)
                 )
             }
         );
@@ -102,42 +104,48 @@ public class HighwayWayProcessorTests
                     1,
                     points[0].GetMetricDistance(points[1], 0),
                     points[0].GetMetricDistance(points[1], 0),
-                    123456
+                    123456,
+                    points[0].GetMetricDistance(points[1], 0)
                 ),
                 new(
                     1,
                     2,
                     points[1].GetMetricDistance(points[2], 0),
                     points[1].GetMetricDistance(points[2], 0),
-                    123456
+                    123456,
+                    points[1].GetMetricDistance(points[2], 0)
                 ),
                 new(
                     3,
                     4,
                     points[0].GetMetricDistance(points[1], 0),
                     points[0].GetMetricDistance(points[1], 0),
-                    123456
+                    123456,
+                    points[0].GetMetricDistance(points[1], 0)
                 ),
                 new(
                     4,
                     5,
                     points[1].GetMetricDistance(points[2], 0),
                     points[1].GetMetricDistance(points[2], 0),
-                    123456
+                    123456,
+                    points[1].GetMetricDistance(points[2], 0)
                 ),
                 new(
                     6,
                     7,
                     points[0].GetMetricDistance(points[1], 0),
                     points[0].GetMetricDistance(points[1], 0),
-                    123456
+                    123456,
+                    points[0].GetMetricDistance(points[1], 0)
                 ),
                 new(
                     7,
                     8,
                     points[1].GetMetricDistance(points[2], 0),
                     points[1].GetMetricDistance(points[2], 0),
-                    123456
+                    123456,
+                    points[1].GetMetricDistance(points[2], 0)
                 )
             }
         );
@@ -173,28 +181,32 @@ public class HighwayWayProcessorTests
                     1,
                     points[0].GetMetricDistance(points[1], 0),
                     points[0].GetMetricDistance(points[1], 0),
-                    123456
+                    123456,
+                    points[0].GetMetricDistance(points[1], 0)
                 ),
                 new(
                     1,
                     2,
                     points[1].GetMetricDistance(points[2], 0),
                     points[1].GetMetricDistance(points[2], 0),
-                    123456
+                    123456,
+                    points[1].GetMetricDistance(points[2], 0)
                 ),
                 new(
                     3,
                     4,
                     points[0].GetMetricDistance(points[1], 0),
                     points[0].GetMetricDistance(points[1], 0),
-                    123456
+                    123456,
+                    points[0].GetMetricDistance(points[1], 0)
                 ),
                 new(
                     4,
                     5,
                     points[1].GetMetricDistance(points[2], 0),
                     points[1].GetMetricDistance(points[2], 0),
-                    123456
+                    123456,
+                    points[1].GetMetricDistance(points[2], 0)
                 )
             }
         );
@@ -229,28 +241,32 @@ public class HighwayWayProcessorTests
                     1,
                     points[0].GetMetricDistance(points[1], 0),
                     points[0].GetMetricDistance(points[1], 0),
-                    123456
+                    123456,
+                    points[0].GetMetricDistance(points[1], 0)
                 ),
                 new(
                     1,
                     2,
                     points[1].GetMetricDistance(points[2], 0),
                     points[1].GetMetricDistance(points[2], 0),
-                    123456
+                    123456,
+                    points[1].GetMetricDistance(points[2], 0)
                 ),
                 new(
                     3,
                     4,
                     points[0].GetMetricDistance(points[1], 0),
                     points[0].GetMetricDistance(points[1], 0),
-                    123456
+                    123456,
+                    points[0].GetMetricDistance(points[1], 0)
                 ),
                 new(
                     4,
                     5,
                     points[1].GetMetricDistance(points[2], 0),
                     points[1].GetMetricDistance(points[2], 0),
-                    123456
+                    123456,
+                    points[1].GetMetricDistance(points[2], 0)
                 )
             }
         );
@@ -277,14 +293,16 @@ public class HighwayWayProcessorTests
                     1,
                     points[0].GetMetricDistance(points[1], 0),
                     points[0].GetMetricDistance(points[1], 0),
-                    123456
+                    123456,
+                    points[0].GetMetricDistance(points[1], 0)
                 ),
                 new(
                     1,
                     2,
                     points[1].GetMetricDistance(points[2], 0),
                     points[1].GetMetricDistance(points[2], 0),
-                    123456
+                    123456,
+                    points[1].GetMetricDistance(points[2], 0)
                 )
             }
         );
@@ -329,14 +347,16 @@ public class HighwayWayProcessorTests
                     1,
                     points[0].GetMetricDistance(points[1], 0),
                     points[0].GetMetricDistance(points[1], 0),
-                    123456
+                    123456,
+                    points[0].GetMetricDistance(points[1], 0)
                 ),
                 new(
                     1,
                     2,
                     points[1].GetMetricDistance(points[2], 1),
                     points[1].GetMetricDistance(points[2], 1),
-                    123456
+                    123456,
+                    points[1].GetMetricDistance(points[2], 1)
                 )
             }
         );
@@ -403,42 +423,48 @@ public class HighwayWayProcessorTests
                     1,
                     points[0].GetMetricDistance(points[1], 0),
                     points[0].GetMetricDistance(points[1], 0),
-                    123456
+                    123456,
+                    points[0].GetMetricDistance(points[1], 0)
                 ),
                 new(
                     1,
                     2,
                     points[1].GetMetricDistance(points[2], 1),
                     points[1].GetMetricDistance(points[2], 1),
-                    123456
+                    123456,
+                    points[1].GetMetricDistance(points[2], 1)
                 ),
                 new(
                     3,
                     4,
                     points[0].GetMetricDistance(points[1], 0),
                     points[0].GetMetricDistance(points[1], 0),
-                    123456
+                    123456,
+                    points[0].GetMetricDistance(points[1], 0)
                 ),
                 new(
                     4,
                     5,
                     points[1].GetMetricDistance(points[2], 1),
                     points[1].GetMetricDistance(points[2], 1),
-                    123456
+                    123456,
+                    points[1].GetMetricDistance(points[2], 1)
                 ),
                 new(
                     6,
                     7,
                     points[0].GetMetricDistance(points[1], 0),
                     points[0].GetMetricDistance(points[1], 0),
-                    123456
+                    123456,
+                    points[0].GetMetricDistance(points[1], 0)
                 ),
                 new(
                     7,
                     8,
                     points[1].GetMetricDistance(points[2], 1),
                     points[1].GetMetricDistance(points[2], 1),
-                    123456
+                    123456,
+                    points[1].GetMetricDistance(points[2], 1)
                 )
             }
         );

@@ -64,7 +64,9 @@ public class PgRoutingRepository : IRoutingPort
                             x.RoutingNode.Level,
                             x.RoutingNode.IsLevelConnection
                         ),
-                        x.RoutingEdge != null ? new(x.RoutingEdge.Id, x.Cost) : null,
+                        x.RoutingEdge != null
+                            ? new(x.RoutingEdge.Id, x.Cost, x.RoutingEdge.Distance)
+                            : null,
                         x.AggCost
                     )
             )
