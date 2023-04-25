@@ -2,6 +2,8 @@
 
 This repository contains the sources for an indoor navigation solution based on [OpenStreetMap](https://www.openstreetmap.org/about) data.
 
+## [Live Demo](https://nav.mrichter.dev/)
+
 ## Development
 - Install the .NET SDK from https://dotnet.microsoft.com/en-us/download
 - To automatically run formatters before commiting, install [pre-commit](https://pre-commit.com/) and register the required hooks:
