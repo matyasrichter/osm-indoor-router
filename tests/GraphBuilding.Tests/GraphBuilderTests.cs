@@ -3,7 +3,6 @@ namespace GraphBuilding.Tests;
 using GraphBuilding.Parsers;
 using Microsoft.Extensions.Logging;
 using NetTopologySuite.Geometries;
-using NetTopologySuite.Planargraph;
 using Ports;
 using Settings;
 
@@ -181,12 +180,24 @@ public class GraphBuilderTests
         var levelConnections = holder.Nodes.Where(x => x.SourceId == 4173362012).ToList();
         levelConnections.Should().HaveCount(3, "there are levels 0;1;2");
 
-        var l1id = holder.Nodes.ToList().FindIndex(x => x is { SourceId: 4173362012, Level: 1 });
-
-        holder.Edges
-            .Where(x => x.ToId == l1id || x.FromId == l1id)
+        holder
             .Should()
-            .HaveCount(3, "there are two edges on level 2 and one on stairs");
+            .HaveEdgesBetweenSourceIds(
+                (4173362012, 1),
+                new[] { (4173362015, 1M), (4926914177, 1M), (4173362008, 0M) }
+            );
+        holder
+            .Should()
+            .HaveEdgesBetweenSourceIds(
+                (4173362012, 2),
+                new[] { (4173362015, 2M), (4926914177, 2M), (4173362008, 1M) }
+            );
+        holder
+            .Should()
+            .HaveEdgesBetweenSourceIds(
+                (4173362015, 1),
+                new[] { (4173362012, 1M), (4926914178, 1M), (4173362010, 1M) }
+            );
     }
 
     /// <summary>
@@ -267,30 +278,17 @@ public class GraphBuilderTests
             .Where(x => x.SourceId == 563250924)
             .Should()
             .HaveCount(1, "there are no levels");
-        holder.Edges
-            .Join(
-                holder.Nodes.Select((x, i) => (x, i)),
-                x => x.FromId,
-                x => x.i,
-                (x, y) => (Edge: x, FromSId: y.x.SourceId)
-            )
-            .Join(
-                holder.Nodes.Select((x, i) => (x, i)),
-                x => x.Edge.ToId,
-                x => x.i,
-                (x, y) => (x.Edge, x.FromSId, ToSId: y.x.SourceId)
-            )
-            .Where(x => x.FromSId == 563250924 || x.ToSId == 563250924)
-            .Select(x => (new HashSet<long?>() { x.FromSId, x.ToSId }, x.Edge.SourceId))
+        holder
             .Should()
-            .BeEquivalentTo(
-                new (HashSet<long>, long?)[]
+            .HaveEdgesBetweenSourceIds(
+                (563250924, 0m),
+                new[]
                 {
-                    (new() { 563250924, 563250921 }, 44328671),
-                    (new() { 563250924, 2911907727 }, 374272471),
-                    (new() { 563250924, 10779255894 }, 374272471),
-                    (new() { 563250924, 9566779413 }, 374272471),
-                    (new() { 563250924, 3776391910 }, 374272471),
+                    (563250921, 0M),
+                    (2911907727, 0M),
+                    (10779255894, 0M),
+                    (9566779413, 0M),
+                    (3776391910, 0M),
                 }
             );
     }

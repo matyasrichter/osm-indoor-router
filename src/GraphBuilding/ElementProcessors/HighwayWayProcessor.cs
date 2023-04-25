@@ -33,13 +33,17 @@ public class HighwayWayProcessor : BaseOsmProcessor
         var coords = source.Geometry.Coordinates.Zip(source.Nodes.Zip(points));
         foreach (var (coord, osmNode) in coords)
         {
-            var nodeLevel = osmNode.Second?.Tags is not null
-                ? ExtractNodeLevelInformation(osmNode.Second.Tags)
-                : null;
-            currLevel = nodeLevel ?? currLevel;
-            // level connections are nodes "between" levels,
-            // we set this flag if this line is not single-level and this node does not have a level tag
-            var isLevelConnection = maxLevelOffset != 0 && nodeLevel is null;
+            var isLevelConnection = false;
+            if (maxLevelOffset != 0)
+            {
+                var nodeLevel = osmNode.Second?.Tags is not null
+                    ? ExtractNodeLevelInformation(osmNode.Second.Tags)
+                    : null;
+                currLevel = nodeLevel ?? currLevel;
+                // level connections are nodes "between" levels,
+                // we set this flag if this line is not single-level and this node does not have a level tag
+                isLevelConnection = maxLevelOffset != 0 && nodeLevel is null;
+            }
 
             InMemoryNode node =
                 new(Gf.CreatePoint(coord), currLevel, osmNode.First, isLevelConnection);
