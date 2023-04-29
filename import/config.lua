@@ -30,8 +30,8 @@ tables.polygons = osm2pgsql.define_area_table('osm_polygons', {
 
 tables.multipolygons = osm2pgsql.define_table({
     name = 'osm_multipolygons',
+    ids = { type = 'relation', id_column = 'area_id' },
     columns = {
-        { column = 'area_id', type = 'bigint' },
         { column = 'tags', type = 'jsonb' },
         { column = 'geom', type = 'multipolygon', projection = srid, not_null = true },
         { column = 'updated_at', sql_type = 'timestamp' },
@@ -40,6 +40,7 @@ tables.multipolygons = osm2pgsql.define_table({
 
 tables.multipolygons_m2m = osm2pgsql.define_table({
     name = 'osm_multipolygons_m2m',
+    ids = { type = 'relation', id_column = 'id' },
     columns = {
         { column = 'mp_id', sql_type = 'bigint' },
         { column = 'l_id', sql_type = 'bigint' },
