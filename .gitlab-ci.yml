@@ -303,7 +303,9 @@ push_osm2pgsql:
   extends: .build_and_push_image
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      changes: [ "dockerfiles/osm2pgsql.Dockerfile" ]
+      changes:
+          - "dockerfiles/osm2pgsql.Dockerfile"
+          - "import/**/*"
   variables:
     PUSHED_IMAGE_NAME: "osm2pgsql"
     DOCKERFILE: "dockerfiles/osm2pgsql.Dockerfile"
