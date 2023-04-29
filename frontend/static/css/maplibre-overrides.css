@@ -2,3 +2,15 @@
 .maplibregl-ctrl-group {
 	border-radius: 0;
 }
+.mapboxgl-ctrl-indoorequal button.mapboxgl-ctrl-active {
+  background-color: rgb(0 0 0/5%);
+}
+.mapboxgl-ctrl-indoorequal button+button.mapboxgl-ctrl-active{
+  border-top: 1px solid #555;
+}
+.mapboxgl-ctrl-indoorequal button:not(:last-child).mapboxgl-ctrl-active{
+  border-bottom: 1px solid #555;
+}
+.mapboxgl-ctrl-indoorequal button:hover {
+  background-color: rgb(0 0 0/5%);
+}
