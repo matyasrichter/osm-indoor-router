@@ -80,18 +80,47 @@ public class GraphBuilder
         {
             if (ct.IsCancellationRequested)
                 yield break;
-            if (area.Tags.ContainsKey("indoor") && area.Tags["indoor"] is "area" or "corridor")
+            if (IsRoutableArea(area.Tags))
                 yield return await areaProcessor.Process(
-                    area,
-                    holder.GetNodesInArea(area.Geometry.EnvelopeInternal)
-                );
-            else if (area.Tags.GetValueOrDefault("highway") is "pedestrian")
-                yield return await areaProcessor.Process(
-                    area,
+                    // convert to a multipolygon with a single polygon
+                    new(
+                        area.AreaId,
+                        area.Tags,
+                        new(new[] { area.Geometry }),
+                        new[]
+                        {
+                            new OsmLine(
+                                area.AreaId,
+                                area.Tags,
+                                area.Nodes,
+                                area.GeometryAsLinestring
+                            )
+                        }
+                    ),
                     holder.GetNodesInArea(area.Geometry.EnvelopeInternal)
                 );
         }
+
+        if (ct.IsCancellationRequested)
+            yield break;
+        var multiPolygons = await osm.GetMultiPolygons(settings.Bbox.AsRectangle());
+        if (ct.IsCancellationRequested)
+            yield break;
+        foreach (var mp in multiPolygons)
+        {
+            if (ct.IsCancellationRequested)
+                yield break;
+            if (IsRoutableArea(mp.Tags))
+                yield return await areaProcessor.Process(
+                    mp,
+                    holder.GetNodesInArea(mp.Geometry.EnvelopeInternal)
+                );
+        }
     }
+
+    private static bool IsRoutableArea(IReadOnlyDictionary<string, string> tags) =>
+        tags.GetValueOrDefault("highway") is "pedestrian"
+        || (tags.ContainsKey("indoor") && tags["indoor"] is "area" or "corridor");
 
     private static void SaveResult(GraphHolder holder, ProcessingResult line)
     {

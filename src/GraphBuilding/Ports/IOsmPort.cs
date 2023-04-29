@@ -19,6 +19,13 @@ public record OsmPolygon(
     LineString GeometryAsLinestring
 );
 
+public record OsmMultiPolygon(
+    long AreaId,
+    IReadOnlyDictionary<string, string> Tags,
+    MultiPolygon Geometry,
+    ICollection<OsmLine> Members
+);
+
 public interface IOsmPort
 {
     public Task<OsmPoint?> GetPointByOsmId(long osmId);
@@ -26,4 +33,5 @@ public interface IOsmPort
     public Task<IEnumerable<OsmPoint>> GetPoints(Geometry boundingBox);
     public Task<IEnumerable<OsmLine>> GetLines(Geometry boundingBox);
     public Task<IEnumerable<OsmPolygon>> GetPolygons(Geometry boundingBox);
+    public Task<IEnumerable<OsmMultiPolygon>> GetMultiPolygons(Geometry boundingBox);
 }

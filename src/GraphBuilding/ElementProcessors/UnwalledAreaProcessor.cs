@@ -10,7 +10,7 @@ public class UnwalledAreaProcessor : BaseOsmProcessor
         : base(osm, levelParser) { }
 
     public async Task<ProcessingResult> Process(
-        OsmPolygon source,
+        OsmMultiPolygon source,
         IEnumerable<InMemoryNode> nodesInEnvelope
     )
     {
@@ -34,27 +34,30 @@ public class UnwalledAreaProcessor : BaseOsmProcessor
         return JoinResults(results);
     }
 
-    private async Task<ProcessingResult> ProcessSingleLevel(OsmPolygon source, decimal level)
+    private async Task<ProcessingResult> ProcessSingleLevel(OsmMultiPolygon source, decimal level)
     {
         var nodes = new List<InMemoryNode>();
         var edges = new List<InMemoryEdge>();
-        var points = await Osm.GetPointsByOsmIds(source.Nodes);
-        var idsWithPoints = source.Nodes.Zip(points).Select(x => (OsmId: x.First, Point: x.Second));
-        var coords = source.GeometryAsLinestring.Coordinates
-            .Zip(idsWithPoints)
-            .Select(x => (Coord: x.First, IdWithPoint: x.Second));
+        var points = await Osm.GetPointsByOsmIds(source.Members.SelectMany(x => x.Nodes));
+        var coords = source.Members
+            .SelectMany(x => x.Nodes.Zip(x.Geometry.Coordinates))
+            .Zip(points)
+            .Select(x => (IdWithCoord: x.First, Point: x.Second))
+            .DistinctBy(x => x.IdWithCoord.First);
         var nodeIds = new Dictionary<long, int>();
         foreach (
             var (from, to) in GetPairs(coords)
-                .Where(x => x.Item1.IdWithPoint.OsmId != x.Item2.IdWithPoint.OsmId)
+                .Where(x => x.Item1.IdWithCoord.First != x.Item2.IdWithCoord.First)
         )
         {
-            var lineGeometry = Gf.CreateLineString(new[] { from.Coord, to.Coord });
+            var lineGeometry = Gf.CreateLineString(
+                new[] { from.IdWithCoord.Second, to.IdWithCoord.Second }
+            );
             if (!lineGeometry.CoveredBy(source.Geometry))
                 continue;
             var fromId = GetNodeId(nodes, nodeIds, from, level);
             var toId = GetNodeId(nodes, nodeIds, to, level);
-            var distance = from.Coord.GetMetricDistance(to.Coord, 0);
+            var distance = from.IdWithCoord.Second.GetMetricDistance(to.IdWithCoord.Second, 0);
             edges.Add(new(fromId, toId, distance, distance, source.AreaId, distance));
         }
 
@@ -64,7 +67,7 @@ public class UnwalledAreaProcessor : BaseOsmProcessor
     private static ProcessingResult AddNodesFromEnvelope(
         ProcessingResult result,
         IEnumerable<InMemoryNode> nodeCandidates,
-        OsmPolygon source
+        OsmMultiPolygon source
     )
     {
         foreach (var node in nodeCandidates)
@@ -95,26 +98,29 @@ public class UnwalledAreaProcessor : BaseOsmProcessor
     private static int GetNodeId(
         IList<InMemoryNode> result,
         Dictionary<long, int> nodeIds,
-        (Coordinate First, (long First, OsmPoint? Second) Second) node,
+        ((long Id, Coordinate Coordinate) Node, OsmPoint? Point) node,
         decimal level
     )
     {
-        var sourceId = node.Second.First;
-        if (!nodeIds.ContainsKey(node.Second.First))
+        if (!nodeIds.ContainsKey(node.Node.Id))
         {
-            var fromNode = new InMemoryNode(Gf.CreatePoint(node.First), level, sourceId);
+            var fromNode = new InMemoryNode(
+                Gf.CreatePoint(node.Node.Coordinate),
+                level,
+                node.Node.Id
+            );
             result.Add(fromNode);
-            nodeIds[sourceId] = result.Count - 1;
+            nodeIds[node.Node.Id] = result.Count - 1;
         }
 
-        return nodeIds[sourceId];
+        return nodeIds[node.Node.Id];
     }
 
     private static IEnumerable<(T, T)> GetPairs<T>(IEnumerable<T> source)
     {
         var list = source.ToList();
-        for (var i = 0; i < list.Count - 2; i++)
-            for (var j = i + 1; j < list.Count - 1; j++)
+        for (var i = 0; i < list.Count - 1; i++)
+            for (var j = i + 1; j < list.Count; j++)
                 yield return (list[i], list[j]);
     }
 }

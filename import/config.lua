@@ -22,18 +22,30 @@ tables.lines = osm2pgsql.define_way_table('osm_lines', {
 
 tables.polygons = osm2pgsql.define_area_table('osm_polygons', {
     { column = 'tags', type = 'jsonb' },
-    { column = 'geom', type = 'geometry', projection = srid, not_null = true },
-    { column = 'geom_linestring', type = 'geometry', projection = srid, not_null = true },
+    { column = 'geom', type = 'polygon', projection = srid, not_null = true },
+    { column = 'geom_linestring', type = 'linestring', projection = srid, not_null = true },
     { column = 'nodes', sql_type = 'bigint[]', not_null = true },
     { column = 'updated_at', sql_type = 'timestamp' },
 })
 
-tables.routes = osm2pgsql.define_relation_table('osm_routes', {
-    { column = 'tags', type = 'jsonb' },
-    { column = 'geom', type = 'multilinestring', projection = srid, not_null = true },
-    { column = 'members', type = 'jsonb', not_null = true },
-    { column = 'updated_at', sql_type = 'timestamp' },
+tables.multipolygons = osm2pgsql.define_table({
+    name = 'osm_multipolygons',
+    columns = {
+        { column = 'area_id', type = 'bigint' },
+        { column = 'tags', type = 'jsonb' },
+        { column = 'geom', type = 'multipolygon', projection = srid, not_null = true },
+        { column = 'updated_at', sql_type = 'timestamp' },
+    }
 })
+
+tables.multipolygons_m2m = osm2pgsql.define_table({
+    name = 'osm_multipolygons_m2m',
+    columns = {
+        { column = 'mp_id', sql_type = 'bigint' },
+        { column = 'l_id', sql_type = 'bigint' },
+    }
+})
+
 
 -- These tag keys are generally regarded as useless for most rendering. Most
 -- of them are from imports or intended as internal information for mappers.
@@ -237,8 +249,16 @@ function osm2pgsql.process_node(object)
     })
 end
 
+-- This will be used to store information about relations queryable by member
+-- way id. It is a table of tables. The outer table is indexed by the way id,
+-- the inner table indexed by the relation id. This way even if the information
+-- about a relation is added twice, it will be in there only once. It is
+-- always good to write your osm2pgsql Lua code in an idempotent way, i.e.
+-- it can be called any number of times and will lead to the same result.
+local w2r = {}
+
 function osm2pgsql.process_way(object)
-    if clean_tags(object.tags) then
+    if clean_tags(object.tags) and not w2r[object.id] then
         return
     end
 
@@ -260,6 +280,17 @@ function osm2pgsql.process_way(object)
     end
 end
 
+-- This function is called for every added, modified, or deleted relation.
+-- Its only job is to return the ids of all member ways of the specified
+-- relation we want to see in stage 2 again. It MUST NOT store any information
+-- about the relation!
+function osm2pgsql.select_relation_members(relation)
+    -- Only interested in relations with type=route, route=road and a ref
+    if relation.tags.type == 'multipolygon' then
+        return { ways = osm2pgsql.way_member_ids(relation) }
+    end
+end
+
 function osm2pgsql.process_relation(object)
     local relation_type = object:grab_tag('type')
 
@@ -267,24 +298,26 @@ function osm2pgsql.process_relation(object)
         return
     end
 
-    if relation_type == 'route' then
-        tables.routes:insert({
-            tags = object.tags,
-            geom = object:as_multilinestring(),
-            members = object.members,
-            updated_at = now
-        })
-        return
-    end
-
     if relation_type == 'multipolygon' then
-        tables.polygons:insert({
+        local members = osm2pgsql.way_member_ids(object)
+        tables.multipolygons:insert({
+            area_id = object.id,
             tags = object.tags,
             geom = object:as_multipolygon(),
-            geom_linestring = object:as_multilinestring(),
-            members = object.members,
+            members = '{' .. table.concat(members,",") .. '}',
             updated_at = now
         })
+        -- Go through all the members and store relation ids and refs so they
+        -- can be found by the way id.
+        for _, member in ipairs(object.members) do
+            if member.type == 'w' then
+                w2r[member.ref] = true
+                tables.multipolygons_m2m:insert({
+                    mp_id = object.id,
+                    l_id = member.ref
+                })
+            end
+        end
     end
 end
 

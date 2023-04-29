@@ -17,6 +17,8 @@ public class RoutingDbContext : DbContext
     public DbSet<OsmPoint> OsmPoints => Set<OsmPoint>();
     public DbSet<OsmLine> OsmLines => Set<OsmLine>();
     public DbSet<OsmPolygon> OsmPolygons => Set<OsmPolygon>();
+    public DbSet<OsmMultiPolygon> OsmMultiPolygons => Set<OsmMultiPolygon>();
+    public DbSet<OsmMultiPolygonM2M> OsmMultiPolygonsM2M => Set<OsmMultiPolygonM2M>();
 
     public RoutingDbContext(DbContextOptions options)
         : base(options) { }
@@ -36,8 +38,17 @@ public class RoutingDbContext : DbContext
             .HasPostgresExtension("pgrouting");
         _ = modelBuilder.Entity<PgRoutingAStarOneToOneResult>().HasNoKey().ToView(null);
         // osm2pgsql output tables
-        _ = modelBuilder.Entity<OsmPoint>().HasNoKey().ToTable(t => t.ExcludeFromMigrations());
-        _ = modelBuilder.Entity<OsmLine>().HasNoKey().ToTable(t => t.ExcludeFromMigrations());
-        _ = modelBuilder.Entity<OsmPolygon>().HasNoKey().ToTable(t => t.ExcludeFromMigrations());
+        _ = modelBuilder.Entity<OsmPoint>().ToTable(t => t.ExcludeFromMigrations());
+        _ = modelBuilder.Entity<OsmLine>().ToTable(t => t.ExcludeFromMigrations());
+        _ = modelBuilder.Entity<OsmPolygon>().ToTable(t => t.ExcludeFromMigrations());
+        _ = modelBuilder
+            .Entity<OsmMultiPolygon>()
+            .HasMany(e => e.Members)
+            .WithMany(e => e.MultiPolygons)
+            .UsingEntity<OsmMultiPolygonM2M>(
+                l => l.HasOne<OsmLine>().WithMany().HasForeignKey(e => e.OsmLineId),
+                r => r.HasOne<OsmMultiPolygon>().WithMany().HasForeignKey(e => e.OsmMultiPolygonId)
+            )
+            .ToTable(t => t.ExcludeFromMigrations());
     }
 }

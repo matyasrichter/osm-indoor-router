@@ -40,11 +40,18 @@ public sealed class DatabaseFixture : IAsyncLifetime
         );
         await dbContext.Database.ExecuteSqlRawAsync(
             "CREATE TABLE IF NOT EXISTS osm_lines (way_id BIGINT PRIMARY KEY, tags JSONB,"
-                + " geom GEOMETRY(Geometry, 4326),  nodes bigint[], updated_at TIMESTAMP WITH TIME ZONE);"
+                + " geom GEOMETRY(LineString, 4326),  nodes bigint[], updated_at TIMESTAMP WITH TIME ZONE);"
         );
         await dbContext.Database.ExecuteSqlRawAsync(
             "CREATE TABLE IF NOT EXISTS osm_polygons (area_id BIGINT PRIMARY KEY, tags JSONB,"
-                + " geom GEOMETRY(Geometry, 4326), geom_linestring GEOMETRY(Geometry, 4326), nodes bigint[], updated_at TIMESTAMP WITH TIME ZONE);"
+                + " geom GEOMETRY(Polygon, 4326), geom_linestring GEOMETRY(Geometry, 4326), nodes bigint[], updated_at TIMESTAMP WITH TIME ZONE);"
+        );
+        await dbContext.Database.ExecuteSqlRawAsync(
+            "CREATE TABLE IF NOT EXISTS osm_multipolygons (area_id BIGINT PRIMARY KEY, tags JSONB,"
+                + " geom GEOMETRY(MultiPolygon, 4326), members bigint[], updated_at TIMESTAMP WITH TIME ZONE);"
+        );
+        await dbContext.Database.ExecuteSqlRawAsync(
+            "CREATE TABLE IF NOT EXISTS osm_multipolygons_m2m (mp_id BIGINT, l_id BIGINT);"
         );
     }
 
