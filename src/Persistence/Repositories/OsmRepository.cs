@@ -45,4 +45,21 @@ public class OsmRepository : IOsmPort
                 p => new OsmPolygon(p.AreaId, p.Tags, p.Nodes, p.Geometry, p.GeometryAsLinestring)
             )
             .ToListAsync();
+
+    public async Task<IEnumerable<OsmMultiPolygon>> GetMultiPolygons(Geometry boundingBox) =>
+        await context.OsmMultiPolygons
+            .Where(p => boundingBox.Intersects(p.Geometry))
+            .Include(p => p.Members)
+            .Select(
+                p =>
+                    new OsmMultiPolygon(
+                        p.AreaId,
+                        p.Tags,
+                        p.Geometry,
+                        p.Members
+                            .Select(l => new OsmLine(l.WayId, l.Tags, l.Nodes, l.Geometry))
+                            .ToList()
+                    )
+            )
+            .ToListAsync();
 }

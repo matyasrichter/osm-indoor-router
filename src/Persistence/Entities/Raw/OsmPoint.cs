@@ -1,5 +1,6 @@
 namespace Persistence.Entities.Raw;
 
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using NetTopologySuite.Geometries;
 
@@ -7,6 +8,7 @@ using NetTopologySuite.Geometries;
 public record OsmPoint
 {
     [Column("node_id")]
+    [Key]
     public required long NodeId { get; init; }
 
     [Column("tags", TypeName = "jsonb")]

@@ -1,9 +1,12 @@
 namespace Persistence.Tests;
 
-using GraphBuilding.Ports;
+using Entities.Raw;
 using Microsoft.EntityFrameworkCore;
 using NetTopologySuite.Geometries;
 using Repositories;
+using OsmLine = GraphBuilding.Ports.OsmLine;
+using OsmPoint = GraphBuilding.Ports.OsmPoint;
+using OsmPolygon = GraphBuilding.Ports.OsmPolygon;
 
 [Collection("DB")]
 [Trait("Category", "DB")]
@@ -321,6 +324,74 @@ public sealed class OsmRepositoryTests : DbTestClass
             .BeEquivalentTo(polygons[0..2].Concat(polygons[3..4]));
     }
 
+    [Fact]
+    public async Task CanRetrieveMultiPolygons()
+    {
+        var repo = new OsmRepository(DbContext);
+        var now = new DateTime(2023, 03, 01, 15, 11, 00, DateTimeKind.Utc);
+        var polygons = new OsmLine[]
+        {
+            new(
+                1,
+                CreateTags(new("amenity", "bicycle_parking"), new("bicycle_parking", "stands")),
+                new long[] { 1, 2, 3, 1 },
+                CreateLineString((10, 15), (11, 16), (12, 16), (10, 15))
+            ),
+            new(
+                2,
+                CreateTags(new KeyValuePair<string, string>("amenity", "vending_machine")),
+                new long[] { 4, 1, 5, 4 },
+                CreateLineString((10, 16), (12, 13), (10, 15), (18, 19), (10, 16))
+            )
+        };
+        foreach (var polygon in polygons)
+            await SaveLine(polygon, now);
+        var multiPolygon = new OsmMultiPolygon()
+        {
+            AreaId = 1,
+            Tags = CreateTags(new("amenity", "bicycle_parking"), new("bicycle_parking", "stands")),
+            Members = polygons.Select(
+                x =>
+                    new Entities.Raw.OsmLine()
+                    {
+                        WayId = x.WayId,
+                        Geometry = x.Geometry,
+                        Tags = x.Tags,
+                        Nodes = x.Nodes.ToList(),
+                        UpdatedAt = now
+                    }
+            ),
+            Geometry = CreateMultiPolygon(polygons.Select(x => x.Geometry).ToArray()),
+            UpdatedAt = now
+        };
+
+        await SaveMultiPolygon(multiPolygon, now);
+
+        var result = (
+            await repo.GetMultiPolygons(
+                gf.CreatePolygon(
+                    new LinearRing(
+                        new Coordinate[]
+                        {
+                            new(0, 0),
+                            new(0, 50),
+                            new(50, 50),
+                            new(50, 0),
+                            new(0, 0)
+                        }
+                    )
+                )
+            )
+        ).ToList();
+
+        result.Should().HaveCount(1);
+        var mp = result[0];
+        mp.AreaId.Should().Be(multiPolygon.AreaId);
+        mp.Tags.Should().BeEquivalentTo(multiPolygon.Tags);
+        ((IComparable)mp.Geometry).Should().Be(multiPolygon.Geometry);
+        mp.Members.Should().BeEquivalentTo(polygons);
+    }
+
     private Point CreatePoint(double x, double y) => gf.CreatePoint(new Coordinate(x, y));
 
     private LineString CreateLineString(params (double x, double y)[] nodes) =>
@@ -328,6 +399,9 @@ public sealed class OsmRepositoryTests : DbTestClass
 
     private Polygon CreatePolygon(params (double x, double y)[] nodes) =>
         gf.CreatePolygon(nodes.Select(x => new Coordinate(x.x, x.y)).ToArray());
+
+    private MultiPolygon CreateMultiPolygon(params LineString[] members) =>
+        gf.CreateMultiPolygon(members.Select(x => new Polygon(new(x.Coordinates))).ToArray());
 
     private static IReadOnlyDictionary<string, string> CreateTags(
         params KeyValuePair<string, string>[] items
@@ -362,6 +436,23 @@ public sealed class OsmRepositoryTests : DbTestClass
             p.Nodes,
             now
         );
+
+    private async Task SaveMultiPolygon(OsmMultiPolygon p, DateTime now)
+    {
+        await DbContext.Database.ExecuteSqlRawAsync(
+            "INSERT INTO osm_multipolygons (area_id, tags, geom, updated_at) VALUES (@p0, @p1::jsonb, @p2, @p3)",
+            p.AreaId,
+            p.Tags,
+            p.Geometry,
+            now
+        );
+        await DbContext.OsmMultiPolygonsM2M.AddRangeAsync(
+            p.Members.Select(
+                l => new OsmMultiPolygonM2M() { OsmMultiPolygonId = p.AreaId, OsmLineId = l.WayId }
+            )
+        );
+        await DbContext.SaveChangesAsync();
+    }
 
     public OsmRepositoryTests(DatabaseFixture dbFixture)
         : base(dbFixture) { }

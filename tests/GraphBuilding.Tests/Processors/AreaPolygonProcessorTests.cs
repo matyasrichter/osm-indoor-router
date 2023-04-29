@@ -140,7 +140,21 @@ public class AreaPolygonProcessorTests
             );
         var processor = new UnwalledAreaProcessor(osm.Object, new(Mock.Of<ILogger<LevelParser>>()));
 
-        var result = await processor.Process(polygon, Enumerable.Empty<InMemoryNode>());
+        var mp = new OsmMultiPolygon(
+            polygon.AreaId,
+            polygon.Tags,
+            new(new[] { polygon.Geometry }),
+            new[]
+            {
+                new OsmLine(
+                    polygon.AreaId,
+                    polygon.Tags,
+                    polygon.Nodes,
+                    polygon.GeometryAsLinestring
+                )
+            }
+        );
+        var result = await processor.Process(mp, Enumerable.Empty<InMemoryNode>());
         result.Nodes.Should().BeEquivalentTo(expectedNodes);
         var edgePairs = result.Edges
             .Select(
@@ -179,16 +193,99 @@ public class AreaPolygonProcessorTests
             new(new(points.Take(4).Append(points[0]).Select(x => x.Value.Coordinate).ToArray())),
             new(points.Take(4).Append(points[0]).Select(x => x.Value.Coordinate).ToArray())
         );
+
         var processor = new UnwalledAreaProcessor(osm.Object, new(Mock.Of<ILogger<LevelParser>>()));
+        var mp = new OsmMultiPolygon(
+            polygon.AreaId,
+            polygon.Tags,
+            new(new[] { polygon.Geometry }),
+            new[]
+            {
+                new OsmLine(
+                    polygon.AreaId,
+                    polygon.Tags,
+                    polygon.Nodes,
+                    polygon.GeometryAsLinestring
+                )
+            }
+        );
 
         var existingNode = new InMemoryNode(points.Last().Value, 0, 563250924);
-        var result = await processor.Process(polygon, new[] { existingNode });
+        var result = await processor.Process(mp, new[] { existingNode });
         result
             .Should()
             .HaveEdgesBetweenSourceIds(
                 563250924,
                 new[] { 2911907727, 10779255894, 9566779413, 3776391910, }
             );
+    }
+
+    [Fact]
+    public async Task CanHandlePolygonWithHole()
+    {
+        var innerPoints = new (long, Coordinate)[]
+        {
+            (1, new(1, 1)),
+            (2, new(3, 2)),
+            (3, new(4, 3)),
+            (4, new(2, 2)),
+            (1, new(1, 1)),
+        };
+        var outerPoints = new (long, Coordinate)[]
+        {
+            (5, new(0, 0)),
+            (6, new(4, 0)),
+            (7, new(5, 4)),
+            (8, new(1, 4)),
+            (5, new(0, 0)),
+        };
+        var multipolygon = Gf.CreateMultiPolygon(
+            new[]
+            {
+                Gf.CreatePolygon(
+                    new LinearRing(outerPoints.Select(x => x.Item2).ToArray()),
+                    new LinearRing[] { new(innerPoints.Select(x => x.Item2).ToArray()) }
+                )
+            }
+        );
+
+        var osm = new Mock<IOsmPort>();
+        osm.Setup(x => x.GetPointByOsmId(It.IsAny<long>())).ReturnsAsync((OsmPoint?)null);
+        osm.Setup(x => x.GetPointsByOsmIds(It.IsAny<IEnumerable<long>>()))
+            .ReturnsAsync((IEnumerable<long> osmIds) => osmIds.Select<long, OsmPoint?>(_ => null));
+        var osmMultiPolygon = new OsmMultiPolygon(
+            123456,
+            new Dictionary<string, string>() { { "indoor", "area" }, { "level", "2" } },
+            multipolygon,
+            new OsmLine[]
+            {
+                new(
+                    123,
+                    new Dictionary<string, string>(),
+                    innerPoints.Select(x => x.Item1).ToList(),
+                    new(innerPoints.Select(x => x.Item2).ToArray())
+                ),
+                new(
+                    124,
+                    new Dictionary<string, string>(),
+                    outerPoints.Select(x => x.Item1).ToList(),
+                    new(outerPoints.Select(x => x.Item2).ToArray())
+                )
+            }
+        );
+        var processor = new UnwalledAreaProcessor(osm.Object, new(Mock.Of<ILogger<LevelParser>>()));
+
+        var result = await processor.Process(osmMultiPolygon, Array.Empty<InMemoryNode>());
+        result.Nodes
+            .Select(x => x.SourceId)
+            .Should()
+            .BeEquivalentTo(new[] { 1, 2, 3, 4, 5, 6, 7, 8 });
+        result.Nodes.Select(x => x.Level).Distinct().Should().BeEquivalentTo(new[] { 2 });
+        result
+            .Should()
+            .HaveEdgesBetweenSourceIds(1, new long[] { 2, 4, 5, 6, 8 })
+            .And.HaveEdgesBetweenSourceIds(7, new long[] { 6, 8, 2, 3, 4 });
+        result.Edges.Should().HaveCount(20);
     }
 }
 # pragma warning restore CA1506

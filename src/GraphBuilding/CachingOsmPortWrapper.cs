@@ -51,4 +51,7 @@ public class CachingOsmPortWrapper : IOsmPort
 
     public async Task<IEnumerable<OsmPolygon>> GetPolygons(Geometry boundingBox) =>
         await osm.GetPolygons(boundingBox);
+
+    public async Task<IEnumerable<OsmMultiPolygon>> GetMultiPolygons(Geometry boundingBox) =>
+        await osm.GetMultiPolygons(boundingBox);
 }
