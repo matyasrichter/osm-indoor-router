@@ -1,5 +1,6 @@
 namespace GraphBuilding.ElementProcessors;
 
+using Core;
 using GraphBuilding.Parsers;
 using GraphBuilding.Ports;
 using NetTopologySuite.Geometries;
@@ -46,7 +47,8 @@ public class UnwalledAreaProcessor : BaseOsmProcessor
             .DistinctBy(x => x.IdWithCoord.First);
         var nodeIds = new Dictionary<long, int>();
         foreach (
-            var (from, to) in GetPairs(coords)
+            var (from, to) in coords
+                .GetPairs()
                 .Where(x => x.Item1.IdWithCoord.First != x.Item2.IdWithCoord.First)
         )
         {
@@ -114,13 +116,5 @@ public class UnwalledAreaProcessor : BaseOsmProcessor
         }
 
         return nodeIds[node.Node.Id];
-    }
-
-    private static IEnumerable<(T, T)> GetPairs<T>(IEnumerable<T> source)
-    {
-        var list = source.ToList();
-        for (var i = 0; i < list.Count - 1; i++)
-            for (var j = i + 1; j < list.Count; j++)
-                yield return (list[i], list[j]);
     }
 }
