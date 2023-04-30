@@ -55,6 +55,7 @@ public class PgRoutingRepository : IRoutingPort
             )
             .Include(x => x.RoutingNode)
             .Include(x => x.RoutingEdge)
+            .OrderBy(x => x.Seq)
             .Select(
                 x =>
                     new RouteSegment(
