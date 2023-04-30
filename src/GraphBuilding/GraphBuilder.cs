@@ -6,7 +6,12 @@ using Parsers;
 using Ports;
 using Settings;
 
-public class GraphBuilder
+public interface IGraphBuilder
+{
+    Task<GraphHolder> BuildGraph(CancellationToken ct);
+}
+
+public class GraphBuilder : IGraphBuilder
 {
     private readonly IOsmPort osm;
     private readonly AppSettings settings;
@@ -19,14 +24,16 @@ public class GraphBuilder
         this.levelParser = levelParser;
     }
 
-    public async Task BuildGraph(GraphHolder holder, CancellationToken ct)
+    public async Task<GraphHolder> BuildGraph(CancellationToken ct)
     {
+        var holder = new GraphHolder();
         await foreach (var r in ProcessPoints(ct))
             SaveResult(holder, r);
         await foreach (var r in ProcessLines(ct))
             SaveResult(holder, r);
         await foreach (var r in ProcessPolygons(holder, ct))
             SaveResult(holder, r);
+        return holder;
     }
 
     private async IAsyncEnumerable<ProcessingResult> ProcessPoints(

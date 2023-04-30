@@ -11,6 +11,6 @@ public static class Configure
         services
             .AddTransient<MapProcessor>()
             .AddTransient<OverpassLoader>()
-            .AddTransient<GraphBuilder>()
+            .AddTransient<IGraphBuilder, GraphBuilder>()
             .AddTransient<LevelParser>();
 }

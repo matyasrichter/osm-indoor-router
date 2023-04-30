@@ -7,12 +7,12 @@ public partial class MapProcessor
 {
     private readonly IGraphSavingPort savingPort;
     private readonly ILogger<MapProcessor> logger;
-    private readonly GraphBuilder graphBuilder;
+    private readonly IGraphBuilder graphBuilder;
 
     public MapProcessor(
         IGraphSavingPort savingPort,
         ILogger<MapProcessor> logger,
-        GraphBuilder graphBuilder
+        IGraphBuilder graphBuilder
     )
     {
         this.savingPort = savingPort;
@@ -25,8 +25,7 @@ public partial class MapProcessor
         if (ct.IsCancellationRequested)
             return;
 
-        var graphHolder = new GraphHolder();
-        await graphBuilder.BuildGraph(graphHolder, ct);
+        var graphHolder = await graphBuilder.BuildGraph(ct);
         LogBuiltGraph(graphHolder.Edges.Count, graphHolder.Nodes.Count);
 
         if (ct.IsCancellationRequested || graphHolder.Edges.Count == 0)

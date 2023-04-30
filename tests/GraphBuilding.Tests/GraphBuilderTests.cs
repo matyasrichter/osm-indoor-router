@@ -36,8 +36,7 @@ public class GraphBuilderTests
                 }
             );
 
-        var holder = new GraphHolder();
-        await builder.BuildGraph(holder, CancellationToken.None);
+        var holder = await builder.BuildGraph(CancellationToken.None);
         holder.Edges
             .Select(x => (x.FromId, x.ToId))
             .Should()
@@ -81,8 +80,7 @@ public class GraphBuilderTests
                 }
             );
 
-        var holder = new GraphHolder();
-        await builder.BuildGraph(holder, CancellationToken.None);
+        var holder = await builder.BuildGraph(CancellationToken.None);
         holder.Edges
             .Select(x => (x.FromId, x.ToId))
             .Should()
@@ -174,8 +172,7 @@ public class GraphBuilderTests
                     Task.FromResult(osmIds.Select(osmPoints.GetValueOrDefault))
             );
 
-        var holder = new GraphHolder();
-        await builder.BuildGraph(holder, CancellationToken.None);
+        var holder = await builder.BuildGraph(CancellationToken.None);
 
         var levelConnections = holder.Nodes.Where(x => x.SourceId == 4173362012).ToList();
         levelConnections.Should().HaveCount(3, "there are levels 0;1;2");
@@ -271,8 +268,7 @@ public class GraphBuilderTests
         osm.Setup(x => x.GetPointsByOsmIds(It.IsAny<IEnumerable<long>>()))
             .ReturnsAsync((IEnumerable<long> osmIds) => osmIds.Select(_ => (OsmPoint?)null));
 
-        var holder = new GraphHolder();
-        await builder.BuildGraph(holder, CancellationToken.None);
+        var holder = await builder.BuildGraph(CancellationToken.None);
 
         holder.Nodes
             .Where(x => x.SourceId == 563250924)
