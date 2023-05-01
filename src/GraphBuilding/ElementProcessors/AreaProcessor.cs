@@ -5,9 +5,9 @@ using GraphBuilding.Parsers;
 using GraphBuilding.Ports;
 using NetTopologySuite.Geometries;
 
-public class UnwalledAreaProcessor : BaseOsmProcessor
+public class AreaProcessor : BaseOsmProcessor
 {
-    public UnwalledAreaProcessor(IOsmPort osm, LevelParser levelParser)
+    public AreaProcessor(IOsmPort osm, LevelParser levelParser)
         : base(osm, levelParser) { }
 
     public async Task<ProcessingResult> Process(

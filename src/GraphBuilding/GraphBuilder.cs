@@ -82,7 +82,7 @@ public class GraphBuilder : IGraphBuilder
         var areas = await osm.GetPolygons(settings.Bbox.AsRectangle());
         if (ct.IsCancellationRequested)
             yield break;
-        var areaProcessor = new UnwalledAreaProcessor(osm, levelParser);
+        var areaProcessor = new AreaProcessor(osm, levelParser);
         foreach (var area in areas)
         {
             if (ct.IsCancellationRequested)

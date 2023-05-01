@@ -138,7 +138,7 @@ public class AreaPolygonProcessorTests
                 (IEnumerable<long> osmIds) =>
                     Task.FromResult(osmIds.Select(points.GetValueOrDefault))
             );
-        var processor = new UnwalledAreaProcessor(osm.Object, new(Mock.Of<ILogger<LevelParser>>()));
+        var processor = new AreaProcessor(osm.Object, new(Mock.Of<ILogger<LevelParser>>()));
 
         var mp = new OsmMultiPolygon(
             polygon.AreaId,
@@ -194,7 +194,7 @@ public class AreaPolygonProcessorTests
             new(points.Take(4).Append(points[0]).Select(x => x.Value.Coordinate).ToArray())
         );
 
-        var processor = new UnwalledAreaProcessor(osm.Object, new(Mock.Of<ILogger<LevelParser>>()));
+        var processor = new AreaProcessor(osm.Object, new(Mock.Of<ILogger<LevelParser>>()));
         var mp = new OsmMultiPolygon(
             polygon.AreaId,
             polygon.Tags,
@@ -273,7 +273,7 @@ public class AreaPolygonProcessorTests
                 )
             }
         );
-        var processor = new UnwalledAreaProcessor(osm.Object, new(Mock.Of<ILogger<LevelParser>>()));
+        var processor = new AreaProcessor(osm.Object, new(Mock.Of<ILogger<LevelParser>>()));
 
         var result = await processor.Process(osmMultiPolygon, Array.Empty<InMemoryNode>());
         result.Nodes
