@@ -1,5 +1,6 @@
 namespace GraphBuilding.ElementProcessors;
 
+using NetTopologySuite.Geometries;
 using Parsers;
 using Ports;
 
@@ -38,6 +39,7 @@ public class ElevatorNodeProcessor : BaseOsmProcessor
                     new(
                         nodes.Count - 1,
                         nodes.Count,
+                        LineString.Empty,
                         levelVerticalDistance,
                         levelVerticalDistance,
                         source.NodeId,
@@ -49,6 +51,6 @@ public class ElevatorNodeProcessor : BaseOsmProcessor
             prev = node;
         }
 
-        return new(nodes, edges);
+        return new(nodes, edges, new List<(decimal Level, (int FromId, int ToId) Edge)>());
     }
 }

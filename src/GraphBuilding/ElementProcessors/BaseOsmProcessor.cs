@@ -71,7 +71,8 @@ public abstract class BaseOsmProcessor
                             ogResult.Nodes
                                 .Select(x => x with { Level = x.Level + l - ogLevel })
                                 .ToList(),
-                            ogResult.Edges.ToList()
+                            ogResult.Edges.ToList(),
+                            ogResult.WallEdges.Select(x => (l, x.Edge)).ToList()
                         )
                     )
             )
@@ -81,6 +82,7 @@ public abstract class BaseOsmProcessor
     {
         var nodes = new List<InMemoryNode>();
         var edges = new List<InMemoryEdge>();
+        var walls = new List<(decimal Level, (int FromId, int ToId) Edge)>();
 
         foreach (var result in results)
         {
@@ -91,8 +93,9 @@ public abstract class BaseOsmProcessor
                     x => x with { FromId = x.FromId + nodeOffset, ToId = x.ToId + nodeOffset }
                 )
             );
+            walls.AddRange(result.WallEdges);
         }
 
-        return new(nodes, edges);
+        return new(nodes, edges, walls);
     }
 }

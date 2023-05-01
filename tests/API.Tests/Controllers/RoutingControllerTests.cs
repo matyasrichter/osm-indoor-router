@@ -39,8 +39,24 @@ public class RoutingControllerTests : ControllerTestBase
         await repo.SaveEdges(
             new InMemoryEdge[]
             {
-                new(nodeIds[0], nodeIds[1], 100, 200, 123456, 100),
-                new(nodeIds[1], nodeIds[2], 100, 200, 123457, 100)
+                new(
+                    nodeIds[0],
+                    nodeIds[1],
+                    new(new[] { nodes[0].Coordinates.Coordinate, nodes[1].Coordinates.Coordinate }),
+                    100,
+                    200,
+                    123456,
+                    100
+                ),
+                new(
+                    nodeIds[1],
+                    nodeIds[2],
+                    new(new[] { nodes[1].Coordinates.Coordinate, nodes[2].Coordinates.Coordinate }),
+                    100,
+                    200,
+                    123457,
+                    100
+                )
             },
             version
         );

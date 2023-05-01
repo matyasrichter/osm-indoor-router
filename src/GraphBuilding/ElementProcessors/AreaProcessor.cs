@@ -3,6 +3,7 @@ namespace GraphBuilding.ElementProcessors;
 using Core;
 using GraphBuilding.Parsers;
 using GraphBuilding.Ports;
+using Microsoft.FSharp.Collections;
 using NetTopologySuite.Geometries;
 
 public class AreaProcessor : BaseOsmProcessor
@@ -60,11 +61,21 @@ public class AreaProcessor : BaseOsmProcessor
             var fromId = GetNodeId(nodes, nodeIds, from, level);
             var toId = GetNodeId(nodes, nodeIds, to, level);
             var distance = from.IdWithCoord.Second.GetMetricDistance(to.IdWithCoord.Second, 0);
-            edges.Add(new(fromId, toId, distance, distance, source.AreaId, distance));
+            edges.Add(new(fromId, toId, lineGeometry, distance, distance, source.AreaId, distance));
         }
 
-        return new(nodes, edges);
+        var wallEdges = HasWalls(source.Tags)
+            ? SeqModule
+                .Windowed(2, Enumerable.Range(0, nodes.Count))
+                .Select(x => (level, (x[0], x[1])))
+                .ToList()
+            : new List<(decimal Level, (int FromId, int ToId) Edge)>();
+
+        return new(nodes, edges, wallEdges);
     }
+
+    private static bool HasWalls(IReadOnlyDictionary<string, string> tags) =>
+        tags.GetValueOrDefault("indoor") is "room" or "wall";
 
     private static ProcessingResult AddNodesFromEnvelope(
         ProcessingResult result,
@@ -89,7 +100,15 @@ public class AreaProcessor : BaseOsmProcessor
                     Math.Abs(node.Level - existingNode.Level)
                 );
                 result.Edges.Add(
-                    new(i, result.Nodes.Count - 1, distance, distance, source.AreaId, distance)
+                    new(
+                        i,
+                        result.Nodes.Count - 1,
+                        lineGeometry,
+                        distance,
+                        distance,
+                        source.AreaId,
+                        distance
+                    )
                 );
             }
         }

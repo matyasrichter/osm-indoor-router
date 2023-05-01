@@ -2,6 +2,7 @@ namespace GraphBuilding.ElementProcessors;
 
 using GraphBuilding.Parsers;
 using GraphBuilding.Ports;
+using NetTopologySuite.Geometries;
 
 public class HighwayWayProcessor : BaseOsmProcessor
 {
@@ -55,7 +56,15 @@ public class HighwayWayProcessor : BaseOsmProcessor
                     prev.Level - node.Level
                 );
                 edges.Add(
-                    new(nodes.Count - 1, nodes.Count, distance, distance, source.WayId, distance)
+                    new(
+                        nodes.Count - 1,
+                        nodes.Count,
+                        prev.Coordinates.GetLineStringTo(node.Coordinates),
+                        distance,
+                        distance,
+                        source.WayId,
+                        distance
+                    )
                 );
             }
 
@@ -63,6 +72,6 @@ public class HighwayWayProcessor : BaseOsmProcessor
             prev = node;
         }
 
-        return new(nodes, edges);
+        return new(nodes, edges, new List<(decimal Level, (int FromId, int ToId) Edge)>());
     }
 }

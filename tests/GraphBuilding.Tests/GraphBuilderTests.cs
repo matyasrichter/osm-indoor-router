@@ -15,7 +15,13 @@ public class GraphBuilderTests
     public async Task CanBuildGraphWithSingleLine()
     {
         var osm = new Mock<IOsmPort>();
-        var builder = new GraphBuilder(osm.Object, Settings, new(Mock.Of<ILogger<LevelParser>>()));
+        var builder = new GraphBuilder(
+            osm.Object,
+            Settings,
+            new(Mock.Of<ILogger<LevelParser>>()),
+            new(Mock.Of<ILogger<WallGraphCutter>>()),
+            Mock.Of<ILogger<GraphBuilder>>()
+        );
         var points = new List<Point>()
         {
             gf.CreatePoint(new Coordinate(1, 1)),
@@ -47,7 +53,13 @@ public class GraphBuilderTests
     public async Task CanBuildTShapedGraph()
     {
         var osm = new Mock<IOsmPort>();
-        var builder = new GraphBuilder(osm.Object, Settings, new(Mock.Of<ILogger<LevelParser>>()));
+        var builder = new GraphBuilder(
+            osm.Object,
+            Settings,
+            new(Mock.Of<ILogger<LevelParser>>()),
+            new(Mock.Of<ILogger<WallGraphCutter>>()),
+            Mock.Of<ILogger<GraphBuilder>>()
+        );
         var points = new List<Point>()
         {
             gf.CreatePoint(new Coordinate(1, 1)),
@@ -91,7 +103,13 @@ public class GraphBuilderTests
     public async Task CanBuildLevelConnections()
     {
         var osm = new Mock<IOsmPort>();
-        var builder = new GraphBuilder(osm.Object, Settings, new(Mock.Of<ILogger<LevelParser>>()));
+        var builder = new GraphBuilder(
+            osm.Object,
+            Settings,
+            new(Mock.Of<ILogger<LevelParser>>()),
+            new(Mock.Of<ILogger<WallGraphCutter>>()),
+            Mock.Of<ILogger<GraphBuilder>>()
+        );
         var points = new List<Point>()
         {
             gf.CreatePoint(new Coordinate(14.3888106, 50.1047052)), // 4173362015
@@ -210,7 +228,13 @@ public class GraphBuilderTests
     public async Task CanHandleRoutableNodeInsidePolygon()
     {
         var osm = new Mock<IOsmPort>();
-        var builder = new GraphBuilder(osm.Object, Settings, new(Mock.Of<ILogger<LevelParser>>()));
+        var builder = new GraphBuilder(
+            osm.Object,
+            Settings,
+            new(Mock.Of<ILogger<LevelParser>>()),
+            new(Mock.Of<ILogger<WallGraphCutter>>()),
+            Mock.Of<ILogger<GraphBuilder>>()
+        );
         var points = new List<KeyValuePair<long, Point>>()
         {
             new(2911907727, gf.CreatePoint(new Coordinate(14.3896986, 50.1043596))),

@@ -58,9 +58,9 @@ public class MapProcessorTests
             },
             Edges =
             {
-                new(0, 1, 10, 10, 1, 10),
-                new(1, 2, 10, 10, 1, 10),
-                new(1, 3, 10, 10, 2, 10),
+                new(0, 1, new(new Coordinate[] { new(1, 0), new(2, 0) }), 10, 10, 1, 10),
+                new(1, 2, new(new Coordinate[] { new(2, 0), new(3, 0) }), 10, 10, 1, 10),
+                new(1, 3, new(new Coordinate[] { new(2, 0), new(2, 1) }), 10, 10, 2, 10),
             }
         };
         builder.Setup(x => x.BuildGraph(It.IsAny<CancellationToken>())).ReturnsAsync(builderResult);

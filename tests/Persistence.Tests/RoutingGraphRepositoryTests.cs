@@ -54,8 +54,8 @@ public sealed class RoutingGraphRepositoryTests : DbTestClass
         ).First();
         var toInsert = new HashSet<InMemoryEdge>()
         {
-            new(100, nodeId, 2, 1, null, 1),
-            new(nodeId, 100, 1, 3, null, 1)
+            new(100, nodeId, new(Array.Empty<Coordinate>()), 2, 1, null, 1),
+            new(nodeId, 100, new(Array.Empty<Coordinate>()), 1, 3, null, 1)
         };
 
         var saving = async () => await repo.SaveEdges(toInsert, version);
@@ -86,8 +86,8 @@ public sealed class RoutingGraphRepositoryTests : DbTestClass
         ).ToList();
         var toInsert = new HashSet<InMemoryEdge>()
         {
-            new(nodeIds[0], nodeIds[1], 1, 3, null, 1),
-            new(nodeIds[0], nodeIds[2], 3, 1, 654, 2)
+            new(nodeIds[0], nodeIds[1], new(Array.Empty<Coordinate>()), 1, 3, null, 1),
+            new(nodeIds[0], nodeIds[2], new(Array.Empty<Coordinate>()), 3, 1, 654, 2)
         };
 
         await repo.SaveEdges(toInsert, version);
