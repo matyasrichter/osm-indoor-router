@@ -6,8 +6,8 @@ using Ports;
 
 public class WallProcessor : BaseOsmProcessor
 {
-    public WallProcessor(IOsmPort osm, LevelParser levelParser)
-        : base(osm, levelParser) { }
+    public WallProcessor(LevelParser levelParser)
+        : base(levelParser) { }
 
     public ProcessingResult Process(OsmLine source)
     {

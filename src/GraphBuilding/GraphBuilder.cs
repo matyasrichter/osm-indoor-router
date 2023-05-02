@@ -29,7 +29,7 @@ public partial class GraphBuilder : IGraphBuilder
         ILogger<GraphBuilder> logger
     )
     {
-        this.osm = new CachingOsmPortWrapper(osm);
+        this.osm = osm;
         this.settings = settings;
         this.levelParser = levelParser;
         this.logger = logger;
@@ -39,32 +39,46 @@ public partial class GraphBuilder : IGraphBuilder
     public async Task<GraphHolder> BuildGraph(CancellationToken ct)
     {
         var holder = new GraphHolder();
-        var walls = new Dictionary<decimal, List<LineString>>();
-        var points = (await osm.GetPoints(settings.Bbox.AsRectangle())).ToList();
+        var points = (await osm.GetPoints(settings.Bbox.AsRectangle())).ToDictionary(
+            x => x.NodeId,
+            x => x
+        );
+        var lines = (await osm.GetLines(settings.Bbox.AsRectangle())).ToDictionary(
+            x => x.WayId,
+            x => x
+        );
+        var polygons = (await osm.GetPolygons(settings.Bbox.AsRectangle())).ToDictionary(
+            x => x.AreaId,
+            x => x
+        );
+        var multiPolygons = (await osm.GetMultiPolygons(settings.Bbox.AsRectangle())).ToDictionary(
+            x => x.AreaId,
+            x => x
+        );
 
         foreach (var r in ProcessPoints(points, ct))
             SaveResult(holder, r);
 
-        await foreach (var r in ProcessLines(ct))
+        foreach (var r in ProcessLines(points, lines, ct))
             SaveResult(holder, r);
 
-        await foreach (var r in ProcessPolygons(holder, ct))
+        foreach (var r in ProcessPolygons(points, polygons, multiPolygons, holder, ct))
             SaveResult(holder, r);
 
-        wallGraphCutter.Run(holder, points.ToDictionary(x => x.NodeId, x => x));
+        wallGraphCutter.Run(holder, points);
 
         return holder;
     }
 
     private IEnumerable<ProcessingResult> ProcessPoints(
-        IEnumerable<OsmPoint> points,
+        IReadOnlyDictionary<long, OsmPoint> points,
         CancellationToken ct
     )
     {
         if (ct.IsCancellationRequested)
             yield break;
-        var elevatorProcessor = new ElevatorNodeProcessor(osm, levelParser);
-        foreach (var point in points)
+        var elevatorProcessor = new ElevatorNodeProcessor(levelParser);
+        foreach (var point in points.Values)
         {
             if (ct.IsCancellationRequested)
                 yield break;
@@ -77,22 +91,23 @@ public partial class GraphBuilder : IGraphBuilder
         }
     }
 
-    private async IAsyncEnumerable<ProcessingResult> ProcessLines(
-        [EnumeratorCancellation] CancellationToken ct
+    private IEnumerable<ProcessingResult> ProcessLines(
+        IReadOnlyDictionary<long, OsmPoint> points,
+        IReadOnlyDictionary<long, OsmLine> lines,
+        CancellationToken ct
     )
     {
-        var lines = await osm.GetLines(settings.Bbox.AsRectangle());
         if (ct.IsCancellationRequested)
             yield break;
-        var hwProcessor = new HighwayWayProcessor(osm, levelParser);
-        var wallProcessor = new WallProcessor(osm, levelParser);
-        foreach (var line in lines)
+        var hwProcessor = new HighwayWayProcessor(levelParser);
+        var wallProcessor = new WallProcessor(levelParser);
+        foreach (var line in lines.Values)
         {
             if (ct.IsCancellationRequested)
                 yield break;
             LogProcessingItem(nameof(OsmLine), line.WayId);
             if (line.Tags.ContainsKey("highway"))
-                yield return await hwProcessor.Process(line);
+                yield return hwProcessor.Process(line, points);
             else if (
                 line.Tags.GetValueOrDefault("indoor") is "wall"
                 || line.Tags.GetValueOrDefault("barrier") is "wall" or "fence"
@@ -102,55 +117,58 @@ public partial class GraphBuilder : IGraphBuilder
         }
     }
 
-    private async IAsyncEnumerable<ProcessingResult> ProcessPolygons(
+    private IEnumerable<ProcessingResult> ProcessPolygons(
+        IReadOnlyDictionary<long, OsmPoint> points,
+        IReadOnlyDictionary<long, OsmPolygon> polygons,
+        IReadOnlyDictionary<long, OsmMultiPolygon> multiPolygons,
         GraphHolder holder,
-        [EnumeratorCancellation] CancellationToken ct
+        CancellationToken ct
     )
     {
-        var areas = await osm.GetPolygons(settings.Bbox.AsRectangle());
         if (ct.IsCancellationRequested)
             yield break;
-        var areaProcessor = new AreaProcessor(osm, levelParser);
-        foreach (var area in areas)
+        var areaProcessor = new AreaProcessor(levelParser);
+        foreach (var polygon in polygons.Values)
         {
             if (ct.IsCancellationRequested)
                 yield break;
-            LogProcessingItem(nameof(OsmPolygon), area.AreaId);
-            if (IsRoutableArea(area.Tags))
-                yield return await areaProcessor.Process(
+            LogProcessingItem(nameof(OsmPolygon), polygon.AreaId);
+            if (IsRoutableArea(polygon.Tags))
+                yield return areaProcessor.Process(
                     // convert to a multipolygon with a single polygon
                     new(
-                        area.AreaId,
-                        area.Tags,
-                        new(new[] { area.Geometry }),
+                        polygon.AreaId,
+                        polygon.Tags,
+                        new(new[] { polygon.Geometry }),
                         new[]
                         {
                             new OsmLine(
-                                area.AreaId,
-                                area.Tags,
-                                area.Nodes,
-                                area.GeometryAsLinestring
+                                polygon.AreaId,
+                                polygon.Tags,
+                                polygon.Nodes,
+                                polygon.GeometryAsLinestring
                             )
                         }
                     ),
-                    holder.GetNodesInArea(area.Geometry.EnvelopeInternal)
+                    holder.GetNodesInArea(polygon.Geometry.EnvelopeInternal),
+                    points
                 );
         }
 
         if (ct.IsCancellationRequested)
             yield break;
-        var multiPolygons = await osm.GetMultiPolygons(settings.Bbox.AsRectangle());
         if (ct.IsCancellationRequested)
             yield break;
-        foreach (var mp in multiPolygons)
+        foreach (var mp in multiPolygons.Values)
         {
             if (ct.IsCancellationRequested)
                 yield break;
             LogProcessingItem(nameof(OsmMultiPolygon), mp.AreaId);
             if (IsRoutableArea(mp.Tags))
-                yield return await areaProcessor.Process(
+                yield return areaProcessor.Process(
                     mp,
-                    holder.GetNodesInArea(mp.Geometry.EnvelopeInternal)
+                    holder.GetNodesInArea(mp.Geometry.EnvelopeInternal),
+                    points
                 );
         }
     }

@@ -500,7 +500,7 @@ public class HighwayWayProcessorTests
 
     [Theory]
     [MemberData(nameof(ProcessingTestData))]
-    public async Task TestProcessing(
+    public void TestProcessing(
         string name,
         OsmLine line,
         Dictionary<long, OsmPoint> points,
@@ -509,17 +509,9 @@ public class HighwayWayProcessorTests
     )
     {
         testOutputHelper.WriteLine(name);
-        var osm = new Mock<IOsmPort>();
-        osm.Setup(x => x.GetPointByOsmId(It.IsAny<long>()))
-            .Returns((long osmId) => Task.FromResult(points.GetValueOrDefault(osmId)));
-        osm.Setup(x => x.GetPointsByOsmIds(It.IsAny<IEnumerable<long>>()))
-            .Returns(
-                (IEnumerable<long> osmIds) =>
-                    Task.FromResult(osmIds.Select(points.GetValueOrDefault))
-            );
-        var processor = new HighwayWayProcessor(osm.Object, new(Mock.Of<ILogger<LevelParser>>()));
+        var processor = new HighwayWayProcessor(new(Mock.Of<ILogger<LevelParser>>()));
 
-        var result = await processor.Process(line);
+        var result = processor.Process(line, points);
         result.Nodes.Should().BeEquivalentTo(expectedNodes);
         result.Edges.Should().BeEquivalentTo(expectedEdges);
     }

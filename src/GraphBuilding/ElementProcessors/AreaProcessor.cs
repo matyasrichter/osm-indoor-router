@@ -1,24 +1,25 @@
 namespace GraphBuilding.ElementProcessors;
 
 using Core;
-using GraphBuilding.Parsers;
-using GraphBuilding.Ports;
+using Parsers;
+using Ports;
 using Microsoft.FSharp.Collections;
 using NetTopologySuite.Geometries;
 
 public class AreaProcessor : BaseOsmProcessor
 {
-    public AreaProcessor(IOsmPort osm, LevelParser levelParser)
-        : base(osm, levelParser) { }
+    public AreaProcessor(LevelParser levelParser)
+        : base(levelParser) { }
 
-    public async Task<ProcessingResult> Process(
+    public ProcessingResult Process(
         OsmMultiPolygon source,
-        IEnumerable<InMemoryNode> nodesInEnvelope
+        IEnumerable<InMemoryNode> nodesInEnvelope,
+        IReadOnlyDictionary<long, OsmPoint> points
     )
     {
         var (ogLevel, _, repeatOnLevels) = ExtractLevelInformation(source.Tags);
         var resultsWithLevels = DuplicateResults(
-            await ProcessSingleLevel(source, ogLevel),
+            ProcessSingleLevel(source, ogLevel, points),
             repeatOnLevels,
             ogLevel
         );
@@ -36,11 +37,15 @@ public class AreaProcessor : BaseOsmProcessor
         return JoinResults(results);
     }
 
-    private async Task<ProcessingResult> ProcessSingleLevel(OsmMultiPolygon source, decimal level)
+    private static ProcessingResult ProcessSingleLevel(
+        OsmMultiPolygon source,
+        decimal level,
+        IReadOnlyDictionary<long, OsmPoint> osmPoints
+    )
     {
         var nodes = new List<InMemoryNode>();
         var edges = new List<InMemoryEdge>();
-        var points = await Osm.GetPointsByOsmIds(source.Members.SelectMany(x => x.Nodes));
+        var points = source.Members.SelectMany(x => x.Nodes).Select(osmPoints.GetValueOrDefault);
         var coords = source.Members
             .SelectMany(x => x.Nodes.Zip(x.Geometry.Coordinates))
             .Zip(points)

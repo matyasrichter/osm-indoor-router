@@ -6,8 +6,8 @@ using Ports;
 
 public class ElevatorNodeProcessor : BaseOsmProcessor
 {
-    public ElevatorNodeProcessor(IOsmPort osm, LevelParser levelParser)
-        : base(osm, levelParser) { }
+    public ElevatorNodeProcessor(LevelParser levelParser)
+        : base(levelParser) { }
 
     public ProcessingResult Process(OsmPoint source)
     {

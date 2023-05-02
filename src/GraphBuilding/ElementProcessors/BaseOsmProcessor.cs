@@ -1,7 +1,6 @@
 namespace GraphBuilding.ElementProcessors;
 
-using GraphBuilding.Parsers;
-using GraphBuilding.Ports;
+using Parsers;
 using NetTopologySuite.Geometries;
 
 public abstract class BaseOsmProcessor
@@ -9,13 +8,7 @@ public abstract class BaseOsmProcessor
     protected static readonly GeometryFactory Gf = new(new(), 4326);
     protected LevelParser LevelParser { get; }
 
-    protected IOsmPort Osm { get; }
-
-    protected BaseOsmProcessor(IOsmPort osm, LevelParser levelParser)
-    {
-        Osm = osm;
-        LevelParser = levelParser;
-    }
+    protected BaseOsmProcessor(LevelParser levelParser) => LevelParser = levelParser;
 
     protected (
         decimal OgLevel,

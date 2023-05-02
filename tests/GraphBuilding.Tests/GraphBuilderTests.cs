@@ -80,7 +80,7 @@ public class GraphBuilderTests
                         new(points.Take(3).Select(x => x.Coordinate).ToArray())
                     ),
                     new OsmLine(
-                        123456,
+                        123457,
                         new Dictionary<string, string>() { { "highway", "footway" } },
                         new List<long>() { 4, 5, 2 },
                         new(
@@ -182,13 +182,7 @@ public class GraphBuilderTests
                 )
             }
         };
-        osm.Setup(x => x.GetPointByOsmId(It.IsAny<long>()))
-            .Returns((long osmId) => Task.FromResult(osmPoints.GetValueOrDefault(osmId)));
-        osm.Setup(x => x.GetPointsByOsmIds(It.IsAny<IEnumerable<long>>()))
-            .Returns(
-                (IEnumerable<long> osmIds) =>
-                    Task.FromResult(osmIds.Select(osmPoints.GetValueOrDefault))
-            );
+        osm.Setup(x => x.GetPoints(It.IsAny<Geometry>())).ReturnsAsync(osmPoints.Values);
 
         var holder = await builder.BuildGraph(CancellationToken.None);
 
@@ -288,9 +282,6 @@ public class GraphBuilderTests
                     )
                 }
             );
-        osm.Setup(x => x.GetPointByOsmId(It.IsAny<long>())).ReturnsAsync((OsmPoint?)null);
-        osm.Setup(x => x.GetPointsByOsmIds(It.IsAny<IEnumerable<long>>()))
-            .ReturnsAsync((IEnumerable<long> osmIds) => osmIds.Select(_ => (OsmPoint?)null));
 
         var holder = await builder.BuildGraph(CancellationToken.None);
 
