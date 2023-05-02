@@ -93,10 +93,11 @@ public class GraphBuilderTests
             );
 
         var holder = await builder.BuildGraph(CancellationToken.None);
-        holder.Edges
-            .Select(x => (x.FromId, x.ToId))
+        holder
             .Should()
-            .BeEquivalentTo(new List<(long, long)>() { (0, 1), (1, 2), (3, 4), (4, 1) });
+            .HaveEdgesBetweenSourceIds((2, 0), new (long, decimal)[] { (1, 0), (3, 0), (5, 0) });
+        holder.Should().HaveEdgesBetweenSourceIds((4, 0), new (long, decimal)[] { (5, 0) });
+        holder.Edges.Should().HaveCount(4);
     }
 
     [Fact]
