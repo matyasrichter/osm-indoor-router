@@ -1,9 +1,7 @@
 namespace GraphBuilding;
 
-using System.Runtime.CompilerServices;
 using ElementProcessors;
 using Microsoft.Extensions.Logging;
-using NetTopologySuite.Geometries;
 using Parsers;
 using Ports;
 using Settings;
@@ -55,11 +53,12 @@ public partial class GraphBuilder : IGraphBuilder
             x => x.AreaId,
             x => x
         );
+        LogLoadedFromDB(points.Count, lines.Count, polygons.Count, multiPolygons.Count);
 
-        foreach (var r in ProcessPoints(points, ct))
+        foreach (var r in ProcessPoints(points))
             SaveResult(holder, r);
 
-        foreach (var r in ProcessLines(points, lines, ct))
+        foreach (var r in ProcessLines(points, lines))
             SaveResult(holder, r);
 
         foreach (var r in ProcessPolygons(points, polygons, multiPolygons, holder, ct))
@@ -70,51 +69,47 @@ public partial class GraphBuilder : IGraphBuilder
         return holder;
     }
 
-    private IEnumerable<ProcessingResult> ProcessPoints(
-        IReadOnlyDictionary<long, OsmPoint> points,
-        CancellationToken ct
-    )
+    private IEnumerable<ProcessingResult> ProcessPoints(IReadOnlyDictionary<long, OsmPoint> points)
     {
-        if (ct.IsCancellationRequested)
-            yield break;
         var elevatorProcessor = new ElevatorNodeProcessor(levelParser);
-        foreach (var point in points.Values)
-        {
-            if (ct.IsCancellationRequested)
-                yield break;
-            LogProcessingItem(nameof(OsmPoint), point.NodeId);
-            if (
-                point.Tags.GetValueOrDefault("elevator") is "yes"
-                || point.Tags.GetValueOrDefault("highway") is "elevator"
-            )
-                yield return elevatorProcessor.Process(point);
-        }
+        return points.Values
+            .AsParallel()
+            .Select(point =>
+            {
+                LogProcessingItem(nameof(OsmPoint), point.NodeId);
+                if (
+                    point.Tags.GetValueOrDefault("elevator") is "yes"
+                    || point.Tags.GetValueOrDefault("highway") is "elevator"
+                )
+                    return elevatorProcessor.Process(point);
+                return null;
+            })
+            .Where(x => x is not null)!;
     }
 
     private IEnumerable<ProcessingResult> ProcessLines(
         IReadOnlyDictionary<long, OsmPoint> points,
-        IReadOnlyDictionary<long, OsmLine> lines,
-        CancellationToken ct
+        IReadOnlyDictionary<long, OsmLine> lines
     )
     {
-        if (ct.IsCancellationRequested)
-            yield break;
         var hwProcessor = new HighwayWayProcessor(levelParser);
         var wallProcessor = new WallProcessor(levelParser);
-        foreach (var line in lines.Values)
-        {
-            if (ct.IsCancellationRequested)
-                yield break;
-            LogProcessingItem(nameof(OsmLine), line.WayId);
-            if (line.Tags.ContainsKey("highway"))
-                yield return hwProcessor.Process(line, points);
-            else if (
-                line.Tags.GetValueOrDefault("indoor") is "wall"
-                || line.Tags.GetValueOrDefault("barrier") is "wall" or "fence"
-                || line.Tags.GetValueOrDefault("building") is not null and not "roof"
-            )
-                yield return wallProcessor.Process(line);
-        }
+        return lines.Values
+            .AsParallel()
+            .Select(line =>
+            {
+                LogProcessingItem(nameof(OsmLine), line.WayId);
+                if (line.Tags.ContainsKey("highway"))
+                    return hwProcessor.Process(line, points);
+                else if (
+                    line.Tags.GetValueOrDefault("indoor") is "wall"
+                    || line.Tags.GetValueOrDefault("barrier") is "wall" or "fence"
+                    || line.Tags.GetValueOrDefault("building") is not null and not "roof"
+                )
+                    return wallProcessor.Process(line);
+                return null;
+            })
+            .Where(x => x is not null)!;
     }
 
     private IEnumerable<ProcessingResult> ProcessPolygons(
@@ -125,52 +120,50 @@ public partial class GraphBuilder : IGraphBuilder
         CancellationToken ct
     )
     {
-        if (ct.IsCancellationRequested)
-            yield break;
         var areaProcessor = new AreaProcessor(levelParser);
-        foreach (var polygon in polygons.Values)
-        {
-            if (ct.IsCancellationRequested)
-                yield break;
-            LogProcessingItem(nameof(OsmPolygon), polygon.AreaId);
-            if (IsRoutableArea(polygon.Tags))
-                yield return areaProcessor.Process(
-                    // convert to a multipolygon with a single polygon
-                    new(
-                        polygon.AreaId,
-                        polygon.Tags,
-                        new(new[] { polygon.Geometry }),
-                        new[]
-                        {
-                            new OsmLine(
-                                polygon.AreaId,
-                                polygon.Tags,
-                                polygon.Nodes,
-                                polygon.GeometryAsLinestring
-                            )
-                        }
-                    ),
-                    holder.GetNodesInArea(polygon.Geometry.EnvelopeInternal),
-                    points
-                );
-        }
-
-        if (ct.IsCancellationRequested)
-            yield break;
-        if (ct.IsCancellationRequested)
-            yield break;
-        foreach (var mp in multiPolygons.Values)
-        {
-            if (ct.IsCancellationRequested)
-                yield break;
-            LogProcessingItem(nameof(OsmMultiPolygon), mp.AreaId);
-            if (IsRoutableArea(mp.Tags))
-                yield return areaProcessor.Process(
-                    mp,
-                    holder.GetNodesInArea(mp.Geometry.EnvelopeInternal),
-                    points
-                );
-        }
+        return polygons.Values
+            .AsParallel()
+            .Select(polygon =>
+            {
+                LogProcessingItem(nameof(OsmPolygon), polygon.AreaId);
+                if (IsRoutableArea(polygon.Tags))
+                    return areaProcessor.Process(
+                        // convert to a multipolygon with a single polygon
+                        new(
+                            polygon.AreaId,
+                            polygon.Tags,
+                            new(new[] { polygon.Geometry }),
+                            new[]
+                            {
+                                new OsmLine(
+                                    polygon.AreaId,
+                                    polygon.Tags,
+                                    polygon.Nodes,
+                                    polygon.GeometryAsLinestring
+                                )
+                            }
+                        ),
+                        holder.GetNodesInArea(polygon.Geometry.EnvelopeInternal),
+                        points
+                    );
+                return null;
+            })
+            .Concat(
+                multiPolygons.Values
+                    .AsParallel()
+                    .Select(mp =>
+                    {
+                        LogProcessingItem(nameof(OsmMultiPolygon), mp.AreaId);
+                        if (IsRoutableArea(mp.Tags))
+                            return areaProcessor.Process(
+                                mp,
+                                holder.GetNodesInArea(mp.Geometry.EnvelopeInternal),
+                                points
+                            );
+                        return null;
+                    })
+            )
+            .Where(x => x is not null)!;
     }
 
     private static bool IsRoutableArea(IReadOnlyDictionary<string, string> tags) =>
@@ -208,6 +201,18 @@ public partial class GraphBuilder : IGraphBuilder
             return existingId;
         return holder.AddNode(node);
     }
+
+    [LoggerMessage(
+        Level = LogLevel.Information,
+        Message = "Loaded data from database: {PointCount} points, {LineCount} lines,"
+            + " {PolygonCount} polygons, {MPCount} multipolygons"
+    )]
+    private partial void LogLoadedFromDB(
+        int pointCount,
+        int lineCount,
+        int polygonCount,
+        int mpCount
+    );
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Processing {Type} ID {SourceId}")]
     private partial void LogProcessingItem(string type, long sourceId);
