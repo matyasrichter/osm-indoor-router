@@ -121,7 +121,7 @@ public class AreaPolygonProcessorTests
 
     [Theory]
     [MemberData(nameof(ProcessingTestData))]
-    public async Task TestProcessing(
+    public void TestProcessing(
         string name,
         OsmPolygon polygon,
         Dictionary<long, OsmPoint> points,
@@ -130,15 +130,7 @@ public class AreaPolygonProcessorTests
     )
     {
         testOutputHelper.WriteLine(name);
-        var osm = new Mock<IOsmPort>();
-        osm.Setup(x => x.GetPointByOsmId(It.IsAny<long>()))
-            .Returns((long osmId) => Task.FromResult(points.GetValueOrDefault(osmId)));
-        osm.Setup(x => x.GetPointsByOsmIds(It.IsAny<IEnumerable<long>>()))
-            .Returns(
-                (IEnumerable<long> osmIds) =>
-                    Task.FromResult(osmIds.Select(points.GetValueOrDefault))
-            );
-        var processor = new AreaProcessor(osm.Object, new(Mock.Of<ILogger<LevelParser>>()));
+        var processor = new AreaProcessor(new(Mock.Of<ILogger<LevelParser>>()));
 
         var mp = new OsmMultiPolygon(
             polygon.AreaId,
@@ -154,7 +146,7 @@ public class AreaPolygonProcessorTests
                 )
             }
         );
-        var result = await processor.Process(mp, Enumerable.Empty<InMemoryNode>());
+        var result = processor.Process(mp, Enumerable.Empty<InMemoryNode>(), points);
         result.Nodes.Should().BeEquivalentTo(expectedNodes);
         var edgePairs = result.Edges
             .Select(
@@ -171,7 +163,7 @@ public class AreaPolygonProcessorTests
     }
 
     [Fact]
-    public async Task CanHandleNodeInsideEnvelope()
+    public void CanHandleNodeInsideEnvelope()
     {
         var points = new List<KeyValuePair<long, Point>>()
         {
@@ -181,10 +173,6 @@ public class AreaPolygonProcessorTests
             new(3776391910, Gf.CreatePoint(new Coordinate(14.3897692, 50.1043239))),
             new(563250924, Gf.CreatePoint(new Coordinate(14.3896805, 50.1043039))),
         };
-        var osm = new Mock<IOsmPort>();
-        osm.Setup(x => x.GetPointByOsmId(It.IsAny<long>())).ReturnsAsync((OsmPoint?)null);
-        osm.Setup(x => x.GetPointsByOsmIds(It.IsAny<IEnumerable<long>>()))
-            .ReturnsAsync((IEnumerable<long> osmIds) => osmIds.Select<long, OsmPoint?>(_ => null));
 
         var polygon = new OsmPolygon(
             374272471,
@@ -194,7 +182,7 @@ public class AreaPolygonProcessorTests
             new(points.Take(4).Append(points[0]).Select(x => x.Value.Coordinate).ToArray())
         );
 
-        var processor = new AreaProcessor(osm.Object, new(Mock.Of<ILogger<LevelParser>>()));
+        var processor = new AreaProcessor(new(Mock.Of<ILogger<LevelParser>>()));
         var mp = new OsmMultiPolygon(
             polygon.AreaId,
             polygon.Tags,
@@ -211,7 +199,11 @@ public class AreaPolygonProcessorTests
         );
 
         var existingNode = new InMemoryNode(points.Last().Value, 0, 563250924);
-        var result = await processor.Process(mp, new[] { existingNode });
+        var result = processor.Process(
+            mp,
+            new[] { existingNode },
+            new Dictionary<long, OsmPoint>()
+        );
         result
             .Should()
             .HaveEdgesBetweenSourceIds(
@@ -221,7 +213,7 @@ public class AreaPolygonProcessorTests
     }
 
     [Fact]
-    public async Task CanHandlePolygonWithHole()
+    public void CanHandlePolygonWithHole()
     {
         var innerPoints = new (long, Coordinate)[]
         {
@@ -249,10 +241,6 @@ public class AreaPolygonProcessorTests
             }
         );
 
-        var osm = new Mock<IOsmPort>();
-        osm.Setup(x => x.GetPointByOsmId(It.IsAny<long>())).ReturnsAsync((OsmPoint?)null);
-        osm.Setup(x => x.GetPointsByOsmIds(It.IsAny<IEnumerable<long>>()))
-            .ReturnsAsync((IEnumerable<long> osmIds) => osmIds.Select<long, OsmPoint?>(_ => null));
         var osmMultiPolygon = new OsmMultiPolygon(
             123456,
             new Dictionary<string, string>() { { "indoor", "area" }, { "level", "2" } },
@@ -273,9 +261,13 @@ public class AreaPolygonProcessorTests
                 )
             }
         );
-        var processor = new AreaProcessor(osm.Object, new(Mock.Of<ILogger<LevelParser>>()));
+        var processor = new AreaProcessor(new(Mock.Of<ILogger<LevelParser>>()));
 
-        var result = await processor.Process(osmMultiPolygon, Array.Empty<InMemoryNode>());
+        var result = processor.Process(
+            osmMultiPolygon,
+            Array.Empty<InMemoryNode>(),
+            new Dictionary<long, OsmPoint>()
+        );
         result.Nodes
             .Select(x => x.SourceId)
             .Should()

@@ -54,6 +54,7 @@ public class HighwayWayProcessorTests
                 new(
                     0,
                     1,
+                    points[0].GetLineStringTo(points[1]),
                     points[0].GetMetricDistance(points[1], 0),
                     points[0].GetMetricDistance(points[1], 0),
                     123456,
@@ -62,6 +63,7 @@ public class HighwayWayProcessorTests
                 new(
                     1,
                     2,
+                    points[1].GetLineStringTo(points[2]),
                     points[1].GetMetricDistance(points[2], 0),
                     points[1].GetMetricDistance(points[2], 0),
                     123456,
@@ -102,6 +104,7 @@ public class HighwayWayProcessorTests
                 new(
                     0,
                     1,
+                    points[0].GetLineStringTo(points[1]),
                     points[0].GetMetricDistance(points[1], 0),
                     points[0].GetMetricDistance(points[1], 0),
                     123456,
@@ -110,6 +113,7 @@ public class HighwayWayProcessorTests
                 new(
                     1,
                     2,
+                    points[1].GetLineStringTo(points[2]),
                     points[1].GetMetricDistance(points[2], 0),
                     points[1].GetMetricDistance(points[2], 0),
                     123456,
@@ -118,6 +122,7 @@ public class HighwayWayProcessorTests
                 new(
                     3,
                     4,
+                    points[0].GetLineStringTo(points[1]),
                     points[0].GetMetricDistance(points[1], 0),
                     points[0].GetMetricDistance(points[1], 0),
                     123456,
@@ -126,6 +131,7 @@ public class HighwayWayProcessorTests
                 new(
                     4,
                     5,
+                    points[1].GetLineStringTo(points[2]),
                     points[1].GetMetricDistance(points[2], 0),
                     points[1].GetMetricDistance(points[2], 0),
                     123456,
@@ -134,6 +140,7 @@ public class HighwayWayProcessorTests
                 new(
                     6,
                     7,
+                    points[0].GetLineStringTo(points[1]),
                     points[0].GetMetricDistance(points[1], 0),
                     points[0].GetMetricDistance(points[1], 0),
                     123456,
@@ -142,6 +149,7 @@ public class HighwayWayProcessorTests
                 new(
                     7,
                     8,
+                    points[1].GetLineStringTo(points[2]),
                     points[1].GetMetricDistance(points[2], 0),
                     points[1].GetMetricDistance(points[2], 0),
                     123456,
@@ -179,6 +187,7 @@ public class HighwayWayProcessorTests
                 new(
                     0,
                     1,
+                    points[0].GetLineStringTo(points[1]),
                     points[0].GetMetricDistance(points[1], 0),
                     points[0].GetMetricDistance(points[1], 0),
                     123456,
@@ -187,6 +196,7 @@ public class HighwayWayProcessorTests
                 new(
                     1,
                     2,
+                    points[1].GetLineStringTo(points[2]),
                     points[1].GetMetricDistance(points[2], 0),
                     points[1].GetMetricDistance(points[2], 0),
                     123456,
@@ -195,6 +205,7 @@ public class HighwayWayProcessorTests
                 new(
                     3,
                     4,
+                    points[0].GetLineStringTo(points[1]),
                     points[0].GetMetricDistance(points[1], 0),
                     points[0].GetMetricDistance(points[1], 0),
                     123456,
@@ -203,6 +214,7 @@ public class HighwayWayProcessorTests
                 new(
                     4,
                     5,
+                    points[1].GetLineStringTo(points[2]),
                     points[1].GetMetricDistance(points[2], 0),
                     points[1].GetMetricDistance(points[2], 0),
                     123456,
@@ -239,6 +251,7 @@ public class HighwayWayProcessorTests
                 new(
                     0,
                     1,
+                    points[0].GetLineStringTo(points[1]),
                     points[0].GetMetricDistance(points[1], 0),
                     points[0].GetMetricDistance(points[1], 0),
                     123456,
@@ -247,6 +260,7 @@ public class HighwayWayProcessorTests
                 new(
                     1,
                     2,
+                    points[1].GetLineStringTo(points[2]),
                     points[1].GetMetricDistance(points[2], 0),
                     points[1].GetMetricDistance(points[2], 0),
                     123456,
@@ -255,6 +269,7 @@ public class HighwayWayProcessorTests
                 new(
                     3,
                     4,
+                    points[0].GetLineStringTo(points[1]),
                     points[0].GetMetricDistance(points[1], 0),
                     points[0].GetMetricDistance(points[1], 0),
                     123456,
@@ -263,6 +278,7 @@ public class HighwayWayProcessorTests
                 new(
                     4,
                     5,
+                    points[1].GetLineStringTo(points[2]),
                     points[1].GetMetricDistance(points[2], 0),
                     points[1].GetMetricDistance(points[2], 0),
                     123456,
@@ -291,6 +307,7 @@ public class HighwayWayProcessorTests
                 new(
                     0,
                     1,
+                    points[0].GetLineStringTo(points[1]),
                     points[0].GetMetricDistance(points[1], 0),
                     points[0].GetMetricDistance(points[1], 0),
                     123456,
@@ -299,6 +316,7 @@ public class HighwayWayProcessorTests
                 new(
                     1,
                     2,
+                    points[1].GetLineStringTo(points[2]),
                     points[1].GetMetricDistance(points[2], 0),
                     points[1].GetMetricDistance(points[2], 0),
                     123456,
@@ -345,6 +363,7 @@ public class HighwayWayProcessorTests
                 new(
                     0,
                     1,
+                    points[0].GetLineStringTo(points[1]),
                     points[0].GetMetricDistance(points[1], 0),
                     points[0].GetMetricDistance(points[1], 0),
                     123456,
@@ -353,6 +372,7 @@ public class HighwayWayProcessorTests
                 new(
                     1,
                     2,
+                    points[1].GetLineStringTo(points[2]),
                     points[1].GetMetricDistance(points[2], 1),
                     points[1].GetMetricDistance(points[2], 1),
                     123456,
@@ -421,6 +441,7 @@ public class HighwayWayProcessorTests
                 new(
                     0,
                     1,
+                    points[0].GetLineStringTo(points[1]),
                     points[0].GetMetricDistance(points[1], 0),
                     points[0].GetMetricDistance(points[1], 0),
                     123456,
@@ -429,6 +450,7 @@ public class HighwayWayProcessorTests
                 new(
                     1,
                     2,
+                    points[1].GetLineStringTo(points[2]),
                     points[1].GetMetricDistance(points[2], 1),
                     points[1].GetMetricDistance(points[2], 1),
                     123456,
@@ -437,6 +459,7 @@ public class HighwayWayProcessorTests
                 new(
                     3,
                     4,
+                    points[0].GetLineStringTo(points[1]),
                     points[0].GetMetricDistance(points[1], 0),
                     points[0].GetMetricDistance(points[1], 0),
                     123456,
@@ -445,6 +468,7 @@ public class HighwayWayProcessorTests
                 new(
                     4,
                     5,
+                    points[1].GetLineStringTo(points[2]),
                     points[1].GetMetricDistance(points[2], 1),
                     points[1].GetMetricDistance(points[2], 1),
                     123456,
@@ -453,6 +477,7 @@ public class HighwayWayProcessorTests
                 new(
                     6,
                     7,
+                    points[0].GetLineStringTo(points[1]),
                     points[0].GetMetricDistance(points[1], 0),
                     points[0].GetMetricDistance(points[1], 0),
                     123456,
@@ -461,6 +486,7 @@ public class HighwayWayProcessorTests
                 new(
                     7,
                     8,
+                    points[1].GetLineStringTo(points[2]),
                     points[1].GetMetricDistance(points[2], 1),
                     points[1].GetMetricDistance(points[2], 1),
                     123456,
@@ -474,7 +500,7 @@ public class HighwayWayProcessorTests
 
     [Theory]
     [MemberData(nameof(ProcessingTestData))]
-    public async Task TestProcessing(
+    public void TestProcessing(
         string name,
         OsmLine line,
         Dictionary<long, OsmPoint> points,
@@ -483,17 +509,9 @@ public class HighwayWayProcessorTests
     )
     {
         testOutputHelper.WriteLine(name);
-        var osm = new Mock<IOsmPort>();
-        osm.Setup(x => x.GetPointByOsmId(It.IsAny<long>()))
-            .Returns((long osmId) => Task.FromResult(points.GetValueOrDefault(osmId)));
-        osm.Setup(x => x.GetPointsByOsmIds(It.IsAny<IEnumerable<long>>()))
-            .Returns(
-                (IEnumerable<long> osmIds) =>
-                    Task.FromResult(osmIds.Select(points.GetValueOrDefault))
-            );
-        var processor = new HighwayWayProcessor(osm.Object, new(Mock.Of<ILogger<LevelParser>>()));
+        var processor = new HighwayWayProcessor(new(Mock.Of<ILogger<LevelParser>>()));
 
-        var result = await processor.Process(line);
+        var result = processor.Process(line, points);
         result.Nodes.Should().BeEquivalentTo(expectedNodes);
         result.Edges.Should().BeEquivalentTo(expectedEdges);
     }

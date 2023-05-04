@@ -41,7 +41,7 @@ public partial class MapProcessor
                 .ToDictionary(x => x.First, x => x.Second)
         );
         _ = await savingPort.SaveEdges(edgesToInsert, version);
-
+        await savingPort.RemoveNodesWithoutEdges();
         await savingPort.FinalizeVersion(version);
     }
 

@@ -1,17 +1,17 @@
 namespace GraphBuilding.ElementProcessors;
 
-using GraphBuilding.Parsers;
-using GraphBuilding.Ports;
+using Parsers;
+using Ports;
 
 public class HighwayWayProcessor : BaseOsmProcessor
 {
-    public HighwayWayProcessor(IOsmPort osm, LevelParser levelParser)
-        : base(osm, levelParser) { }
+    public HighwayWayProcessor(LevelParser levelParser)
+        : base(levelParser) { }
 
-    public async Task<ProcessingResult> Process(OsmLine source)
+    public ProcessingResult Process(OsmLine source, IReadOnlyDictionary<long, OsmPoint> points)
     {
         var (ogLevel, levelDiff, repeatOnLevels) = ExtractLevelInformation(source.Tags);
-        var ogLevelLine = await ProcessSingleLevel(source, ogLevel, levelDiff);
+        var ogLevelLine = ProcessSingleLevel(source, ogLevel, levelDiff, points);
         if (repeatOnLevels.Count > 0)
             return JoinResults(
                 DuplicateResults(ogLevelLine, repeatOnLevels, ogLevel).Select(x => x.Result)
@@ -19,17 +19,18 @@ public class HighwayWayProcessor : BaseOsmProcessor
         return ogLevelLine;
     }
 
-    private async Task<ProcessingResult> ProcessSingleLevel(
+    private ProcessingResult ProcessSingleLevel(
         OsmLine source,
         decimal level,
-        decimal maxLevelOffset
+        decimal maxLevelOffset,
+        IReadOnlyDictionary<long, OsmPoint> osmPoints
     )
     {
         var nodes = new List<InMemoryNode>();
         var edges = new List<InMemoryEdge>();
         InMemoryNode? prev = null;
         var currLevel = level;
-        var points = await Osm.GetPointsByOsmIds(source.Nodes);
+        var points = source.Nodes.Select(osmPoints.GetValueOrDefault);
         var coords = source.Geometry.Coordinates.Zip(source.Nodes.Zip(points));
         foreach (var (coord, osmNode) in coords)
         {
@@ -55,7 +56,15 @@ public class HighwayWayProcessor : BaseOsmProcessor
                     prev.Level - node.Level
                 );
                 edges.Add(
-                    new(nodes.Count - 1, nodes.Count, distance, distance, source.WayId, distance)
+                    new(
+                        nodes.Count - 1,
+                        nodes.Count,
+                        prev.Coordinates.GetLineStringTo(node.Coordinates),
+                        distance,
+                        distance,
+                        source.WayId,
+                        distance
+                    )
                 );
             }
 
@@ -63,6 +72,6 @@ public class HighwayWayProcessor : BaseOsmProcessor
             prev = node;
         }
 
-        return new(nodes, edges);
+        return new(nodes, edges, new List<(decimal Level, (int FromId, int ToId) Edge)>());
     }
 }

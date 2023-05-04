@@ -12,5 +12,6 @@ public static class Configure
             .AddTransient<MapProcessor>()
             .AddTransient<OverpassLoader>()
             .AddTransient<IGraphBuilder, GraphBuilder>()
+            .AddTransient<WallGraphCutter>()
             .AddTransient<LevelParser>();
 }

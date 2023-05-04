@@ -66,10 +66,7 @@ public class ElevatorNodeProcessorTests
     {
         testOutputHelper.WriteLine(name);
 
-        var processor = new ElevatorNodeProcessor(
-            Mock.Of<IOsmPort>(),
-            new(Mock.Of<ILogger<LevelParser>>())
-        );
+        var processor = new ElevatorNodeProcessor(new(Mock.Of<ILogger<LevelParser>>()));
 
         var result = processor.Process(source);
         result.Nodes.Should().BeEquivalentTo(expectedNodes);

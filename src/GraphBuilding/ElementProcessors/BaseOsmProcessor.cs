@@ -1,7 +1,6 @@
 namespace GraphBuilding.ElementProcessors;
 
-using GraphBuilding.Parsers;
-using GraphBuilding.Ports;
+using Parsers;
 using NetTopologySuite.Geometries;
 
 public abstract class BaseOsmProcessor
@@ -9,13 +8,7 @@ public abstract class BaseOsmProcessor
     protected static readonly GeometryFactory Gf = new(new(), 4326);
     protected LevelParser LevelParser { get; }
 
-    protected IOsmPort Osm { get; }
-
-    protected BaseOsmProcessor(IOsmPort osm, LevelParser levelParser)
-    {
-        Osm = osm;
-        LevelParser = levelParser;
-    }
+    protected BaseOsmProcessor(LevelParser levelParser) => LevelParser = levelParser;
 
     protected (
         decimal OgLevel,
@@ -71,7 +64,8 @@ public abstract class BaseOsmProcessor
                             ogResult.Nodes
                                 .Select(x => x with { Level = x.Level + l - ogLevel })
                                 .ToList(),
-                            ogResult.Edges.ToList()
+                            ogResult.Edges.ToList(),
+                            ogResult.WallEdges.Select(x => (l, x.Edge)).ToList()
                         )
                     )
             )
@@ -81,6 +75,7 @@ public abstract class BaseOsmProcessor
     {
         var nodes = new List<InMemoryNode>();
         var edges = new List<InMemoryEdge>();
+        var walls = new List<(decimal Level, (int FromId, int ToId) Edge)>();
 
         foreach (var result in results)
         {
@@ -91,8 +86,9 @@ public abstract class BaseOsmProcessor
                     x => x with { FromId = x.FromId + nodeOffset, ToId = x.ToId + nodeOffset }
                 )
             );
+            walls.AddRange(result.WallEdges);
         }
 
-        return new(nodes, edges);
+        return new(nodes, edges, walls);
     }
 }

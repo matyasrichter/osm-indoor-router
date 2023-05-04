@@ -15,7 +15,13 @@ public class GraphBuilderTests
     public async Task CanBuildGraphWithSingleLine()
     {
         var osm = new Mock<IOsmPort>();
-        var builder = new GraphBuilder(osm.Object, Settings, new(Mock.Of<ILogger<LevelParser>>()));
+        var builder = new GraphBuilder(
+            osm.Object,
+            Settings,
+            new(Mock.Of<ILogger<LevelParser>>()),
+            new(Mock.Of<ILogger<WallGraphCutter>>()),
+            Mock.Of<ILogger<GraphBuilder>>()
+        );
         var points = new List<Point>()
         {
             gf.CreatePoint(new Coordinate(1, 1)),
@@ -47,7 +53,13 @@ public class GraphBuilderTests
     public async Task CanBuildTShapedGraph()
     {
         var osm = new Mock<IOsmPort>();
-        var builder = new GraphBuilder(osm.Object, Settings, new(Mock.Of<ILogger<LevelParser>>()));
+        var builder = new GraphBuilder(
+            osm.Object,
+            Settings,
+            new(Mock.Of<ILogger<LevelParser>>()),
+            new(Mock.Of<ILogger<WallGraphCutter>>()),
+            Mock.Of<ILogger<GraphBuilder>>()
+        );
         var points = new List<Point>()
         {
             gf.CreatePoint(new Coordinate(1, 1)),
@@ -68,7 +80,7 @@ public class GraphBuilderTests
                         new(points.Take(3).Select(x => x.Coordinate).ToArray())
                     ),
                     new OsmLine(
-                        123456,
+                        123457,
                         new Dictionary<string, string>() { { "highway", "footway" } },
                         new List<long>() { 4, 5, 2 },
                         new(
@@ -81,17 +93,24 @@ public class GraphBuilderTests
             );
 
         var holder = await builder.BuildGraph(CancellationToken.None);
-        holder.Edges
-            .Select(x => (x.FromId, x.ToId))
+        holder
             .Should()
-            .BeEquivalentTo(new List<(long, long)>() { (0, 1), (1, 2), (3, 4), (4, 1) });
+            .HaveEdgesBetweenSourceIds((2, 0), new (long, decimal)[] { (1, 0), (3, 0), (5, 0) });
+        holder.Should().HaveEdgesBetweenSourceIds((4, 0), new (long, decimal)[] { (5, 0) });
+        holder.Edges.Should().HaveCount(4);
     }
 
     [Fact]
     public async Task CanBuildLevelConnections()
     {
         var osm = new Mock<IOsmPort>();
-        var builder = new GraphBuilder(osm.Object, Settings, new(Mock.Of<ILogger<LevelParser>>()));
+        var builder = new GraphBuilder(
+            osm.Object,
+            Settings,
+            new(Mock.Of<ILogger<LevelParser>>()),
+            new(Mock.Of<ILogger<WallGraphCutter>>()),
+            Mock.Of<ILogger<GraphBuilder>>()
+        );
         var points = new List<Point>()
         {
             gf.CreatePoint(new Coordinate(14.3888106, 50.1047052)), // 4173362015
@@ -164,13 +183,7 @@ public class GraphBuilderTests
                 )
             }
         };
-        osm.Setup(x => x.GetPointByOsmId(It.IsAny<long>()))
-            .Returns((long osmId) => Task.FromResult(osmPoints.GetValueOrDefault(osmId)));
-        osm.Setup(x => x.GetPointsByOsmIds(It.IsAny<IEnumerable<long>>()))
-            .Returns(
-                (IEnumerable<long> osmIds) =>
-                    Task.FromResult(osmIds.Select(osmPoints.GetValueOrDefault))
-            );
+        osm.Setup(x => x.GetPoints(It.IsAny<Geometry>())).ReturnsAsync(osmPoints.Values);
 
         var holder = await builder.BuildGraph(CancellationToken.None);
 
@@ -210,7 +223,13 @@ public class GraphBuilderTests
     public async Task CanHandleRoutableNodeInsidePolygon()
     {
         var osm = new Mock<IOsmPort>();
-        var builder = new GraphBuilder(osm.Object, Settings, new(Mock.Of<ILogger<LevelParser>>()));
+        var builder = new GraphBuilder(
+            osm.Object,
+            Settings,
+            new(Mock.Of<ILogger<LevelParser>>()),
+            new(Mock.Of<ILogger<WallGraphCutter>>()),
+            Mock.Of<ILogger<GraphBuilder>>()
+        );
         var points = new List<KeyValuePair<long, Point>>()
         {
             new(2911907727, gf.CreatePoint(new Coordinate(14.3896986, 50.1043596))),
@@ -264,9 +283,6 @@ public class GraphBuilderTests
                     )
                 }
             );
-        osm.Setup(x => x.GetPointByOsmId(It.IsAny<long>())).ReturnsAsync((OsmPoint?)null);
-        osm.Setup(x => x.GetPointsByOsmIds(It.IsAny<IEnumerable<long>>()))
-            .ReturnsAsync((IEnumerable<long> osmIds) => osmIds.Select(_ => (OsmPoint?)null));
 
         var holder = await builder.BuildGraph(CancellationToken.None);
 

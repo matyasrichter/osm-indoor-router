@@ -1,5 +1,7 @@
 namespace GraphBuilding.Tests;
 
+using NetTopologySuite.Geometries;
+
 public class GraphHolderTests
 {
     [Fact]
@@ -8,7 +10,15 @@ public class GraphHolderTests
         var builder = new GraphHolder();
         var id1 = builder.AddNode(new(new(0, 1), 0, null));
         var id2 = builder.AddNode(new(new(1, 0), 0, 123));
-        var edge = new InMemoryEdge(id1, id2, 1, 1, null, 1);
+        var edge = new InMemoryEdge(
+            id1,
+            id2,
+            new(new Coordinate[] { new(0, 1), new(1, 0) }),
+            1,
+            1,
+            null,
+            1
+        );
         builder.AddEdge(edge);
 
         builder.GetNode(id1).Should().NotBeNull();
@@ -42,10 +52,26 @@ public class GraphHolderTests
             new(new(0, 1), 2, 123),
             new(new(1, 0), 2, 124),
         };
-        var nodeIds = nodes.Select(builder.AddNode).ToList();
-        var edge1 = new InMemoryEdge(nodeIds[0], nodeIds[1], 1, 1, 987, 1);
+        var nodeIds = nodes.Select(n => builder.AddNode(n)).ToList();
+        var edge1 = new InMemoryEdge(
+            nodeIds[0],
+            nodeIds[1],
+            new(new[] { nodes[0].Coordinates.Coordinate, nodes[1].Coordinates.Coordinate }),
+            1,
+            1,
+            987,
+            1
+        );
         builder.AddEdge(edge1);
-        var edge2 = new InMemoryEdge(nodeIds[2], nodeIds[3], 1, 1, 987, 1);
+        var edge2 = new InMemoryEdge(
+            nodeIds[2],
+            nodeIds[3],
+            new(new[] { nodes[2].Coordinates.Coordinate, nodes[3].Coordinates.Coordinate }),
+            1,
+            1,
+            987,
+            1
+        );
         builder.AddEdge(edge2);
 
         foreach (var (node, id) in nodes.Zip(nodeIds))

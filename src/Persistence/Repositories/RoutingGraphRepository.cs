@@ -62,6 +62,11 @@ public class RoutingGraphRepository : IGraphSavingPort, IGraphVersionProvider, I
         return toInsert.Select(x => x.Id);
     }
 
+    public async Task RemoveNodesWithoutEdges() =>
+        await db.RoutingNodes
+            .Where(n => !db.RoutingEdges.Any(e => e.FromId == n.Id || e.ToId == n.Id))
+            .ExecuteDeleteAsync();
+
     public async Task<long> AddVersion()
     {
         var inserted = await db.RoutingGraphVersions.AddAsync(
@@ -95,7 +100,7 @@ public class RoutingGraphRepository : IGraphSavingPort, IGraphVersionProvider, I
     ) =>
         await db.RoutingNodes
             .Where(x => x.Version == graphVersion)
-            .Where(x => x.Level == level || x.Level == 0)
+            .Where(x => x.Level == level)
             .OrderBy(
                 x =>
                     x.Coordinates.Distance(
@@ -104,7 +109,6 @@ public class RoutingGraphRepository : IGraphSavingPort, IGraphVersionProvider, I
                         )
                     )
             )
-            .ThenBy(x => Math.Abs(x.Level - level))
             .Select(x => new Node(x.Id, x.Coordinates, x.Level, x.IsLevelConnection))
             .FirstOrDefaultAsync();
 }

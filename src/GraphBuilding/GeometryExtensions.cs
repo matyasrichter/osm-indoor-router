@@ -10,6 +10,9 @@ public static class GeometryExtensions
     public static double GetMetricDistance(this Point a, Point b, decimal levelDelta) =>
         GetMetricDistance(a.Coordinate, b.Coordinate, levelDelta);
 
+    public static LineString GetLineStringTo(this Point a, Point b) =>
+        Gf.CreateLineString(new[] { a.Coordinate, b.Coordinate });
+
     /// <summary>
     /// Get distance in meters using the Haversine formula for great circle distance.
     /// </summary>
@@ -49,6 +52,8 @@ public static class GeometryExtensions
 
         return radius * greatCircleDistance;
     }
+
+    private static readonly GeometryFactory Gf = new(new(), 4326);
 
     private static double ToRadians(double angle) => angle * (Math.PI / 180.0);
 }

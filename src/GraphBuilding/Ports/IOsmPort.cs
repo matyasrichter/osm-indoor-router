@@ -28,8 +28,6 @@ public record OsmMultiPolygon(
 
 public interface IOsmPort
 {
-    public Task<OsmPoint?> GetPointByOsmId(long osmId);
-    public Task<IEnumerable<OsmPoint?>> GetPointsByOsmIds(IEnumerable<long> osmId);
     public Task<IEnumerable<OsmPoint>> GetPoints(Geometry boundingBox);
     public Task<IEnumerable<OsmLine>> GetLines(Geometry boundingBox);
     public Task<IEnumerable<OsmPolygon>> GetPolygons(Geometry boundingBox);
