@@ -28,6 +28,10 @@ public class MapProcessorTests
             return Task.FromResult(Enumerable.Range(fromId, Edges.Count).Select(x => (long)x));
         }
 
+#pragma warning disable CA1822
+        public Task RemoveNodesWithoutEdges() => Task.CompletedTask;
+#pragma warning restore CA1822
+
         public Task<long> AddVersion()
         {
             Versions[Versions.Count] = false;

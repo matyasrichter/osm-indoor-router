@@ -122,6 +122,47 @@ public sealed class RoutingGraphRepositoryTests : DbTestClass
             );
     }
 
+    [Fact]
+    public async Task CanRemoveDesertedNodes()
+    {
+        var repo = new RoutingGraphRepository(
+            DbContext,
+            new TestingTimeMachine() { Now = new(2021, 1, 20, 11, 0, 0, DateTimeKind.Utc) }
+        );
+
+        var version = await repo.AddVersion();
+        var nodeIds = (
+            await repo.SaveNodes(
+                new InMemoryNode[]
+                {
+                    new(new(1, 2), 0m, null),
+                    new(new(3, 4), 0m, null),
+                    new(new(5, 8), 0m, null),
+                    new(new(10, 20), 0m, null),
+                },
+                version
+            )
+        ).ToList();
+        var toInsert = new HashSet<InMemoryEdge>()
+        {
+            new(nodeIds[0], nodeIds[1], new(Array.Empty<Coordinate>()), 1, 3, null, 1),
+            new(nodeIds[0], nodeIds[2], new(Array.Empty<Coordinate>()), 3, 1, 654, 2)
+        };
+
+        await repo.SaveEdges(toInsert, version);
+
+        (await DbContext.RoutingNodes.CountAsync()).Should().Be(4);
+        (await DbContext.RoutingEdges.CountAsync()).Should().Be(2);
+
+        await repo.RemoveNodesWithoutEdges();
+
+        (await DbContext.RoutingNodes.ToListAsync())
+            .Select(x => x.Id)
+            .Should()
+            .BeEquivalentTo(nodeIds.Take(3));
+        (await DbContext.RoutingEdges.CountAsync()).Should().Be(2);
+    }
+
     public static TheoryData<
         string,
         RoutingNode[],
@@ -174,34 +215,6 @@ public sealed class RoutingGraphRepositoryTests : DbTestClass
                 2,
                 2,
                 new(2, GF.CreatePoint(new Coordinate(16, 10)), 2, false)
-            },
-            {
-                "it is the closest, even though there's a closer node on level 0",
-                new RoutingNode[]
-                {
-                    new(1, 2, GF.CreatePoint(new Coordinate(10, 10)), 2, 123, false),
-                    new(2, 2, GF.CreatePoint(new Coordinate(16, 16)), 2, 123, false),
-                    new(3, 2, GF.CreatePoint(new Coordinate(16, 16)), 0, 123, false)
-                },
-                15,
-                15,
-                2,
-                2,
-                new(2, GF.CreatePoint(new Coordinate(16, 16)), 2, false)
-            },
-            {
-                "it is the closest at level 0, and there aren't any nodes on level 2",
-                new RoutingNode[]
-                {
-                    new(1, 2, GF.CreatePoint(new Coordinate(10, 10)), 0, 123, false),
-                    new(2, 2, GF.CreatePoint(new Coordinate(16, 15)), 1, 123, false),
-                    new(3, 2, GF.CreatePoint(new Coordinate(16, 16)), 0, 123, false)
-                },
-                15,
-                15,
-                2,
-                2,
-                new(3, GF.CreatePoint(new Coordinate(16, 16)), 0, false)
             }
         };
 

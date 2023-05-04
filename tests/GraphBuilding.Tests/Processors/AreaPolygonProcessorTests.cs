@@ -121,7 +121,7 @@ public class AreaPolygonProcessorTests
 
     [Theory]
     [MemberData(nameof(ProcessingTestData))]
-    public async Task TestProcessing(
+    public void TestProcessing(
         string name,
         OsmPolygon polygon,
         Dictionary<long, OsmPoint> points,

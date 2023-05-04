@@ -17,17 +17,17 @@ public partial class RoutingService
 
     public async Task<Route?> FindRoute(long from, long to, long graphVersion)
     {
-        LogStartingRouting(from, to);
+        LogStartingRouting(from, to, graphVersion);
 
         var routeNodes = await routingPort.FindRoute(from, to, graphVersion);
 
         if (routeNodes.Count == 0)
         {
-            LogCouldNotFindRoute(from, to, 0);
+            LogCouldNotFindRoute(from, to, graphVersion);
             return null;
         }
 
-        LogFoundRoute(from, to, routeNodes.Count, 0);
+        LogFoundRoute(from, to, routeNodes.Count, graphVersion);
 
         var route = routeNodes
             .Select(
@@ -44,8 +44,11 @@ public partial class RoutingService
         return new(route, routeNodes.Sum(x => x.Edge?.Distance ?? 0));
     }
 
-    [LoggerMessage(Level = LogLevel.Debug, Message = "Starting routing from {From} to {To}")]
-    private partial void LogStartingRouting(long from, long to);
+    [LoggerMessage(
+        Level = LogLevel.Debug,
+        Message = "Starting routing from {From} to {To} in graph version {Version}"
+    )]
+    private partial void LogStartingRouting(long from, long to, long version);
 
     [LoggerMessage(
         Level = LogLevel.Debug,

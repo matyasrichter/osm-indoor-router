@@ -4,6 +4,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.FSharp.Collections;
 using NetTopologySuite.Algorithm;
 using NetTopologySuite.Geometries;
+using NetTopologySuite.Index.KdTree;
+using NetTopologySuite.Index.Strtree;
 using Ports;
 
 public partial class WallGraphCutter
@@ -14,30 +16,21 @@ public partial class WallGraphCutter
     {
         LogStarting();
 
-        var edgeIndicesToRemove = new HashSet<int>();
-
         foreach (var level in holder.WallEdgeLevels)
         {
-            var toRemove = ProcessSingleLevel(holder, level, osmPoints);
-
-            foreach (var i in toRemove)
-                _ = edgeIndicesToRemove.Add(i);
+            ProcessSingleLevel(holder, level, osmPoints);
         }
 
-        LogFinished(edgeIndicesToRemove.Count);
-        // drop remapped indices
-        foreach (var i in edgeIndicesToRemove.OrderDescending())
-            holder.Edges.RemoveAt(i);
+        LogFinished();
     }
 
-    private IEnumerable<int> ProcessSingleLevel(
+    private void ProcessSingleLevel(
         GraphHolder holder,
         decimal level,
         IReadOnlyDictionary<long, OsmPoint> osmPoints
     )
     {
         LogStartingLevel(level);
-        var edgeIndicesToRemove = new List<int>();
         var wallNodes = new Dictionary<int, InMemoryNode>();
         var edgesLineStrings = new List<LineString>();
         var wallEdgeStars = new Dictionary<int, HashSet<int>>();
@@ -58,7 +51,9 @@ public partial class WallGraphCutter
                 wallEdgeStars[b.Id] = new() { a.Id };
         }
 
-        var ml = new MultiLineString(edgesLineStrings.ToArray());
+        var index = new STRtree<LineString>(edgesLineStrings.Count);
+        foreach (var lineString in edgesLineStrings)
+            index.Insert(lineString.EnvelopeInternal, lineString);
 
         foreach (var wallNode in wallNodes)
         {
@@ -80,15 +75,21 @@ public partial class WallGraphCutter
                 // order by angle
                 .OrderBy(t => Math.Atan2(centerCoordinate.Y - t.Y, centerCoordinate.X - t.X))
                 .ToList();
+
+            // skip if this is the end vertex of a wall
+            if (adjacentCoordinates.Count <= 1)
+                continue;
             // add first to the end, otherwise the last two walls would be ignored
             adjacentCoordinates.Add(adjacentCoordinates.First());
 
-            // node.edges are ordered counterclockwise
             foreach (
                 var (l, r) in SeqModule.Windowed(2, adjacentCoordinates).Select(x => (x[0], x[1]))
             )
             {
-                var bisectorAngle = AngleUtility.Bisector(r, centerCoordinate, l);
+                // angle of right arm plus half of the angle between arms
+                var bisectorAngle =
+                    AngleUtility.Angle(centerCoordinate, r)
+                    + (AngleUtility.InteriorAngle(r, centerCoordinate, l) / 2);
                 var newCoordinate = MoveCoordinate(centerCoordinate, bisectorAngle, 0.000001);
                 var newNode = wallNode.Value with { Coordinates = Gf.CreatePoint(newCoordinate) };
                 var newId = holder.AddNode(newNode, checkUniqueness: false);
@@ -114,28 +115,53 @@ public partial class WallGraphCutter
                                 )
                             }
                     )
-                    .Where(x => !x.Geometry.Crosses(ml));
+                    .Where(x =>
+                    {
+                        var candidates = index.Query(x.Geometry.EnvelopeInternal);
+                        return candidates.Count == 0
+                            || candidates.All(potentialCross =>
+                            {
+                                var intersection = x.Geometry.Relate(potentialCross);
+                                return !intersection.IsIntersects()
+                                    || intersection.Matches("FF*FT****");
+                            });
+                    });
+                // todo: check if we didnt accidentally move the edge to another room
                 foreach (var e in edgeCandidates)
                     holder.Edges.Add(e);
             }
 
-            edgeIndicesToRemove.AddRange(routingEdges.Select(x => x.Index));
+            foreach (var i in routingEdges.Select(x => x.Index).OrderDescending())
+                holder.Edges.RemoveAt(i);
         }
 
         LogStartingLevelGlobal(level);
-        edgeIndicesToRemove.AddRange(
-            holder.Edges
-                .Select((x, i) => (x, i))
-                .Where(
-                    x =>
-                        holder.Nodes[(int)x.x.FromId].Level == level
-                        && holder.Nodes[(int)x.x.ToId].Level == level
-                )
-                .Where(x => x.x.Geometry.Crosses(ml))
-                .Select(x => x.i)
-        );
-
-        return edgeIndicesToRemove;
+        var toRemoveGlobal = holder.Edges
+            .Select((x, i) => (x, i))
+            .Where(
+                x =>
+                    holder.Nodes[(int)x.x.FromId].Level == level
+                    && holder.Nodes[(int)x.x.ToId].Level == level
+            )
+            .Where(x =>
+            {
+                var candidates = index.Query(x.x.Geometry.EnvelopeInternal);
+                return candidates.Count > 0
+                    && candidates.Any(potentialCross =>
+                    {
+                        var intersection = x.x.Geometry.Relate(potentialCross);
+                        return !intersection.IsDisjoint() && !intersection.Matches("FF*FT****");
+                        // var intersection = x.x.Geometry.Intersection(potentialCross);
+                        // if (intersection.Dimension == Dimension.False || intersection.IsEmpty) return false;
+                        // if (intersection.Dimension == Dimension.P)
+                        //     return !wallNodes.ContainsKey((int)x.x.FromId) &&
+                        //            !wallNodes.ContainsKey((int)x.x.ToId);
+                        // return true;
+                    });
+            })
+            .Select(x => x.i);
+        foreach (var i in toRemoveGlobal.OrderDescending())
+            holder.Edges.RemoveAt(i);
     }
 
     private static List<(int Index, InMemoryEdge Edge)> GetEdgesFrom(long id, GraphHolder holder) =>
@@ -176,9 +202,6 @@ public partial class WallGraphCutter
     )]
     private partial void LogStartingLevelGlobal(decimal level);
 
-    [LoggerMessage(
-        Level = LogLevel.Information,
-        Message = "Finished wall cutting, removing {RemovedNodeCount} edges"
-    )]
-    private partial void LogFinished(int removedNodeCount);
+    [LoggerMessage(Level = LogLevel.Information, Message = "Finished wall cutting")]
+    private partial void LogFinished();
 }

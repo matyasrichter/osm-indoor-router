@@ -73,6 +73,7 @@ public class AreaProcessor : BaseOsmProcessor
             ? SeqModule
                 .Windowed(2, Enumerable.Range(0, nodes.Count))
                 .Select(x => (level, (x[0], x[1])))
+                .Append((level, (nodes.Count - 1, 0)))
                 .ToList()
             : new List<(decimal Level, (int FromId, int ToId) Edge)>();
 
