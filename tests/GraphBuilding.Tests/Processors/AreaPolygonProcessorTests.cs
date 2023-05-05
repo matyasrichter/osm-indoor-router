@@ -210,6 +210,54 @@ public class AreaPolygonProcessorTests
                 563250924,
                 new[] { 2911907727, 10779255894, 9566779413, 3776391910, }
             );
+        result.Edges.Should().HaveCount(10);
+    }
+
+    [Fact]
+    public void DoesNotAddItsOwnNodesFromEnvelope()
+    {
+        var points = new List<KeyValuePair<long, Point>>()
+        {
+            new(2911907727, Gf.CreatePoint(new Coordinate(14.3896986, 50.1043596))),
+            new(10779255894, Gf.CreatePoint(new Coordinate(14.3895723, 50.1042648))),
+            new(9566779413, Gf.CreatePoint(new Coordinate(14.3897029, 50.1042739))),
+            new(3776391910, Gf.CreatePoint(new Coordinate(14.3897692, 50.1043239))),
+        };
+
+        var polygon = new OsmPolygon(
+            374272471,
+            new Dictionary<string, string>() { { "highway", "pedestrian" }, { "area", "yes" } },
+            points.Take(4).Append(points[0]).Select(x => x.Key).ToList(),
+            new(new(points.Take(4).Append(points[0]).Select(x => x.Value.Coordinate).ToArray())),
+            new(points.Take(4).Append(points[0]).Select(x => x.Value.Coordinate).ToArray())
+        );
+
+        var processor = new AreaProcessor(new(Mock.Of<ILogger<LevelParser>>()));
+        var mp = new OsmMultiPolygon(
+            polygon.AreaId,
+            polygon.Tags,
+            new(new[] { polygon.Geometry }),
+            new[]
+            {
+                new OsmLine(
+                    polygon.AreaId,
+                    polygon.Tags,
+                    polygon.Nodes,
+                    polygon.GeometryAsLinestring
+                )
+            }
+        );
+
+        var existingNode = new InMemoryNode(points.First().Value, 0, 2911907727);
+        var result = processor.Process(
+            mp,
+            new[] { existingNode },
+            new Dictionary<long, OsmPoint>()
+        );
+        result
+            .Should()
+            .HaveEdgesBetweenSourceIds(2911907727, new[] { 10779255894, 9566779413, 3776391910, });
+        result.Edges.Should().HaveCount(6);
     }
 
     [Fact]

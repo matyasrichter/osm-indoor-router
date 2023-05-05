@@ -23,8 +23,10 @@ public class AreaProcessor : BaseOsmProcessor
             repeatOnLevels,
             ogLevel
         );
+        var nodeSet = source.Members.SelectMany(x => x.Nodes).ToHashSet();
         var nodeCandidatesToAdd = nodesInEnvelope
             .Where(x => source.Geometry.Covers(x.Coordinates))
+            .Where(x => x.SourceId is not null && !nodeSet.Contains(x.SourceId.Value))
             .ToList();
         var results = resultsWithLevels.Select(
             x =>
