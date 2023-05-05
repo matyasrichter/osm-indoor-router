@@ -72,6 +72,8 @@ public partial class GraphBuilder : IGraphBuilder
     private IEnumerable<ProcessingResult> ProcessPoints(IReadOnlyDictionary<long, OsmPoint> points)
     {
         var elevatorProcessor = new ElevatorNodeProcessor(levelParser);
+        var plainNodeProcessor = new PlainNodeProcessor(levelParser);
+        var entranceNodeProcessor = new EntranceNodeProcessor(levelParser);
         return points.Values
             .AsParallel()
             .Select(point =>
@@ -82,6 +84,10 @@ public partial class GraphBuilder : IGraphBuilder
                     || point.Tags.GetValueOrDefault("highway") is "elevator"
                 )
                     return elevatorProcessor.Process(point);
+                else if (point.Tags.GetValueOrDefault("entrance") is not null)
+                    return entranceNodeProcessor.Process(point);
+                else if (point.Tags.GetValueOrDefault("door") is not null)
+                    return plainNodeProcessor.Process(point);
                 return null;
             })
             .Where(x => x is not null)!;
