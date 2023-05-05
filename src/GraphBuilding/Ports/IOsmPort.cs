@@ -7,14 +7,14 @@ public record OsmPoint(long NodeId, IReadOnlyDictionary<string, string> Tags, Po
 public record OsmLine(
     long WayId,
     IReadOnlyDictionary<string, string> Tags,
-    ICollection<long> Nodes,
+    IList<long> Nodes,
     LineString Geometry
 );
 
 public record OsmPolygon(
     long AreaId,
     IReadOnlyDictionary<string, string> Tags,
-    ICollection<long> Nodes,
+    IList<long> Nodes,
     Polygon Geometry,
     LineString GeometryAsLinestring
 );

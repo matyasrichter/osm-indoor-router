@@ -65,19 +65,52 @@ public class AreaProcessor : BaseOsmProcessor
             );
             if (!lineGeometry.CoveredBy(source.Geometry))
                 continue;
-            var fromId = GetNodeId(nodes, nodeIds, from, level);
-            var toId = GetNodeId(nodes, nodeIds, to, level);
+            var fromId = GetNodeId(
+                nodes,
+                nodeIds,
+                from.IdWithCoord.First,
+                from.IdWithCoord.Second,
+                level
+            );
+            var toId = GetNodeId(
+                nodes,
+                nodeIds,
+                to.IdWithCoord.First,
+                to.IdWithCoord.Second,
+                level
+            );
             var distance = from.IdWithCoord.Second.GetMetricDistance(to.IdWithCoord.Second, 0);
             edges.Add(new(fromId, toId, lineGeometry, distance, distance, source.AreaId, distance));
         }
 
-        var wallEdges = HasWalls(source.Tags)
-            ? SeqModule
-                .Windowed(2, Enumerable.Range(0, nodes.Count))
-                .Select(x => (level, (x[0], x[1])))
-                .Append((level, (nodes.Count - 1, 0)))
-                .ToList()
-            : new List<(decimal Level, (int FromId, int ToId) Edge)>();
+        var wallEdges = new List<(decimal Level, (int FromId, int ToId) Edge)>();
+        if (HasWalls(source.Tags))
+        {
+            foreach (var polygon in source.Members)
+            {
+                var nodeSourceIdList =
+                    polygon.Nodes[0] == polygon.Nodes[^1]
+                        ? polygon.Nodes
+                            .Zip(polygon.Geometry.Coordinates)
+                            .Append((polygon.Nodes[0], polygon.Geometry.Coordinates[0]))
+                            .ToList()
+                        : polygon.Nodes.Zip(polygon.Geometry.Coordinates);
+                wallEdges.AddRange(
+                    SeqModule
+                        .Windowed(2, nodeSourceIdList)
+                        .Select(
+                            x =>
+                                (
+                                    level,
+                                    (
+                                        GetNodeId(nodes, nodeIds, x[0].First, x[0].Second, level),
+                                        GetNodeId(nodes, nodeIds, x[1].First, x[1].Second, level)
+                                    )
+                                )
+                        )
+                );
+            }
+        }
 
         return new(nodes, edges, wallEdges);
     }
@@ -127,21 +160,18 @@ public class AreaProcessor : BaseOsmProcessor
     private static int GetNodeId(
         IList<InMemoryNode> result,
         Dictionary<long, int> nodeIds,
-        ((long Id, Coordinate Coordinate) Node, OsmPoint? Point) node,
+        long osmId,
+        Coordinate coordinate,
         decimal level
     )
     {
-        if (!nodeIds.ContainsKey(node.Node.Id))
+        if (!nodeIds.ContainsKey(osmId))
         {
-            var fromNode = new InMemoryNode(
-                Gf.CreatePoint(node.Node.Coordinate),
-                level,
-                node.Node.Id
-            );
+            var fromNode = new InMemoryNode(Gf.CreatePoint(coordinate), level, osmId);
             result.Add(fromNode);
-            nodeIds[node.Node.Id] = result.Count - 1;
+            nodeIds[osmId] = result.Count - 1;
         }
 
-        return nodeIds[node.Node.Id];
+        return nodeIds[osmId];
     }
 }

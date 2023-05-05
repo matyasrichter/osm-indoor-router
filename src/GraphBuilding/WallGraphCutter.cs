@@ -4,7 +4,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.FSharp.Collections;
 using NetTopologySuite.Algorithm;
 using NetTopologySuite.Geometries;
-using NetTopologySuite.Index.KdTree;
 using NetTopologySuite.Index.Strtree;
 using Ports;
 
