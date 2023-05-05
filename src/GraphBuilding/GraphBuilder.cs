@@ -107,11 +107,7 @@ public partial class GraphBuilder : IGraphBuilder
                 LogProcessingItem(nameof(OsmLine), line.WayId);
                 if (line.Tags.ContainsKey("highway"))
                     return hwProcessor.Process(line, points);
-                else if (
-                    line.Tags.GetValueOrDefault("indoor") is "wall"
-                    || line.Tags.GetValueOrDefault("barrier") is "wall" or "fence"
-                    || line.Tags.GetValueOrDefault("building") is not null and not "roof"
-                )
+                else if (IsWalledElement(line.Tags))
                     return wallProcessor.Process(line);
                 return null;
             })
@@ -127,6 +123,7 @@ public partial class GraphBuilder : IGraphBuilder
     )
     {
         var areaProcessor = new AreaProcessor(levelParser);
+        var wallProcessor = new WallProcessor(levelParser);
         return polygons.Values
             .AsParallel()
             .Select(polygon =>
@@ -152,6 +149,8 @@ public partial class GraphBuilder : IGraphBuilder
                         holder.GetNodesInArea(polygon.Geometry.EnvelopeInternal),
                         points
                     );
+                else if (IsWalledElement(polygon.Tags))
+                    return wallProcessor.Process(polygon);
                 return null;
             })
             .Concat(
@@ -166,11 +165,21 @@ public partial class GraphBuilder : IGraphBuilder
                                 holder.GetNodesInArea(mp.Geometry.EnvelopeInternal),
                                 points
                             );
+                        else if (IsWalledElement(mp.Tags))
+                            return wallProcessor.Process(mp);
                         return null;
                     })
             )
             .Where(x => x is not null)!;
     }
+
+    private static bool IsWalledElement(IReadOnlyDictionary<string, string> tags) =>
+        tags.GetValueOrDefault("walls") is not "no"
+        && (
+            tags.GetValueOrDefault("indoor") is "wall"
+            || tags.GetValueOrDefault("barrier") is "wall" or "fence"
+            || tags.GetValueOrDefault("building") is not null and not "roof"
+        );
 
     private static bool IsRoutableArea(IReadOnlyDictionary<string, string> tags) =>
         tags.GetValueOrDefault("highway") is "pedestrian"

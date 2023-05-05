@@ -1,6 +1,7 @@
 namespace GraphBuilding.ElementProcessors;
 
 using Microsoft.FSharp.Collections;
+using NetTopologySuite.Geometries;
 using Parsers;
 using Ports;
 
@@ -9,9 +10,21 @@ public class WallProcessor : BaseOsmProcessor
     public WallProcessor(LevelParser levelParser)
         : base(levelParser) { }
 
-    public ProcessingResult Process(OsmLine source)
+    public ProcessingResult Process(OsmLine source) =>
+        Process(source.Tags, source.Nodes.Zip(source.Geometry.Coordinates));
+
+    public ProcessingResult Process(OsmMultiPolygon source) =>
+        Process(source.Tags, source.Members.SelectMany(x => x.Nodes.Zip(x.Geometry.Coordinates)));
+
+    public ProcessingResult Process(OsmPolygon source) =>
+        Process(source.Tags, source.Nodes.Zip(source.GeometryAsLinestring.Coordinates));
+
+    private ProcessingResult Process(
+        IReadOnlyDictionary<string, string> tags,
+        IEnumerable<(long, Coordinate)> source
+    )
     {
-        var (ogLevel, _, repeatOnLevels) = ExtractLevelInformation(source.Tags);
+        var (ogLevel, _, repeatOnLevels) = ExtractLevelInformation(tags);
         var ogLevelLine = ProcessSingleLevel(source, ogLevel);
         if (repeatOnLevels.Count > 0)
             return JoinResults(
@@ -20,11 +33,13 @@ public class WallProcessor : BaseOsmProcessor
         return ogLevelLine;
     }
 
-    private static ProcessingResult ProcessSingleLevel(OsmLine source, decimal level)
+    private static ProcessingResult ProcessSingleLevel(
+        IEnumerable<(long, Coordinate)> source,
+        decimal level
+    )
     {
-        var nodes = source.Nodes
-            .Zip(source.Geometry.Coordinates)
-            .Select(x => new InMemoryNode(Gf.CreatePoint(x.Second), level, x.First, false))
+        var nodes = source
+            .Select(x => new InMemoryNode(Gf.CreatePoint(x.Item2), level, x.Item1))
             .ToList();
         return new(
             nodes,
