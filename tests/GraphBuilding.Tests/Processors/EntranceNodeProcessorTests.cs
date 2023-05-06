@@ -27,7 +27,7 @@ public class EntranceNodeProcessorTests
         data.Add(
             "ground level",
             new(123456, new Dictionary<string, string>() { { "entrance", "main" } }, point),
-            new() { new(point, 0, 123456) },
+            new() { new(point, 0, new(SourceType.Point, 123456)) },
             Array.Empty<HashSet<decimal>>()
         );
         data.Add(
@@ -42,7 +42,12 @@ public class EntranceNodeProcessorTests
                 },
                 point
             ),
-            new() { new(point, -1, 123456), new(point, 0, 123456), new(point, 1, 123456) },
+            new()
+            {
+                new(point, -1, new(SourceType.Point, 123456)),
+                new(point, 0, new(SourceType.Point, 123456)),
+                new(point, 1, new(SourceType.Point, 123456))
+            },
             new HashSet<decimal>[]
             {
                 new() { 0, -1 },
@@ -61,7 +66,11 @@ public class EntranceNodeProcessorTests
                 },
                 point
             ),
-            new() { new(point, -1, 123456), new(point, 0, 123456) },
+            new()
+            {
+                new(point, -1, new(SourceType.Point, 123456)),
+                new(point, 0, new(SourceType.Point, 123456))
+            },
             new HashSet<decimal>[]
             {
                 new() { 0, -1 }

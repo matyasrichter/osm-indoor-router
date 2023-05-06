@@ -31,7 +31,11 @@ public class ElevatorNodeProcessorTests
                 new Dictionary<string, string>() { { "elevator", "yes" }, { "level", "1;2" } },
                 point
             ),
-            new() { new(point, 1, 123456), new(point, 2, 123456) },
+            new()
+            {
+                new(point, 1, new(SourceType.Point, 123456)),
+                new(point, 2, new(SourceType.Point, 123456))
+            },
             new HashSet<decimal>[]
             {
                 new() { 1, 2 }
@@ -44,7 +48,12 @@ public class ElevatorNodeProcessorTests
                 new Dictionary<string, string>() { { "elevator", "yes" }, { "level", "4-6" } },
                 point
             ),
-            new() { new(point, 4, 123456), new(point, 5, 123456), new(point, 6, 123456) },
+            new()
+            {
+                new(point, 4, new(SourceType.Point, 123456)),
+                new(point, 5, new(SourceType.Point, 123456)),
+                new(point, 6, new(SourceType.Point, 123456))
+            },
             new HashSet<decimal>[]
             {
                 new() { 5, 4 },

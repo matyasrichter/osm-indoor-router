@@ -41,14 +41,15 @@ public class RoutingDbContext : DbContext
         _ = modelBuilder.Entity<OsmPoint>().ToTable(t => t.ExcludeFromMigrations());
         _ = modelBuilder.Entity<OsmLine>().ToTable(t => t.ExcludeFromMigrations());
         _ = modelBuilder.Entity<OsmPolygon>().ToTable(t => t.ExcludeFromMigrations());
+        _ = modelBuilder.Entity<OsmMultiPolygonM2M>().ToTable(t => t.ExcludeFromMigrations());
         _ = modelBuilder
             .Entity<OsmMultiPolygon>()
+            .ToTable(t => t.ExcludeFromMigrations())
             .HasMany(e => e.Members)
             .WithMany(e => e.MultiPolygons)
             .UsingEntity<OsmMultiPolygonM2M>(
                 l => l.HasOne<OsmLine>().WithMany().HasForeignKey(e => e.OsmLineId),
                 r => r.HasOne<OsmMultiPolygon>().WithMany().HasForeignKey(e => e.OsmMultiPolygonId)
-            )
-            .ToTable(t => t.ExcludeFromMigrations());
+            );
     }
 }

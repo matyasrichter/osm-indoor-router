@@ -22,7 +22,7 @@ public class PlainNodeProcessorTests
         data.Add(
             "no level tag",
             new(123456, new Dictionary<string, string>() { { "door", "no" } }, point),
-            new() { new(point, 0, 123456) }
+            new() { new(point, 0, new(SourceType.Point, 123456)) }
         );
         data.Add(
             "two levels",
@@ -31,7 +31,7 @@ public class PlainNodeProcessorTests
                 new Dictionary<string, string>() { { "door", "yes" }, { "level", "1;2" } },
                 point
             ),
-            new() { new(point, 1, 123456) }
+            new() { new(point, 1, new(SourceType.Point, 123456)) }
         );
         data.Add(
             "level and repeat_on",
@@ -45,7 +45,12 @@ public class PlainNodeProcessorTests
                 },
                 point
             ),
-            new() { new(point, 4, 123456), new(point, 5, 123456), new(point, 6, 123456) }
+            new()
+            {
+                new(point, 4, new(SourceType.Point, 123456)),
+                new(point, 5, new(SourceType.Point, 123456)),
+                new(point, 6, new(SourceType.Point, 123456))
+            }
         );
 
         return data;

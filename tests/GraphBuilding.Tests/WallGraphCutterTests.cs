@@ -19,14 +19,14 @@ public class WallGraphCutterTests
         var nodes = new InMemoryNode[]
         {
             // wall nodes
-            new(Gf.CreatePoint(new Coordinate(0, 0)), 0, 1),
-            new(Gf.CreatePoint(new Coordinate(6, 0)), 0, 2),
-            new(Gf.CreatePoint(new Coordinate(11, 0)), 0, 3),
+            new(Gf.CreatePoint(new Coordinate(0, 0)), 0, new(SourceType.Point, 1)),
+            new(Gf.CreatePoint(new Coordinate(6, 0)), 0, new(SourceType.Point, 2)),
+            new(Gf.CreatePoint(new Coordinate(11, 0)), 0, new(SourceType.Point, 3)),
             // top node
-            new(Gf.CreatePoint(new Coordinate(4, 2)), 0, 4),
+            new(Gf.CreatePoint(new Coordinate(4, 2)), 0, new(SourceType.Point, 4)),
             // bottom nodes
-            new(Gf.CreatePoint(new Coordinate(6, -2)), 0, 5),
-            new(Gf.CreatePoint(new Coordinate(8, -2)), 0, 6),
+            new(Gf.CreatePoint(new Coordinate(6, -2)), 0, new(SourceType.Point, 5)),
+            new(Gf.CreatePoint(new Coordinate(8, -2)), 0, new(SourceType.Point, 6)),
         };
         var nodeIds = nodes.Select(x => (long)holder.AddNode(x)).ToList();
         var edges = new InMemoryEdge[]
@@ -38,7 +38,7 @@ public class WallGraphCutterTests
                 nodes[3].Coordinates.GetLineStringTo(nodes[1].Coordinates),
                 1,
                 1,
-                10,
+                new(SourceType.Line, 10),
                 1
             ),
             // bottom edges
@@ -48,7 +48,7 @@ public class WallGraphCutterTests
                 nodes[1].Coordinates.GetLineStringTo(nodes[4].Coordinates),
                 1,
                 1,
-                11,
+                new(SourceType.Line, 11),
                 1
             ),
             new(
@@ -57,7 +57,7 @@ public class WallGraphCutterTests
                 nodes[5].Coordinates.GetLineStringTo(nodes[1].Coordinates),
                 1,
                 1,
-                12,
+                new(SourceType.Line, 12),
                 1
             ),
         };
@@ -94,13 +94,13 @@ public class WallGraphCutterTests
         var nodes = new InMemoryNode[]
         {
             // wall nodes
-            new(Gf.CreatePoint(new Coordinate(0, 2)), 0, 1),
-            new(Gf.CreatePoint(new Coordinate(2, 0)), 0, 2),
-            new(Gf.CreatePoint(new Coordinate(0, -2)), 0, 3),
+            new(Gf.CreatePoint(new Coordinate(0, 2)), 0, new(SourceType.Point, 1)),
+            new(Gf.CreatePoint(new Coordinate(2, 0)), 0, new(SourceType.Point, 2)),
+            new(Gf.CreatePoint(new Coordinate(0, -2)), 0, new(SourceType.Point, 3)),
             // top node
-            new(Gf.CreatePoint(new Coordinate(4, 2)), 0, 4),
+            new(Gf.CreatePoint(new Coordinate(4, 2)), 0, new(SourceType.Point, 4)),
             // bottom node
-            new(Gf.CreatePoint(new Coordinate(4, -2)), 0, 5),
+            new(Gf.CreatePoint(new Coordinate(4, -2)), 0, new(SourceType.Point, 5)),
         };
         var nodeIds = nodes.Select(x => (long)holder.AddNode(x)).ToList();
         var edges = new InMemoryEdge[]
@@ -112,7 +112,7 @@ public class WallGraphCutterTests
                 nodes[3].Coordinates.GetLineStringTo(nodes[1].Coordinates),
                 1,
                 1,
-                10,
+                new(SourceType.Line, 10),
                 1
             ),
             // bottom edges
@@ -122,7 +122,7 @@ public class WallGraphCutterTests
                 nodes[1].Coordinates.GetLineStringTo(nodes[4].Coordinates),
                 1,
                 1,
-                11,
+                new(SourceType.Line, 11),
                 1
             ),
         };
@@ -172,9 +172,9 @@ public class WallGraphCutterTests
         var nodes = new InMemoryNode[]
         {
             // wall nodes
-            new(Gf.CreatePoint(new Coordinate(0, 0)), 0, 1),
-            new(Gf.CreatePoint(new Coordinate(2, 0)), 0, 2),
-            new(Gf.CreatePoint(new Coordinate(4, 0)), 0, 3),
+            new(Gf.CreatePoint(new Coordinate(0, 0)), 0, new(SourceType.Point, 1)),
+            new(Gf.CreatePoint(new Coordinate(2, 0)), 0, new(SourceType.Point, 2)),
+            new(Gf.CreatePoint(new Coordinate(4, 0)), 0, new(SourceType.Point, 3)),
         };
         var nodeIds = nodes.Select(x => (long)holder.AddNode(x)).ToList();
         var edges = new InMemoryEdge[]
@@ -186,7 +186,7 @@ public class WallGraphCutterTests
                 nodes[0].Coordinates.GetLineStringTo(nodes[1].Coordinates),
                 1,
                 1,
-                10,
+                new(SourceType.Line, 10),
                 1
             ),
             // bottom edges
@@ -196,7 +196,7 @@ public class WallGraphCutterTests
                 nodes[1].Coordinates.GetLineStringTo(nodes[2].Coordinates),
                 1,
                 1,
-                11,
+                new(SourceType.Line, 11),
                 1
             ),
         };
@@ -242,16 +242,16 @@ public class WallGraphCutterTests
         var nodes = new InMemoryNode[]
         {
             // wall nodes, left-to-right, top-to-bottom
-            new(Gf.CreatePoint(new Coordinate(4, 2)), 1, 0),
-            new(Gf.CreatePoint(new Coordinate(10, 2)), 1, 1),
-            new(Gf.CreatePoint(new Coordinate(18, 2)), 1, 2),
-            new(Gf.CreatePoint(new Coordinate(0, 0)), 1, 3),
-            new(Gf.CreatePoint(new Coordinate(4, 0)), 1, 4),
-            new(Gf.CreatePoint(new Coordinate(8, 0)), 1, 5),
-            new(Gf.CreatePoint(new Coordinate(12, 0)), 1, 6),
-            new(Gf.CreatePoint(new Coordinate(16, 0)), 1, 7),
-            new(Gf.CreatePoint(new Coordinate(0, -3)), 1, 8),
-            new(Gf.CreatePoint(new Coordinate(9, -3)), 1, 9),
+            new(Gf.CreatePoint(new Coordinate(4, 2)), 1, new(SourceType.Point, 0)),
+            new(Gf.CreatePoint(new Coordinate(10, 2)), 1, new(SourceType.Point, 1)),
+            new(Gf.CreatePoint(new Coordinate(18, 2)), 1, new(SourceType.Point, 2)),
+            new(Gf.CreatePoint(new Coordinate(0, 0)), 1, new(SourceType.Point, 3)),
+            new(Gf.CreatePoint(new Coordinate(4, 0)), 1, new(SourceType.Point, 4)),
+            new(Gf.CreatePoint(new Coordinate(8, 0)), 1, new(SourceType.Point, 5)),
+            new(Gf.CreatePoint(new Coordinate(12, 0)), 1, new(SourceType.Point, 6)),
+            new(Gf.CreatePoint(new Coordinate(16, 0)), 1, new(SourceType.Point, 7)),
+            new(Gf.CreatePoint(new Coordinate(0, -3)), 1, new(SourceType.Point, 8)),
+            new(Gf.CreatePoint(new Coordinate(9, -3)), 1, new(SourceType.Point, 9)),
         };
         var nodeIds = nodes.Select(x => (long)holder.AddNode(x)).ToList();
 
@@ -263,7 +263,7 @@ public class WallGraphCutterTests
                 nodes![from].Coordinates.GetLineStringTo(nodes[to].Coordinates),
                 1,
                 1,
-                sourceId,
+                new(SourceType.Line, sourceId),
                 1
             );
             holder.AddEdge(e);
@@ -330,7 +330,7 @@ public class WallGraphCutterTests
             .HaveCount(10 + 24, "should have added new nodes, on each side of each node");
         holder.Edges.Should().HaveCount(40, "new edges created on each side of the wall");
         holder.Edges
-            .Where(x => holder.Nodes[(int)x.FromId].SourceId == holder.Nodes[(int)x.ToId].SourceId)
+            .Where(x => holder.Nodes[(int)x.FromId].Source == holder.Nodes[(int)x.ToId].Source)
             .Should()
             .BeEmpty();
     }

@@ -15,20 +15,25 @@ public class GraphHolderAssertions : ReferenceTypeAssertions<GraphHolder, GraphH
                 Subject.Nodes.Select((x, i) => (x, i)),
                 x => x.FromId,
                 x => x.i,
-                (x, y) => (Edge: x, FromSId: y.x.SourceId, FromLevel: y.x.Level)
+                (x, y) => (Edge: x, FromSId: y.x.Source, FromLevel: y.x.Level)
             )
             .Join(
                 Subject.Nodes.Select((x, i) => (x, i)),
                 x => x.Edge.ToId,
                 x => x.i,
-                (x, y) => (x.Edge, x.FromSId, x.FromLevel, ToSId: y.x.SourceId, ToLevel: y.x.Level)
+                (x, y) => (x.Edge, x.FromSId, x.FromLevel, ToSId: y.x.Source, ToLevel: y.x.Level)
             )
             .Where(
                 x =>
-                    (x.FromSId == nodeId.Id && x.FromLevel == nodeId.Level)
-                    || (x.ToSId == nodeId.Id && x.ToLevel == nodeId.Level)
+                    (x.FromSId?.Id == nodeId.Id && x.FromLevel == nodeId.Level)
+                    || (x.ToSId?.Id == nodeId.Id && x.ToLevel == nodeId.Level)
             )
-            .Select(x => x.FromSId == nodeId.Id ? (x.ToSId, x.ToLevel) : (x.FromSId, x.FromLevel))
+            .Select(
+                x =>
+                    x.FromSId?.Id == nodeId.Id
+                        ? (x.ToSId?.Id, x.ToLevel)
+                        : (x.FromSId?.Id, x.FromLevel)
+            )
             .Should()
             .BeEquivalentTo(expected, o => o.WithoutStrictOrdering());
         return new(this);

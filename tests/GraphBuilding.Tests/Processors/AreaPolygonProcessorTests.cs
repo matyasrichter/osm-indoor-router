@@ -53,10 +53,10 @@ public class AreaPolygonProcessorTests
             new(),
             new()
             {
-                new(points[0], 0, 1),
-                new(points[1], 0, 2),
-                new(points[2], 0, 3),
-                new(points[3], 0, 4)
+                new(points[0], 0, new(SourceType.Point, 1)),
+                new(points[1], 0, new(SourceType.Point, 2)),
+                new(points[2], 0, new(SourceType.Point, 3)),
+                new(points[3], 0, new(SourceType.Point, 4))
             },
             new()
             {
@@ -97,11 +97,11 @@ public class AreaPolygonProcessorTests
             new(),
             new()
             {
-                new(points[0], 0, 1),
-                new(points[1], 0, 2),
-                new(points[2], 0, 3),
-                new(points[3], 0, 4),
-                new(points[4], 0, 5)
+                new(points[0], 0, new(SourceType.Point, 1)),
+                new(points[1], 0, new(SourceType.Point, 2)),
+                new(points[2], 0, new(SourceType.Point, 3)),
+                new(points[3], 0, new(SourceType.Point, 4)),
+                new(points[4], 0, new(SourceType.Point, 5))
             },
             new()
             {
@@ -146,7 +146,12 @@ public class AreaPolygonProcessorTests
                 )
             }
         );
-        var result = processor.Process(mp, Enumerable.Empty<InMemoryNode>(), points);
+        var result = processor.Process(
+            mp,
+            Enumerable.Empty<InMemoryNode>(),
+            points,
+            SourceType.Polygon
+        );
         result.Nodes.Should().BeEquivalentTo(expectedNodes);
         var edgePairs = result.Edges
             .Select(
@@ -198,11 +203,16 @@ public class AreaPolygonProcessorTests
             }
         );
 
-        var existingNode = new InMemoryNode(points.Last().Value, 0, 563250924);
+        var existingNode = new InMemoryNode(
+            points.Last().Value,
+            0,
+            new(SourceType.Point, 563250924)
+        );
         var result = processor.Process(
             mp,
             new[] { existingNode },
-            new Dictionary<long, OsmPoint>()
+            new Dictionary<long, OsmPoint>(),
+            SourceType.Polygon
         );
         result
             .Should()
@@ -248,11 +258,16 @@ public class AreaPolygonProcessorTests
             }
         );
 
-        var existingNode = new InMemoryNode(points.First().Value, 0, 2911907727);
+        var existingNode = new InMemoryNode(
+            points.First().Value,
+            0,
+            new(SourceType.Point, 2911907727)
+        );
         var result = processor.Process(
             mp,
             new[] { existingNode },
-            new Dictionary<long, OsmPoint>()
+            new Dictionary<long, OsmPoint>(),
+            SourceType.Polygon
         );
         result
             .Should()
@@ -314,10 +329,11 @@ public class AreaPolygonProcessorTests
         var result = processor.Process(
             osmMultiPolygon,
             Array.Empty<InMemoryNode>(),
-            new Dictionary<long, OsmPoint>()
+            new Dictionary<long, OsmPoint>(),
+            SourceType.Polygon
         );
         result.Nodes
-            .Select(x => x.SourceId)
+            .Select(x => x.Source?.Id)
             .Should()
             .BeEquivalentTo(new[] { 1, 2, 3, 4, 5, 6, 7, 8 });
         result.Nodes.Select(x => x.Level).Distinct().Should().BeEquivalentTo(new[] { 2 });

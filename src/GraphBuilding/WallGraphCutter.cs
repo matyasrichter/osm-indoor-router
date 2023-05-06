@@ -56,9 +56,9 @@ public partial class WallGraphCutter
 
         foreach (var wallNode in wallNodes)
         {
-            if (wallNode.Value.SourceId is null)
+            if (wallNode.Value.Source is null)
                 continue;
-            var sourceId = wallNode.Value.SourceId.Value;
+            var sourceId = wallNode.Value.Source.Value.Id;
             // skip doors, gates etc. - those are fine
             if (osmPoints.ContainsKey(sourceId) && IsWallOpening(osmPoints[sourceId].Tags))
                 continue;

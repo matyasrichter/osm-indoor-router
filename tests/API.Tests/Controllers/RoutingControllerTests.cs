@@ -31,9 +31,9 @@ public class RoutingControllerTests : ControllerTestBase
         var version = await repo.AddVersion();
         var nodes = new InMemoryNode[]
         {
-            new(new(10, 20), 0, 1),
-            new(new(20, 25), 0, 2),
-            new(new(30, 31), 0, 3)
+            new(new(10, 20), 0, new(SourceType.Point, 1)),
+            new(new(20, 25), 0, new(SourceType.Point, 2)),
+            new(new(30, 31), 0, new(SourceType.Point, 3))
         };
         var nodeIds = (await repo.SaveNodes(nodes, version)).ToList();
         await repo.SaveEdges(
@@ -45,7 +45,7 @@ public class RoutingControllerTests : ControllerTestBase
                     new(new[] { nodes[0].Coordinates.Coordinate, nodes[1].Coordinates.Coordinate }),
                     100,
                     200,
-                    123456,
+                    new(SourceType.Line, 123456),
                     100
                 ),
                 new(
@@ -54,7 +54,7 @@ public class RoutingControllerTests : ControllerTestBase
                     new(new[] { nodes[1].Coordinates.Coordinate, nodes[2].Coordinates.Coordinate }),
                     100,
                     200,
-                    123457,
+                    new(SourceType.Line, 123457),
                     100
                 )
             },

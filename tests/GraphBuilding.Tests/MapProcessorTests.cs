@@ -55,16 +55,40 @@ public class MapProcessorTests
         {
             Nodes =
             {
-                new(Gf.CreatePoint(new Coordinate(1, 0)), 0, 1),
-                new(Gf.CreatePoint(new Coordinate(2, 0)), 0, 2),
-                new(Gf.CreatePoint(new Coordinate(3, 0)), 0, 3),
-                new(Gf.CreatePoint(new Coordinate(2, 1)), 0, 4)
+                new(Gf.CreatePoint(new Coordinate(1, 0)), 0, new(SourceType.Point, 1)),
+                new(Gf.CreatePoint(new Coordinate(2, 0)), 0, new(SourceType.Point, 2)),
+                new(Gf.CreatePoint(new Coordinate(3, 0)), 0, new(SourceType.Point, 3)),
+                new(Gf.CreatePoint(new Coordinate(2, 1)), 0, new(SourceType.Point, 4))
             },
             Edges =
             {
-                new(0, 1, new(new Coordinate[] { new(1, 0), new(2, 0) }), 10, 10, 1, 10),
-                new(1, 2, new(new Coordinate[] { new(2, 0), new(3, 0) }), 10, 10, 1, 10),
-                new(1, 3, new(new Coordinate[] { new(2, 0), new(2, 1) }), 10, 10, 2, 10),
+                new(
+                    0,
+                    1,
+                    new(new Coordinate[] { new(1, 0), new(2, 0) }),
+                    10,
+                    10,
+                    new(SourceType.Point, 1),
+                    10
+                ),
+                new(
+                    1,
+                    2,
+                    new(new Coordinate[] { new(2, 0), new(3, 0) }),
+                    10,
+                    10,
+                    new(SourceType.Point, 1),
+                    10
+                ),
+                new(
+                    1,
+                    3,
+                    new(new Coordinate[] { new(2, 0), new(2, 1) }),
+                    10,
+                    10,
+                    new(SourceType.Point, 2),
+                    10
+                ),
             }
         };
         builder.Setup(x => x.BuildGraph(It.IsAny<CancellationToken>())).ReturnsAsync(builderResult);

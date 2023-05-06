@@ -17,16 +17,20 @@ public class ProcessingResultAssertions
                 Subject.Nodes.Select((x, i) => (x, i)),
                 x => x.FromId,
                 x => x.i,
-                (x, y) => (Edge: x, FromSId: y.x.SourceId)
+                (x, y) => (Edge: x, FromSId: y.x.Source)
             )
             .Join(
                 Subject.Nodes.Select((x, i) => (x, i)),
                 x => x.Edge.ToId,
                 x => x.i,
-                (x, y) => (x.Edge, x.FromSId, ToSId: y.x.SourceId)
+                (x, y) => (x.Edge, x.FromSId, ToSId: y.x.Source)
             )
-            .Where(x => x.FromSId == nodeId || x.ToSId == nodeId)
-            .Select(x => new HashSet<long?>() { x.FromSId, x.ToSId })
+            .Where(
+                x =>
+                    x.FromSId == new Source(SourceType.Point, nodeId)
+                    || x.ToSId == new Source(SourceType.Point, nodeId)
+            )
+            .Select(x => new HashSet<long?>() { x.FromSId?.Id, x.ToSId?.Id })
             .Should()
             .BeEquivalentTo(expected.Select(x => new HashSet<decimal>() { nodeId, x }));
         return new(this);

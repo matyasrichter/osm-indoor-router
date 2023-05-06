@@ -14,7 +14,9 @@ public class PlainNodeProcessor : BaseOsmProcessor
         return new(
             repeatOnLevels
                 .Prepend(ogLevel)
-                .Select(x => new InMemoryNode(source.Geometry, x, source.NodeId))
+                .Select(
+                    x => new InMemoryNode(source.Geometry, x, new(SourceType.Point, source.NodeId))
+                )
                 .ToList(),
             new List<InMemoryEdge>(),
             new List<(decimal Level, (int FromId, int ToId) Edge)>()

@@ -47,7 +47,12 @@ public class HighwayWayProcessor : BaseOsmProcessor
             }
 
             InMemoryNode node =
-                new(Gf.CreatePoint(coord), currLevel, osmNode.First, isLevelConnection);
+                new(
+                    Gf.CreatePoint(coord),
+                    currLevel,
+                    new(SourceType.Point, osmNode.First),
+                    isLevelConnection
+                );
 
             if (prev is not null)
             {
@@ -62,7 +67,7 @@ public class HighwayWayProcessor : BaseOsmProcessor
                         prev.Coordinates.GetLineStringTo(node.Coordinates),
                         distance,
                         distance,
-                        source.WayId,
+                        new(SourceType.Line, source.WayId),
                         distance
                     )
                 );

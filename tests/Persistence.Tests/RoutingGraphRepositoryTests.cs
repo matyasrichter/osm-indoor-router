@@ -87,7 +87,15 @@ public sealed class RoutingGraphRepositoryTests : DbTestClass
         var toInsert = new HashSet<InMemoryEdge>()
         {
             new(nodeIds[0], nodeIds[1], new(Array.Empty<Coordinate>()), 1, 3, null, 1),
-            new(nodeIds[0], nodeIds[2], new(Array.Empty<Coordinate>()), 3, 1, 654, 2)
+            new(
+                nodeIds[0],
+                nodeIds[2],
+                new(Array.Empty<Coordinate>()),
+                3,
+                1,
+                new(SourceType.Line, 654),
+                2
+            )
         };
 
         await repo.SaveEdges(toInsert, version);
@@ -115,6 +123,7 @@ public sealed class RoutingGraphRepositoryTests : DbTestClass
                         Cost = 3,
                         ReverseCost = 1,
                         SourceId = 654,
+                        SourceType = SourceType.Line,
                         Distance = 2
                     }
                 },
@@ -146,7 +155,15 @@ public sealed class RoutingGraphRepositoryTests : DbTestClass
         var toInsert = new HashSet<InMemoryEdge>()
         {
             new(nodeIds[0], nodeIds[1], new(Array.Empty<Coordinate>()), 1, 3, null, 1),
-            new(nodeIds[0], nodeIds[2], new(Array.Empty<Coordinate>()), 3, 1, 654, 2)
+            new(
+                nodeIds[0],
+                nodeIds[2],
+                new(Array.Empty<Coordinate>()),
+                3,
+                1,
+                new(SourceType.Line, 654),
+                2
+            )
         };
 
         await repo.SaveEdges(toInsert, version);
@@ -178,9 +195,30 @@ public sealed class RoutingGraphRepositoryTests : DbTestClass
                 "it is the closest and all nodes are on level 3",
                 new RoutingNode[]
                 {
-                    new(1, 1, GF.CreatePoint(new Coordinate(10, 10)), 3, 123, false),
-                    new(2, 1, GF.CreatePoint(new Coordinate(20, 10)), 3, 123, false),
-                    new(3, 1, GF.CreatePoint(new Coordinate(16, 16)), 3, 123, false)
+                    new(
+                        1,
+                        1,
+                        GF.CreatePoint(new Coordinate(10, 10)),
+                        3,
+                        new(SourceType.Point, 123),
+                        false
+                    ),
+                    new(
+                        2,
+                        1,
+                        GF.CreatePoint(new Coordinate(20, 10)),
+                        3,
+                        new(SourceType.Point, 123),
+                        false
+                    ),
+                    new(
+                        3,
+                        1,
+                        GF.CreatePoint(new Coordinate(16, 16)),
+                        3,
+                        new(SourceType.Point, 123),
+                        false
+                    )
                 },
                 15,
                 15,
@@ -192,9 +230,30 @@ public sealed class RoutingGraphRepositoryTests : DbTestClass
                 "it is the closest on that level (not globally)",
                 new RoutingNode[]
                 {
-                    new(1, 1, GF.CreatePoint(new Coordinate(10, 10)), 2, 123, false),
-                    new(2, 1, GF.CreatePoint(new Coordinate(16, 10)), 2, 123, false),
-                    new(3, 1, GF.CreatePoint(new Coordinate(16, 16)), 1, 123, false)
+                    new(
+                        1,
+                        1,
+                        GF.CreatePoint(new Coordinate(10, 10)),
+                        2,
+                        new(SourceType.Point, 123),
+                        false
+                    ),
+                    new(
+                        2,
+                        1,
+                        GF.CreatePoint(new Coordinate(16, 10)),
+                        2,
+                        new(SourceType.Point, 123),
+                        false
+                    ),
+                    new(
+                        3,
+                        1,
+                        GF.CreatePoint(new Coordinate(16, 16)),
+                        1,
+                        new(SourceType.Point, 123),
+                        false
+                    )
                 },
                 15,
                 15,
@@ -206,9 +265,30 @@ public sealed class RoutingGraphRepositoryTests : DbTestClass
                 "it is the closest in that graph version (not globally)",
                 new RoutingNode[]
                 {
-                    new(1, 2, GF.CreatePoint(new Coordinate(10, 10)), 2, 123, false),
-                    new(2, 2, GF.CreatePoint(new Coordinate(16, 10)), 2, 123, false),
-                    new(3, 1, GF.CreatePoint(new Coordinate(16, 16)), 2, 123, false)
+                    new(
+                        1,
+                        2,
+                        GF.CreatePoint(new Coordinate(10, 10)),
+                        2,
+                        new(SourceType.Point, 123),
+                        false
+                    ),
+                    new(
+                        2,
+                        2,
+                        GF.CreatePoint(new Coordinate(16, 10)),
+                        2,
+                        new(SourceType.Point, 123),
+                        false
+                    ),
+                    new(
+                        3,
+                        1,
+                        GF.CreatePoint(new Coordinate(16, 16)),
+                        2,
+                        new(SourceType.Point, 123),
+                        false
+                    )
                 },
                 15,
                 15,

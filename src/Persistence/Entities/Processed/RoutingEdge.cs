@@ -2,6 +2,7 @@ namespace Persistence.Entities.Processed;
 
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using GraphBuilding;
 
 public class RoutingEdge
 {
@@ -18,4 +19,5 @@ public class RoutingEdge
     public double ReverseCost { get; set; }
     public double Distance { get; set; }
     public long? SourceId { get; init; }
+    public SourceType? SourceType { get; init; }
 }

@@ -187,7 +187,7 @@ public class GraphBuilderTests
 
         var holder = await builder.BuildGraph(CancellationToken.None);
 
-        var levelConnections = holder.Nodes.Where(x => x.SourceId == 4173362012).ToList();
+        var levelConnections = holder.Nodes.Where(x => x.Source?.Id == 4173362012).ToList();
         levelConnections.Should().HaveCount(3, "there are levels 0;1;2");
 
         holder
@@ -287,7 +287,7 @@ public class GraphBuilderTests
         var holder = await builder.BuildGraph(CancellationToken.None);
 
         holder.Nodes
-            .Where(x => x.SourceId == 563250924)
+            .Where(x => x.Source?.Id == 563250924)
             .Should()
             .HaveCount(1, "there are no levels");
         holder

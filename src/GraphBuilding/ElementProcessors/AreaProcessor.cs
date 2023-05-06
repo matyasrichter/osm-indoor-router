@@ -14,26 +14,30 @@ public class AreaProcessor : BaseOsmProcessor
     public ProcessingResult Process(
         OsmMultiPolygon source,
         IEnumerable<InMemoryNode> nodesInEnvelope,
-        IReadOnlyDictionary<long, OsmPoint> points
+        IReadOnlyDictionary<long, OsmPoint> points,
+        SourceType sourceType
     )
     {
         var (ogLevel, _, repeatOnLevels) = ExtractLevelInformation(source.Tags);
         var resultsWithLevels = DuplicateResults(
-            ProcessSingleLevel(source, ogLevel, points),
+            ProcessSingleLevel(source, ogLevel, points, sourceType),
             repeatOnLevels,
             ogLevel
         );
         var nodeSet = source.Members.SelectMany(x => x.Nodes).ToHashSet();
         var nodeCandidatesToAdd = nodesInEnvelope
             .Where(x => source.Geometry.Covers(x.Coordinates))
-            .Where(x => x.SourceId is not null && !nodeSet.Contains(x.SourceId.Value))
+            .Where(
+                x => x.Source is { Type: SourceType.Point } && !nodeSet.Contains(x.Source.Value.Id)
+            )
             .ToList();
         var results = resultsWithLevels.Select(
             x =>
                 AddNodesFromEnvelope(
                     x.Result,
                     nodeCandidatesToAdd.Where(n => n.Level == x.LowestLevel),
-                    source
+                    source,
+                    sourceType
                 )
         );
         return JoinResults(results);
@@ -42,7 +46,8 @@ public class AreaProcessor : BaseOsmProcessor
     private static ProcessingResult ProcessSingleLevel(
         OsmMultiPolygon source,
         decimal level,
-        IReadOnlyDictionary<long, OsmPoint> osmPoints
+        IReadOnlyDictionary<long, OsmPoint> osmPoints,
+        SourceType sourceType
     )
     {
         var nodes = new List<InMemoryNode>();
@@ -80,7 +85,17 @@ public class AreaProcessor : BaseOsmProcessor
                 level
             );
             var distance = from.IdWithCoord.Second.GetMetricDistance(to.IdWithCoord.Second, 0);
-            edges.Add(new(fromId, toId, lineGeometry, distance, distance, source.AreaId, distance));
+            edges.Add(
+                new(
+                    fromId,
+                    toId,
+                    lineGeometry,
+                    distance,
+                    distance,
+                    new(sourceType, source.AreaId),
+                    distance
+                )
+            );
         }
 
         var wallEdges = new List<(decimal Level, (int FromId, int ToId) Edge)>();
@@ -121,7 +136,8 @@ public class AreaProcessor : BaseOsmProcessor
     private static ProcessingResult AddNodesFromEnvelope(
         ProcessingResult result,
         IEnumerable<InMemoryNode> nodeCandidates,
-        OsmMultiPolygon source
+        OsmMultiPolygon source,
+        SourceType sourceType
     )
     {
         foreach (var node in nodeCandidates)
@@ -147,7 +163,7 @@ public class AreaProcessor : BaseOsmProcessor
                         lineGeometry,
                         distance,
                         distance,
-                        source.AreaId,
+                        new(sourceType, source.AreaId),
                         distance
                     )
                 );
@@ -167,7 +183,11 @@ public class AreaProcessor : BaseOsmProcessor
     {
         if (!nodeIds.ContainsKey(osmId))
         {
-            var fromNode = new InMemoryNode(Gf.CreatePoint(coordinate), level, osmId);
+            var fromNode = new InMemoryNode(
+                Gf.CreatePoint(coordinate),
+                level,
+                new(SourceType.Point, osmId)
+            );
             result.Add(fromNode);
             nodeIds[osmId] = result.Count - 1;
         }
