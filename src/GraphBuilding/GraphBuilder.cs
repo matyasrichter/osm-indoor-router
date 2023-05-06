@@ -64,7 +64,7 @@ public partial class GraphBuilder : IGraphBuilder
         foreach (var r in ProcessPolygons(points, polygons, multiPolygons, holder, ct))
             SaveResult(holder, r);
 
-        wallGraphCutter.Run(holder, points);
+        wallGraphCutter.Run(holder, points, polygons, multiPolygons);
 
         return holder;
     }
