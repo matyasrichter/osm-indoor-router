@@ -11,13 +11,18 @@ public partial class WallGraphCutter
 {
     private readonly ILogger<WallGraphCutter> logger;
 
-    public void Run(GraphHolder holder, IReadOnlyDictionary<long, OsmPoint> osmPoints)
+    public void Run(
+        GraphHolder holder,
+        IReadOnlyDictionary<long, OsmPoint> osmPoints,
+        IReadOnlyDictionary<long, OsmPolygon> osmPolygons,
+        IReadOnlyDictionary<long, OsmMultiPolygon> osmMultiPolygons
+    )
     {
         LogStarting();
 
         foreach (var level in holder.WallEdgeLevels)
         {
-            ProcessSingleLevel(holder, level, osmPoints);
+            ProcessSingleLevel(holder, level, osmPoints, osmPolygons, osmMultiPolygons);
         }
 
         LogFinished();
@@ -26,7 +31,9 @@ public partial class WallGraphCutter
     private void ProcessSingleLevel(
         GraphHolder holder,
         decimal level,
-        IReadOnlyDictionary<long, OsmPoint> osmPoints
+        IReadOnlyDictionary<long, OsmPoint> osmPoints,
+        IReadOnlyDictionary<long, OsmPolygon> osmPolygons,
+        IReadOnlyDictionary<long, OsmMultiPolygon> osmMultiPolygons
     )
     {
         LogStartingLevel(level);
@@ -56,9 +63,9 @@ public partial class WallGraphCutter
 
         foreach (var wallNode in wallNodes)
         {
-            if (wallNode.Value.SourceId is null)
+            if (wallNode.Value.Source is null)
                 continue;
-            var sourceId = wallNode.Value.SourceId.Value;
+            var sourceId = wallNode.Value.Source.Value.Id;
             // skip doors, gates etc. - those are fine
             if (osmPoints.ContainsKey(sourceId) && IsWallOpening(osmPoints[sourceId].Tags))
                 continue;
@@ -88,7 +95,7 @@ public partial class WallGraphCutter
                 // angle of right arm plus half of the angle between arms
                 var bisectorAngle =
                     AngleUtility.Angle(centerCoordinate, r)
-                    + (AngleUtility.InteriorAngle(r, centerCoordinate, l) / 2);
+                    - (AngleUtility.InteriorAngle(l, centerCoordinate, r) / 2);
                 var newCoordinate = MoveCoordinate(centerCoordinate, bisectorAngle, 0.000001);
                 var newNode = wallNode.Value with { Coordinates = Gf.CreatePoint(newCoordinate) };
                 var newId = holder.AddNode(newNode, checkUniqueness: false);
@@ -122,10 +129,25 @@ public partial class WallGraphCutter
                             {
                                 var intersection = x.Geometry.Relate(potentialCross);
                                 return !intersection.IsIntersects()
+                                    // boundary-only intersections are ok
                                     || intersection.Matches("FF*FT****");
                             });
+                    })
+                    .Where(x =>
+                    {
+                        // check that we didn't move it completely outside of original polygon (e.g. to the next room)
+                        if (
+                            x.Source is { Type: SourceType.Polygon, Id: var polygonId }
+                            && osmPolygons.ContainsKey(polygonId)
+                        )
+                            return x.Geometry.Intersects(osmPolygons[polygonId].Geometry);
+                        if (
+                            x.Source is { Type: SourceType.Multipolygon, Id: var multiPolygonId }
+                            && osmMultiPolygons.ContainsKey(multiPolygonId)
+                        )
+                            return x.Geometry.Intersects(osmMultiPolygons[multiPolygonId].Geometry);
+                        return true;
                     });
-                // todo: check if we didnt accidentally move the edge to another room
                 foreach (var e in edgeCandidates)
                     holder.Edges.Add(e);
             }

@@ -39,7 +39,10 @@ public class WallProcessor : BaseOsmProcessor
     )
     {
         var nodes = source
-            .Select(x => new InMemoryNode(Gf.CreatePoint(x.Item2), level, x.Item1))
+            .Select(
+                x =>
+                    new InMemoryNode(Gf.CreatePoint(x.Item2), level, new(SourceType.Point, x.Item1))
+            )
             .ToList();
         return new(
             nodes,

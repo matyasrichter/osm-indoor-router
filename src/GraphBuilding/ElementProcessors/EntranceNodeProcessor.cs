@@ -15,10 +15,10 @@ public class EntranceNodeProcessor : BaseOsmProcessor
 
         var nodes = repeatOnLevels
             .Prepend(ogLevel)
-            .Select(x => new InMemoryNode(source.Geometry, x, source.NodeId))
+            .Select(x => new InMemoryNode(source.Geometry, x, new(SourceType.Point, source.NodeId)))
             .ToList();
         if (ogLevel != 0 && !repeatOnLevels.Contains(0))
-            nodes.Add(new(source.Geometry, 0, source.NodeId));
+            nodes.Add(new(source.Geometry, 0, new(SourceType.Point, source.NodeId)));
 
         var groundLevelNodeId = nodes
             .Select((x, i) => (x, i))
@@ -37,7 +37,7 @@ public class EntranceNodeProcessor : BaseOsmProcessor
                         LineString.Empty,
                         0,
                         0,
-                        source.NodeId,
+                        new(SourceType.Point, source.NodeId),
                         0
                     )
             )

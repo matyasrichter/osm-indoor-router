@@ -19,14 +19,14 @@ public class WallGraphCutterTests
         var nodes = new InMemoryNode[]
         {
             // wall nodes
-            new(Gf.CreatePoint(new Coordinate(0, 0)), 0, 1),
-            new(Gf.CreatePoint(new Coordinate(6, 0)), 0, 2),
-            new(Gf.CreatePoint(new Coordinate(11, 0)), 0, 3),
+            new(Gf.CreatePoint(new Coordinate(0, 0)), 0, new(SourceType.Point, 1)),
+            new(Gf.CreatePoint(new Coordinate(6, 0)), 0, new(SourceType.Point, 2)),
+            new(Gf.CreatePoint(new Coordinate(11, 0)), 0, new(SourceType.Point, 3)),
             // top node
-            new(Gf.CreatePoint(new Coordinate(4, 2)), 0, 4),
+            new(Gf.CreatePoint(new Coordinate(4, 2)), 0, new(SourceType.Point, 4)),
             // bottom nodes
-            new(Gf.CreatePoint(new Coordinate(6, -2)), 0, 5),
-            new(Gf.CreatePoint(new Coordinate(8, -2)), 0, 6),
+            new(Gf.CreatePoint(new Coordinate(6, -2)), 0, new(SourceType.Point, 5)),
+            new(Gf.CreatePoint(new Coordinate(8, -2)), 0, new(SourceType.Point, 6)),
         };
         var nodeIds = nodes.Select(x => (long)holder.AddNode(x)).ToList();
         var edges = new InMemoryEdge[]
@@ -38,7 +38,7 @@ public class WallGraphCutterTests
                 nodes[3].Coordinates.GetLineStringTo(nodes[1].Coordinates),
                 1,
                 1,
-                10,
+                new(SourceType.Line, 10),
                 1
             ),
             // bottom edges
@@ -48,7 +48,7 @@ public class WallGraphCutterTests
                 nodes[1].Coordinates.GetLineStringTo(nodes[4].Coordinates),
                 1,
                 1,
-                11,
+                new(SourceType.Line, 11),
                 1
             ),
             new(
@@ -57,7 +57,7 @@ public class WallGraphCutterTests
                 nodes[5].Coordinates.GetLineStringTo(nodes[1].Coordinates),
                 1,
                 1,
-                12,
+                new(SourceType.Line, 12),
                 1
             ),
         };
@@ -74,7 +74,12 @@ public class WallGraphCutterTests
 
         var cutter = new WallGraphCutter(Mock.Of<ILogger<WallGraphCutter>>());
         // passing empty points dict - no door
-        cutter.Run(holder, new Dictionary<long, OsmPoint>());
+        cutter.Run(
+            holder,
+            new Dictionary<long, OsmPoint>(),
+            new Dictionary<long, OsmPolygon>(),
+            new Dictionary<long, OsmMultiPolygon>()
+        );
 
         // verifying the result
         holder.Edges.Should().HaveCount(3, "no new edges created, only remapped");
@@ -94,13 +99,13 @@ public class WallGraphCutterTests
         var nodes = new InMemoryNode[]
         {
             // wall nodes
-            new(Gf.CreatePoint(new Coordinate(0, 2)), 0, 1),
-            new(Gf.CreatePoint(new Coordinate(2, 0)), 0, 2),
-            new(Gf.CreatePoint(new Coordinate(0, -2)), 0, 3),
+            new(Gf.CreatePoint(new Coordinate(0, 2)), 0, new(SourceType.Point, 1)),
+            new(Gf.CreatePoint(new Coordinate(2, 0)), 0, new(SourceType.Point, 2)),
+            new(Gf.CreatePoint(new Coordinate(0, -2)), 0, new(SourceType.Point, 3)),
             // top node
-            new(Gf.CreatePoint(new Coordinate(4, 2)), 0, 4),
+            new(Gf.CreatePoint(new Coordinate(4, 2)), 0, new(SourceType.Point, 4)),
             // bottom node
-            new(Gf.CreatePoint(new Coordinate(4, -2)), 0, 5),
+            new(Gf.CreatePoint(new Coordinate(4, -2)), 0, new(SourceType.Point, 5)),
         };
         var nodeIds = nodes.Select(x => (long)holder.AddNode(x)).ToList();
         var edges = new InMemoryEdge[]
@@ -112,7 +117,7 @@ public class WallGraphCutterTests
                 nodes[3].Coordinates.GetLineStringTo(nodes[1].Coordinates),
                 1,
                 1,
-                10,
+                new(SourceType.Line, 10),
                 1
             ),
             // bottom edges
@@ -122,7 +127,7 @@ public class WallGraphCutterTests
                 nodes[1].Coordinates.GetLineStringTo(nodes[4].Coordinates),
                 1,
                 1,
-                11,
+                new(SourceType.Line, 11),
                 1
             ),
         };
@@ -139,7 +144,12 @@ public class WallGraphCutterTests
 
         var cutter = new WallGraphCutter(Mock.Of<ILogger<WallGraphCutter>>());
         // passing empty points dict - no door
-        cutter.Run(holder, new Dictionary<long, OsmPoint>());
+        cutter.Run(
+            holder,
+            new Dictionary<long, OsmPoint>(),
+            new Dictionary<long, OsmPolygon>(),
+            new Dictionary<long, OsmMultiPolygon>()
+        );
 
         // verifying the result
         holder.Edges.Should().HaveCount(2, "no new edges created, only remapped");
@@ -172,9 +182,9 @@ public class WallGraphCutterTests
         var nodes = new InMemoryNode[]
         {
             // wall nodes
-            new(Gf.CreatePoint(new Coordinate(0, 0)), 0, 1),
-            new(Gf.CreatePoint(new Coordinate(2, 0)), 0, 2),
-            new(Gf.CreatePoint(new Coordinate(4, 0)), 0, 3),
+            new(Gf.CreatePoint(new Coordinate(0, 0)), 0, new(SourceType.Point, 1)),
+            new(Gf.CreatePoint(new Coordinate(2, 0)), 0, new(SourceType.Point, 2)),
+            new(Gf.CreatePoint(new Coordinate(4, 0)), 0, new(SourceType.Point, 3)),
         };
         var nodeIds = nodes.Select(x => (long)holder.AddNode(x)).ToList();
         var edges = new InMemoryEdge[]
@@ -186,7 +196,7 @@ public class WallGraphCutterTests
                 nodes[0].Coordinates.GetLineStringTo(nodes[1].Coordinates),
                 1,
                 1,
-                10,
+                new(SourceType.Line, 10),
                 1
             ),
             // bottom edges
@@ -196,7 +206,7 @@ public class WallGraphCutterTests
                 nodes[1].Coordinates.GetLineStringTo(nodes[2].Coordinates),
                 1,
                 1,
-                11,
+                new(SourceType.Line, 11),
                 1
             ),
         };
@@ -213,7 +223,12 @@ public class WallGraphCutterTests
 
         var cutter = new WallGraphCutter(Mock.Of<ILogger<WallGraphCutter>>());
         // passing empty points dict - no door
-        cutter.Run(holder, new Dictionary<long, OsmPoint>());
+        cutter.Run(
+            holder,
+            new Dictionary<long, OsmPoint>(),
+            new Dictionary<long, OsmPolygon>(),
+            new Dictionary<long, OsmMultiPolygon>()
+        );
 
         // verifying the result
         holder.Edges.Should().HaveCount(4, "new edges created on each side of the wall");
@@ -242,16 +257,16 @@ public class WallGraphCutterTests
         var nodes = new InMemoryNode[]
         {
             // wall nodes, left-to-right, top-to-bottom
-            new(Gf.CreatePoint(new Coordinate(4, 2)), 1, 0),
-            new(Gf.CreatePoint(new Coordinate(10, 2)), 1, 1),
-            new(Gf.CreatePoint(new Coordinate(18, 2)), 1, 2),
-            new(Gf.CreatePoint(new Coordinate(0, 0)), 1, 3),
-            new(Gf.CreatePoint(new Coordinate(4, 0)), 1, 4),
-            new(Gf.CreatePoint(new Coordinate(8, 0)), 1, 5),
-            new(Gf.CreatePoint(new Coordinate(12, 0)), 1, 6),
-            new(Gf.CreatePoint(new Coordinate(16, 0)), 1, 7),
-            new(Gf.CreatePoint(new Coordinate(0, -3)), 1, 8),
-            new(Gf.CreatePoint(new Coordinate(9, -3)), 1, 9),
+            new(Gf.CreatePoint(new Coordinate(4, 2)), 1, new(SourceType.Point, 0)),
+            new(Gf.CreatePoint(new Coordinate(10, 2)), 1, new(SourceType.Point, 1)),
+            new(Gf.CreatePoint(new Coordinate(18, 2)), 1, new(SourceType.Point, 2)),
+            new(Gf.CreatePoint(new Coordinate(0, 0)), 1, new(SourceType.Point, 3)),
+            new(Gf.CreatePoint(new Coordinate(4, 0)), 1, new(SourceType.Point, 4)),
+            new(Gf.CreatePoint(new Coordinate(8, 0)), 1, new(SourceType.Point, 5)),
+            new(Gf.CreatePoint(new Coordinate(12, 0)), 1, new(SourceType.Point, 6)),
+            new(Gf.CreatePoint(new Coordinate(16, 0)), 1, new(SourceType.Point, 7)),
+            new(Gf.CreatePoint(new Coordinate(0, -3)), 1, new(SourceType.Point, 8)),
+            new(Gf.CreatePoint(new Coordinate(9, -3)), 1, new(SourceType.Point, 9)),
         };
         var nodeIds = nodes.Select(x => (long)holder.AddNode(x)).ToList();
 
@@ -263,7 +278,7 @@ public class WallGraphCutterTests
                 nodes![from].Coordinates.GetLineStringTo(nodes[to].Coordinates),
                 1,
                 1,
-                sourceId,
+                new(SourceType.Line, sourceId),
                 1
             );
             holder.AddEdge(e);
@@ -322,15 +337,192 @@ public class WallGraphCutterTests
 
         var cutter = new WallGraphCutter(Mock.Of<ILogger<WallGraphCutter>>());
         // passing empty points dict - no door
-        cutter.Run(holder, new Dictionary<long, OsmPoint>());
+        cutter.Run(
+            holder,
+            new Dictionary<long, OsmPoint>(),
+            new Dictionary<long, OsmPolygon>(),
+            new Dictionary<long, OsmMultiPolygon>()
+        );
 
         // verifying the result
         holder.Nodes
             .Should()
             .HaveCount(10 + 24, "should have added new nodes, on each side of each node");
-        holder.Edges.Should().HaveCount(40, "new edges created on each side of the wall");
+        holder.Edges.Should().HaveCount(42, "new edges created on each side of the wall");
         holder.Edges
-            .Where(x => holder.Nodes[(int)x.FromId].SourceId == holder.Nodes[(int)x.ToId].SourceId)
+            .Where(x => holder.Nodes[(int)x.FromId].Source == holder.Nodes[(int)x.ToId].Source)
+            .Should()
+            .BeEmpty();
+    }
+
+    [Fact]
+    public void DoesNotMoveEdgesToAnotherRoom()
+    {
+        // tests this situation (walls form rooms with sourceId 10,11,12)
+        //     0-----1
+        //     |    /
+        // 3---4---5
+        // |       |
+        // |       |
+        // 8-------9
+        var holder = new GraphHolder();
+        var nodes = new InMemoryNode[]
+        {
+            // wall nodes, left-to-right, top-to-bottom
+            new(Gf.CreatePoint(new Coordinate(4, 2)), 1, new(SourceType.Point, 0)),
+            new(Gf.CreatePoint(new Coordinate(10, 2)), 1, new(SourceType.Point, 1)),
+            new(Gf.CreatePoint(new Coordinate(18, 2)), 1, new(SourceType.Point, 2)),
+            new(Gf.CreatePoint(new Coordinate(0, 0)), 1, new(SourceType.Point, 3)),
+            new(Gf.CreatePoint(new Coordinate(4, 0)), 1, new(SourceType.Point, 4)),
+            new(Gf.CreatePoint(new Coordinate(8, 0)), 1, new(SourceType.Point, 5)),
+            new(Gf.CreatePoint(new Coordinate(12, 0)), 1, new(SourceType.Point, 6)),
+            new(Gf.CreatePoint(new Coordinate(16, 0)), 1, new(SourceType.Point, 7)),
+            new(Gf.CreatePoint(new Coordinate(0, -3)), 1, new(SourceType.Point, 8)),
+            new(Gf.CreatePoint(new Coordinate(8, -3)), 1, new(SourceType.Point, 9)),
+        };
+        var nodeIds = nodes.Select(x => (long)holder.AddNode(x)).ToList();
+
+        InMemoryEdge NewEdge(int from, int to, Source source)
+        {
+            var e = new InMemoryEdge(
+                from,
+                to,
+                nodes![from].Coordinates.GetLineStringTo(nodes[to].Coordinates),
+                1,
+                1,
+                source,
+                1
+            );
+            holder.AddEdge(e);
+            return e;
+        }
+
+        var polygons = new Dictionary<long, OsmPolygon>()
+        {
+            {
+                10,
+                new(
+                    10,
+                    new Dictionary<string, string>() { { "indoor", "room" } },
+                    new List<long>() { 0, 1, 5, 4, 0 },
+                    new(
+                        new(
+                            new[]
+                            {
+                                nodes[0].Coordinates.Coordinate,
+                                nodes[1].Coordinates.Coordinate,
+                                nodes[5].Coordinates.Coordinate,
+                                nodes[4].Coordinates.Coordinate,
+                                nodes[0].Coordinates.Coordinate,
+                            }
+                        )
+                    ),
+                    new(
+                        new[]
+                        {
+                            nodes[0].Coordinates.Coordinate,
+                            nodes[1].Coordinates.Coordinate,
+                            nodes[5].Coordinates.Coordinate,
+                            nodes[4].Coordinates.Coordinate,
+                            nodes[0].Coordinates.Coordinate,
+                        }
+                    )
+                )
+            }
+        };
+        var multiPolygons = new Dictionary<long, OsmMultiPolygon>()
+        {
+            {
+                12,
+                new(
+                    12,
+                    new Dictionary<string, string>() { { "indoor", "room" } },
+                    new(
+                        new Polygon[]
+                        {
+                            new(
+                                new(
+                                    new[]
+                                    {
+                                        nodes[3].Coordinates.Coordinate,
+                                        nodes[4].Coordinates.Coordinate,
+                                        nodes[5].Coordinates.Coordinate,
+                                        nodes[9].Coordinates.Coordinate,
+                                        nodes[8].Coordinates.Coordinate,
+                                        nodes[3].Coordinates.Coordinate,
+                                    }
+                                )
+                            )
+                        }
+                    ),
+                    new List<OsmLine>()
+                    {
+                        new OsmLine(
+                            13,
+                            new Dictionary<string, string>(),
+                            new List<long>() { 3, 4, 5, 9, 8, 3 },
+                            new(
+                                new[]
+                                {
+                                    nodes[3].Coordinates.Coordinate,
+                                    nodes[4].Coordinates.Coordinate,
+                                    nodes[5].Coordinates.Coordinate,
+                                    nodes[9].Coordinates.Coordinate,
+                                    nodes[8].Coordinates.Coordinate,
+                                    nodes[3].Coordinates.Coordinate,
+                                }
+                            )
+                        )
+                    }
+                )
+            }
+        };
+
+        var edges = new InMemoryEdge[]
+        {
+            NewEdge(0, 1, new(SourceType.Polygon, 10)),
+            NewEdge(0, 5, new(SourceType.Polygon, 10)),
+            NewEdge(0, 4, new(SourceType.Polygon, 10)),
+            NewEdge(1, 4, new(SourceType.Polygon, 10)),
+            NewEdge(1, 5, new(SourceType.Polygon, 10)),
+            NewEdge(3, 4, new(SourceType.Multipolygon, 12)),
+            NewEdge(3, 9, new(SourceType.Multipolygon, 12)),
+            NewEdge(3, 8, new(SourceType.Multipolygon, 12)),
+            NewEdge(4, 5, new(SourceType.Polygon, 10)),
+            NewEdge(4, 5, new(SourceType.Multipolygon, 12)),
+            NewEdge(4, 9, new(SourceType.Multipolygon, 12)),
+            NewEdge(4, 8, new(SourceType.Multipolygon, 12)),
+            NewEdge(5, 9, new(SourceType.Multipolygon, 12)),
+            NewEdge(5, 8, new(SourceType.Multipolygon, 12)),
+            NewEdge(8, 9, new(SourceType.Multipolygon, 12)),
+        };
+
+        holder.AddWallEdge((0, 1), 1);
+        holder.AddWallEdge((0, 4), 1);
+        holder.AddWallEdge((1, 5), 1);
+        holder.AddWallEdge((3, 4), 1);
+        holder.AddWallEdge((3, 8), 1);
+        holder.AddWallEdge((4, 5), 1);
+        holder.AddWallEdge((5, 9), 1);
+        holder.AddWallEdge((8, 9), 1);
+
+        // sanity checks
+        holder.Nodes.Should().HaveCount(10);
+        holder.Edges.Should().HaveCount(15);
+        holder.WallEdgeLevels.Should().BeEquivalentTo(new[] { 1M });
+        holder.GetWallEdges(1).Should().HaveCount(8);
+
+        var cutter = new WallGraphCutter(Mock.Of<ILogger<WallGraphCutter>>());
+        // passing empty points dict - no door
+        cutter.Run(holder, new Dictionary<long, OsmPoint>(), polygons, multiPolygons);
+
+        // verifying the result
+        holder.Nodes
+            .Should()
+            .HaveCount(10 + 16, "should have added new nodes, on each side of each node");
+        holder.Edges.Should().HaveCount(15, "no new edges created, only moved");
+        holder.Edges
+            .Where(x => holder.Nodes[(int)x.FromId].Source == holder.Nodes[(int)x.ToId].Source)
             .Should()
             .BeEmpty();
     }

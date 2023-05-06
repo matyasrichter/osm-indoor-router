@@ -9,7 +9,7 @@ public class GraphHolderTests
     {
         var builder = new GraphHolder();
         var id1 = builder.AddNode(new(new(0, 1), 0, null));
-        var id2 = builder.AddNode(new(new(1, 0), 0, 123));
+        var id2 = builder.AddNode(new(new(1, 0), 0, new(SourceType.Point, 123)));
         var edge = new InMemoryEdge(
             id1,
             id2,
@@ -32,7 +32,7 @@ public class GraphHolderTests
     public void DoesNotInsertTwice()
     {
         var builder = new GraphHolder();
-        var node = new InMemoryNode(new(0, 1), 0, 123);
+        var node = new InMemoryNode(new(0, 1), 0, new(SourceType.Point, 123));
         var id1 = builder.AddNode(node);
         var id2 = builder.AddNode(node);
         id1.Should().Be(id2);
@@ -46,11 +46,11 @@ public class GraphHolderTests
         var nodes = new InMemoryNode[]
         {
             // level 1
-            new(new(0, 1), 1, 123),
-            new(new(1, 0), 1, 124),
+            new(new(0, 1), 1, new(SourceType.Point, 123)),
+            new(new(1, 0), 1, new(SourceType.Point, 124)),
             // level 2
-            new(new(0, 1), 2, 123),
-            new(new(1, 0), 2, 124),
+            new(new(0, 1), 2, new(SourceType.Point, 123)),
+            new(new(1, 0), 2, new(SourceType.Point, 124)),
         };
         var nodeIds = nodes.Select(n => builder.AddNode(n)).ToList();
         var edge1 = new InMemoryEdge(
@@ -59,7 +59,7 @@ public class GraphHolderTests
             new(new[] { nodes[0].Coordinates.Coordinate, nodes[1].Coordinates.Coordinate }),
             1,
             1,
-            987,
+            new(SourceType.Line, 987),
             1
         );
         builder.AddEdge(edge1);
@@ -69,7 +69,7 @@ public class GraphHolderTests
             new(new[] { nodes[2].Coordinates.Coordinate, nodes[3].Coordinates.Coordinate }),
             1,
             1,
-            987,
+            new(SourceType.Line, 987),
             1
         );
         builder.AddEdge(edge2);
@@ -78,9 +78,9 @@ public class GraphHolderTests
             builder.GetNode(id).Should().Be(node, $"we got id {id} when we inserted it");
         foreach (var node in nodes)
         {
-            var n = builder.GetNodeBySourceId((long)node.SourceId!, node.Level);
+            var n = builder.GetNodeBySourceId((long)node.Source?.Id!, node.Level);
             n.Should().NotBeNull();
-            n?.Node.SourceId.Should().Be(node.SourceId);
+            n?.Node.Source.Should().Be(node.Source);
             n?.Node.Level.Should().Be(node.Level);
         }
 

@@ -24,14 +24,7 @@ public class RoutingGraphRepository : IGraphSavingPort, IGraphVersionProvider, I
     {
         var entities = nodes
             .Select(
-                n =>
-                    new RoutingNode(
-                        version,
-                        n.Coordinates,
-                        n.Level,
-                        n.SourceId,
-                        n.IsLevelConnection
-                    )
+                n => new RoutingNode(version, n.Coordinates, n.Level, n.Source, n.IsLevelConnection)
             )
             .ToList();
         await db.RoutingNodes.AddRangeAsync(entities);
@@ -51,7 +44,8 @@ public class RoutingGraphRepository : IGraphSavingPort, IGraphVersionProvider, I
                         ToId = e.ToId,
                         Cost = e.Cost,
                         ReverseCost = e.ReverseCost,
-                        SourceId = e.SourceId,
+                        SourceId = e.Source?.Id,
+                        SourceType = e.Source?.Type,
                         Distance = e.Distance
                     }
             )

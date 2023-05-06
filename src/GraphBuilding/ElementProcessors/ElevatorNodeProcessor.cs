@@ -33,7 +33,7 @@ public class ElevatorNodeProcessor : BaseOsmProcessor
         const double levelVerticalDistance = 3.0;
         foreach (var level in levels.Order())
         {
-            InMemoryNode node = new(source.Geometry, level, source.NodeId);
+            InMemoryNode node = new(source.Geometry, level, new(SourceType.Point, source.NodeId));
             if (prev is not null)
                 edges.Add(
                     new(
@@ -42,7 +42,7 @@ public class ElevatorNodeProcessor : BaseOsmProcessor
                         LineString.Empty,
                         levelVerticalDistance,
                         levelVerticalDistance,
-                        source.NodeId,
+                        new(SourceType.Point, source.NodeId),
                         0
                     )
                 );

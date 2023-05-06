@@ -64,7 +64,7 @@ public partial class GraphBuilder : IGraphBuilder
         foreach (var r in ProcessPolygons(points, polygons, multiPolygons, holder, ct))
             SaveResult(holder, r);
 
-        wallGraphCutter.Run(holder, points);
+        wallGraphCutter.Run(holder, points, polygons, multiPolygons);
 
         return holder;
     }
@@ -147,7 +147,8 @@ public partial class GraphBuilder : IGraphBuilder
                             }
                         ),
                         holder.GetNodesInArea(polygon.Geometry.EnvelopeInternal),
-                        points
+                        points,
+                        SourceType.Polygon
                     );
                 else if (IsWalledElement(polygon.Tags))
                     return wallProcessor.Process(polygon);
@@ -163,7 +164,8 @@ public partial class GraphBuilder : IGraphBuilder
                             return areaProcessor.Process(
                                 mp,
                                 holder.GetNodesInArea(mp.Geometry.EnvelopeInternal),
-                                points
+                                points,
+                                SourceType.Multipolygon
                             );
                         else if (IsWalledElement(mp.Tags))
                             return wallProcessor.Process(mp);
@@ -208,8 +210,8 @@ public partial class GraphBuilder : IGraphBuilder
     private static int GetOrCreateNode(GraphHolder holder, InMemoryNode node)
     {
         var existingNode =
-            node.SourceId is not null && !node.IsLevelConnection
-                ? holder.GetNodeBySourceId(node.SourceId.Value, node.Level)
+            node.Source is not null && !node.IsLevelConnection
+                ? holder.GetNodeBySourceId(node.Source.Value.Id, node.Level)
                 : null;
 
         if (existingNode is { Id: var existingId })

@@ -2,6 +2,7 @@ namespace Persistence.Entities.Processed;
 
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using GraphBuilding;
 using NetTopologySuite.Geometries;
 
 public class RoutingNode
@@ -12,14 +13,15 @@ public class RoutingNode
         long version,
         Point coordinates,
         decimal level,
-        long? sourceId,
+        Source? source,
         bool isLevelConnection
     )
     {
         Version = version;
         Coordinates = coordinates;
         Level = level;
-        SourceId = sourceId;
+        SourceId = source?.Id;
+        SourceType = source?.Type;
         IsLevelConnection = isLevelConnection;
     }
 
@@ -28,7 +30,7 @@ public class RoutingNode
         long version,
         Point coordinates,
         decimal level,
-        long? sourceId,
+        Source? source,
         bool isLevelConnection
     )
     {
@@ -36,7 +38,8 @@ public class RoutingNode
         Version = version;
         Coordinates = coordinates;
         Level = level;
-        SourceId = sourceId;
+        SourceId = source?.Id;
+        SourceType = source?.Type;
         IsLevelConnection = isLevelConnection;
     }
 
@@ -52,4 +55,5 @@ public class RoutingNode
     public decimal Level { get; init; }
     public bool IsLevelConnection { get; init; }
     public long? SourceId { get; init; }
+    public SourceType? SourceType { get; init; }
 }

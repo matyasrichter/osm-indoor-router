@@ -34,9 +34,9 @@ public class GraphHolder
 
     public int AddNode(InMemoryNode inMemoryNode, bool checkUniqueness = true)
     {
-        if (checkUniqueness && inMemoryNode is { SourceId: { } sid, Level: var level })
+        if (checkUniqueness && inMemoryNode is { Source: { } sid, Level: var level })
         {
-            var key = (sid, level);
+            var key = (sid.Id, level);
             if (!sourceIdToNodeId.ContainsKey(key))
             {
                 var id = Nodes.Count;

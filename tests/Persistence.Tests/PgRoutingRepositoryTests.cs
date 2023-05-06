@@ -1,6 +1,7 @@
 namespace Persistence.Tests;
 
 using Entities.Processed;
+using GraphBuilding;
 using Repositories;
 using Routing.Entities;
 using Settings;
@@ -17,9 +18,9 @@ public class PgRoutingRepositoryTests : DbTestClass
         RoutingEdge EdgeB
     )> CreateTrivialGraph()
     {
-        var nodeA = new RoutingNode(10, new(10, 10), 0, 1, false);
-        var middleNode = new RoutingNode(10, new(10, 15), 0, 2, false);
-        var nodeB = new RoutingNode(10, new(10, 20), 0, 3, false);
+        var nodeA = new RoutingNode(10, new(10, 10), 0, new(SourceType.Point, 1), false);
+        var middleNode = new RoutingNode(10, new(10, 15), 0, new(SourceType.Point, 2), false);
+        var nodeB = new RoutingNode(10, new(10, 20), 0, new(SourceType.Point, 3), false);
         await DbContext.RoutingNodes.AddRangeAsync(nodeA, nodeB, middleNode);
         await DbContext.SaveChangesAsync();
         var edgeA = new RoutingEdge()
@@ -92,8 +93,8 @@ public class PgRoutingRepositoryTests : DbTestClass
     [Fact]
     public async Task HandlesRouteNotFound()
     {
-        var nodeA = new RoutingNode(10, new(10, 20), 0, 1, false);
-        var nodeB = new RoutingNode(10, new(10, 20), 0, 1, false);
+        var nodeA = new RoutingNode(10, new(10, 20), 0, new(SourceType.Point, 1), false);
+        var nodeB = new RoutingNode(10, new(10, 20), 0, new(SourceType.Point, 1), false);
         await DbContext.RoutingNodes.AddRangeAsync(nodeA, nodeB);
         await DbContext.SaveChangesAsync();
         var repo = new PgRoutingRepository(DbContext, settings);

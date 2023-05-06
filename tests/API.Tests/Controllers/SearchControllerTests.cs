@@ -6,7 +6,6 @@ using System.Net.Http.Json;
 using GraphBuilding;
 using Microsoft.AspNetCore.Http.Extensions;
 using NetTopologySuite.Geometries;
-using Responses;
 using Persistence.Repositories;
 using Routing.Entities;
 using TestUtils;
@@ -30,8 +29,16 @@ public class SearchControllerTests : ControllerTestBase
             await repo.SaveNodes(
                 new[]
                 {
-                    new InMemoryNode(gf.CreatePoint(new Coordinate(0, 0)), 0, 123),
-                    new InMemoryNode(gf.CreatePoint(new Coordinate(10, 10)), 0, 1234)
+                    new InMemoryNode(
+                        gf.CreatePoint(new Coordinate(0, 0)),
+                        0,
+                        new(SourceType.Point, 123)
+                    ),
+                    new InMemoryNode(
+                        gf.CreatePoint(new Coordinate(10, 10)),
+                        0,
+                        new(SourceType.Point, 1234)
+                    )
                 },
                 version
             )
@@ -66,8 +73,16 @@ public class SearchControllerTests : ControllerTestBase
         await repo.SaveNodes(
             new[]
             {
-                new InMemoryNode(gf.CreatePoint(new Coordinate(0, 0)), 2, 123),
-                new InMemoryNode(gf.CreatePoint(new Coordinate(10, 10)), 3, 1234)
+                new InMemoryNode(
+                    gf.CreatePoint(new Coordinate(0, 0)),
+                    2,
+                    new(SourceType.Point, 123)
+                ),
+                new InMemoryNode(
+                    gf.CreatePoint(new Coordinate(10, 10)),
+                    3,
+                    new(SourceType.Point, 1234)
+                )
             },
             version
         );
