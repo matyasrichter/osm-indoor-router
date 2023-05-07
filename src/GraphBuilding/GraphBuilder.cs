@@ -86,7 +86,9 @@ public partial class GraphBuilder : IGraphBuilder
                     return elevatorProcessor.Process(point);
                 else if (point.Tags.GetValueOrDefault("entrance") is not null)
                     return entranceNodeProcessor.Process(point);
-                else if (point.Tags.GetValueOrDefault("door") is not null)
+                else if (
+                    HasAnyOfTags(point.Tags, "door", "level", "amenity", "shop", "name", "ref")
+                )
                     return plainNodeProcessor.Process(point);
                 return null;
             })
@@ -218,6 +220,11 @@ public partial class GraphBuilder : IGraphBuilder
             return existingId;
         return holder.AddNode(node);
     }
+
+    private static bool HasAnyOfTags(
+        IReadOnlyDictionary<string, string> tags,
+        params string[] tagsOfInterest
+    ) => tagsOfInterest.Any(x => tags.GetValueOrDefault(x) is not (null or ""));
 
     [LoggerMessage(
         Level = LogLevel.Information,
