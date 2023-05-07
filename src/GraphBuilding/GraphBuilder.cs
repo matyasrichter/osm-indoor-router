@@ -183,6 +183,7 @@ public partial class GraphBuilder : IGraphBuilder
             tags.GetValueOrDefault("indoor") is "wall"
             || tags.GetValueOrDefault("barrier") is "wall" or "fence"
             || tags.GetValueOrDefault("building") is not null and not "roof"
+            || tags.GetValueOrDefault("public_transport") is "platform"
         );
 
     private static bool IsRoutableArea(IReadOnlyDictionary<string, string> tags) =>
