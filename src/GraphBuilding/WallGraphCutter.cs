@@ -195,7 +195,9 @@ public partial class WallGraphCutter
     {
         if (tags.ContainsKey("door") || tags.ContainsKey("entrance"))
             return true;
-        else if (tags.GetValueOrDefault("barrier") is "turnstile" or "gate")
+        else if (
+            tags.GetValueOrDefault("barrier") is "turnstile" or "gate" or "full-height_turnstile"
+        )
             return true;
         else
             return false;
