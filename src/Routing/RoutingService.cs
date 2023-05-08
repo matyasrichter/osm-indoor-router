@@ -15,11 +15,25 @@ public partial class RoutingService
         this.routingPort = routingPort;
     }
 
-    public async Task<Route?> FindRoute(long from, long to, long graphVersion)
+    public async Task<Route?> FindRoute(
+        long from,
+        long to,
+        long graphVersion,
+        bool disallowStairs,
+        bool disallowElevators,
+        bool disallowEscalators
+    )
     {
         LogStartingRouting(from, to, graphVersion);
 
-        var routeNodes = await routingPort.FindRoute(from, to, graphVersion);
+        var routeNodes = await routingPort.FindRoute(
+            from,
+            to,
+            graphVersion,
+            disallowStairs,
+            disallowElevators,
+            disallowEscalators
+        );
 
         if (routeNodes.Count == 0)
         {

@@ -20,10 +20,20 @@ public class RoutingController : Controller
     public async Task<Results<Ok<Route>, NotFound>> GetRoute(
         [FromQuery] [Required] long from,
         [FromQuery] [Required] long to,
-        [FromQuery] [Required] long graphVersion
+        [FromQuery] [Required] long graphVersion,
+        [FromQuery] bool disallowStairs = false,
+        [FromQuery] bool disallowElevators = false,
+        [FromQuery] bool disallowEscalators = false
     )
     {
-        var route = await routingService.FindRoute(from, to, graphVersion);
+        var route = await routingService.FindRoute(
+            from,
+            to,
+            graphVersion,
+            disallowStairs,
+            disallowElevators,
+            disallowEscalators
+        );
         if (route == null)
             return TypedResults.NotFound();
 

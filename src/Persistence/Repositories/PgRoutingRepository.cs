@@ -21,13 +21,25 @@ public class PgRoutingRepository : IRoutingPort
     public async Task<IReadOnlyCollection<RouteSegment>> FindRoute(
         long sourceId,
         long targetId,
-        long graphVersion
+        long graphVersion,
+        bool disallowStairs,
+        bool disallowElevators,
+        bool disallowEscalators
     )
     {
         var routingNodesTable = db.RoutingNodes.EntityType.GetTableName();
         var routingEdgesTable = db.RoutingEdges.EntityType.GetTableName();
         // sqrt(dx^2 + dy^2), see https://docs.pgrouting.org/latest/en/aStar-family.html#astar-heuristics
         const int heuristic = 4;
+        var stairsQuery = disallowStairs
+            ? $" AND e.\"{nameof(RoutingEdge.IsStairs)}\" IS NOT TRUE"
+            : "";
+        var elevatorsQuery = disallowElevators
+            ? $" AND e.\"{nameof(RoutingEdge.IsElevator)}\" IS NOT TRUE"
+            : "";
+        var escalatorsQuery = disallowEscalators
+            ? $" AND e.\"{nameof(RoutingEdge.IsEscalator)}\" IS NOT TRUE"
+            : "";
         return await db.PgRoutingAStarOneToOneResults
             .FromSqlRaw(
                 "SELECT * FROM pgr_aStar("
@@ -48,6 +60,9 @@ public class PgRoutingRepository : IRoutingPort
                     + $"      ON n2.\"{nameof(RoutingNode.Id)}\" = e.\"{nameof(RoutingEdge.ToId)}\""
                     // this should be safe from sqli, since we have already validated that the value is a long
                     + $"   WHERE e.\"{nameof(RoutingEdge.Version)}\" = \'\'{graphVersion}\'\'"
+                    + stairsQuery
+                    + elevatorsQuery
+                    + escalatorsQuery
                     + $"', @sourceId, @targetId, heuristic := {heuristic}, factor := {GetFactor()})",
                 new NpgsqlParameter("version", graphVersion),
                 new NpgsqlParameter("sourceId", sourceId),
