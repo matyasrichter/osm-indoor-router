@@ -20,4 +20,8 @@ public class RoutingEdge
     public double Distance { get; set; }
     public long? SourceId { get; init; }
     public SourceType? SourceType { get; init; }
+
+    public bool IsElevator { get; set; }
+    public bool IsStairs { get; set; }
+    public bool IsEscalator { get; set; }
 }

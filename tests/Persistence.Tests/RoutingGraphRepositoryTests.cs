@@ -86,15 +86,29 @@ public sealed class RoutingGraphRepositoryTests : DbTestClass
         ).ToList();
         var toInsert = new HashSet<InMemoryEdge>()
         {
-            new(nodeIds[0], nodeIds[1], new(Array.Empty<Coordinate>()), 1, 3, null, 1),
             new(
-                nodeIds[0],
-                nodeIds[2],
-                new(Array.Empty<Coordinate>()),
-                3,
-                1,
-                new(SourceType.Line, 654),
-                2
+                FromId: nodeIds[0],
+                ToId: nodeIds[1],
+                Geometry: new(Array.Empty<Coordinate>()),
+                Cost: 1,
+                ReverseCost: 3,
+                Source: null,
+                Distance: 1,
+                IsElevator: false,
+                IsStairs: true,
+                IsEscalator: false
+            ),
+            new(
+                FromId: nodeIds[0],
+                ToId: nodeIds[2],
+                Geometry: new(Array.Empty<Coordinate>()),
+                Cost: 3,
+                ReverseCost: 1,
+                Source: new(SourceType.Line, 654),
+                Distance: 2,
+                IsElevator: true,
+                IsStairs: false,
+                IsEscalator: true
             )
         };
 
@@ -113,7 +127,10 @@ public sealed class RoutingGraphRepositoryTests : DbTestClass
                         Cost = 1,
                         ReverseCost = 3,
                         SourceId = null,
-                        Distance = 1
+                        Distance = 1,
+                        IsElevator = false,
+                        IsStairs = true,
+                        IsEscalator = false
                     },
                     new()
                     {
@@ -124,7 +141,10 @@ public sealed class RoutingGraphRepositoryTests : DbTestClass
                         ReverseCost = 1,
                         SourceId = 654,
                         SourceType = SourceType.Line,
-                        Distance = 2
+                        Distance = 2,
+                        IsElevator = true,
+                        IsStairs = false,
+                        IsEscalator = true
                     }
                 },
                 o => o.Excluding(x => x.Id).Excluding(x => x.From).Excluding(x => x.To)

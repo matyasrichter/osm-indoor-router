@@ -46,7 +46,10 @@ public class RoutingGraphRepository : IGraphSavingPort, IGraphVersionProvider, I
                         ReverseCost = e.ReverseCost,
                         SourceId = e.Source?.Id,
                         SourceType = e.Source?.Type,
-                        Distance = e.Distance
+                        Distance = e.Distance,
+                        IsElevator = e.IsElevator,
+                        IsStairs = e.IsStairs,
+                        IsEscalator = e.IsEscalator
                     }
             )
             .ToList();
