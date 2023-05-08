@@ -48,7 +48,7 @@ public static class GeometryExtensions
                 * Math.Sin(deltaLon / 2)
             );
 
-        var greatCircleDistance = 2 * Math.Asin(Math.Min(1, Math.Sqrt(x)));
+        var greatCircleDistance = 2 * Math.Atan2(Math.Sqrt(x), Math.Sqrt(1 - x));
 
         return radius * greatCircleDistance;
     }

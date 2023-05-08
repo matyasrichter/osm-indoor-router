@@ -13,6 +13,7 @@ public class GeometryExtensionsTests
     [InlineData(0, 0, 0, 0, 0, 0)]
     [InlineData(0, 0, 0, 0, 1, 3)]
     [InlineData(0, 45, 45, 0, 0, 6672_000)]
+    [InlineData(50.1044647, 14.3893194, 50.1045851, 14.3890526, 0, 23.27)]
     public void CanCalculateDistance(
         double latA,
         double lonA,
