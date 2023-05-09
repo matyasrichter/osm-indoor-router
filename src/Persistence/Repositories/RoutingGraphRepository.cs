@@ -6,7 +6,6 @@ using GraphBuilding;
 using GraphBuilding.Ports;
 using Microsoft.EntityFrameworkCore;
 using NetTopologySuite.Geometries;
-using Npgsql;
 using Routing.Entities;
 using Routing.Ports;
 
@@ -60,10 +59,42 @@ public class RoutingGraphRepository : IGraphSavingPort, IGraphInformationProvide
         return toInsert.Select(x => x.Id);
     }
 
-    public async Task RemoveNodesWithoutEdges() =>
-        await db.RoutingNodes
+    public async Task<int> RemoveNodesWithoutEdges(long version)
+    {
+        var removed = await db.RoutingNodes
+            .Where(x => x.Version == version)
             .Where(n => !db.RoutingEdges.Any(e => e.FromId == n.Id || e.ToId == n.Id))
             .ExecuteDeleteAsync();
+        _ = await db.SaveChangesAsync();
+        return removed;
+    }
+
+    public async Task<int> RemoveSmallComponents(decimal threshold, long version)
+    {
+        var edgeCount = await db.Database
+            .SqlQuery<long>(
+                $"select count(*) as \"Value\" from \"RoutingEdges\" where \"Version\" = {version}"
+            )
+            .SingleAsync();
+        var removeSmallerThan = edgeCount * threshold;
+        var removed = await db.Database.ExecuteSqlRawAsync(
+            $@"WITH nodeIds AS (SELECT unnest(nodes) as id
+                     FROM (SELECT component, ARRAY_AGG(node) AS nodes
+                           FROM pgr_connectedComponents(
+                                   'SELECT ""Id"" as id, ""FromId"" as source, ""ToId"" as target, ""Cost"" as cost, ""ReverseCost"" as reverse_cost FROM ""RoutingEdges"" r WHERE r.""Version"" = {version}'
+                    )
+                    GROUP BY component
+                        HAVING COUNT(node) < {removeSmallerThan}) as subquery)
+            DELETE
+                FROM ""RoutingEdges"" AS e
+            USING nodeIds AS n
+            WHERE e.""Version"" = {version}
+                AND (e.""FromId"" = n.id OR e.""ToId"" = n.id)
+                AND (n.id IS NOT NULL)"
+        );
+        _ = await db.SaveChangesAsync();
+        return removed;
+    }
 
     public async Task<long> AddVersion()
     {

@@ -192,13 +192,77 @@ public sealed class RoutingGraphRepositoryTests : DbTestClass
         (await DbContext.RoutingNodes.CountAsync()).Should().Be(4);
         (await DbContext.RoutingEdges.CountAsync()).Should().Be(2);
 
-        await repo.RemoveNodesWithoutEdges();
+        await repo.RemoveNodesWithoutEdges(version);
 
         (await DbContext.RoutingNodes.ToListAsync())
             .Select(x => x.Id)
             .Should()
             .BeEquivalentTo(nodeIds.Take(3));
         (await DbContext.RoutingEdges.CountAsync()).Should().Be(2);
+    }
+
+    [Fact]
+    public async Task CanRemoveSmallComponents()
+    {
+        var repo = new RoutingGraphRepository(
+            DbContext,
+            new TestingTimeMachine() { Now = new(2021, 1, 20, 11, 0, 0, DateTimeKind.Utc) }
+        );
+
+        var version = await repo.AddVersion();
+        var nodeIds = (
+            await repo.SaveNodes(
+                Enumerable.Repeat<InMemoryNode>(new(new(1, 2), 0m, null), 50),
+                version
+            )
+        ).ToList();
+        var largeComponent = new HashSet<InMemoryEdge>(
+            Enumerable
+                .Range(0, 44)
+                .Select(
+                    i =>
+                        new InMemoryEdge(
+                            nodeIds[i],
+                            nodeIds[i + 1],
+                            LineString.Empty,
+                            1,
+                            1,
+                            new(SourceType.Line, 1),
+                            1
+                        )
+                )
+        );
+        await repo.SaveEdges(largeComponent, version);
+
+        var smallComponent = new HashSet<InMemoryEdge>(
+            Enumerable
+                .Range(45, 4)
+                .Select(
+                    i =>
+                        new InMemoryEdge(
+                            nodeIds[i],
+                            nodeIds[i + 1],
+                            LineString.Empty,
+                            1,
+                            1,
+                            new(SourceType.Line, 1),
+                            1
+                        )
+                )
+        );
+        await repo.SaveEdges(smallComponent, version);
+
+        (await DbContext.RoutingNodes.CountAsync()).Should().Be(50);
+        (await DbContext.RoutingEdges.CountAsync()).Should().Be(48);
+
+        await repo.RemoveSmallComponents(0.5m, version);
+
+        (await DbContext.RoutingNodes.CountAsync()).Should().Be(50);
+        (await DbContext.RoutingEdges.CountAsync()).Should().Be(44);
+
+        await repo.RemoveNodesWithoutEdges(version);
+        (await DbContext.RoutingNodes.CountAsync()).Should().Be(45);
+        (await DbContext.RoutingEdges.CountAsync()).Should().Be(44);
     }
 
     public static TheoryData<
