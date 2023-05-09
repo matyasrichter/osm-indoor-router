@@ -529,6 +529,10 @@
 			background-color: #005b96;
 			border-color: #005b96;
 			color: white;
+
+            @media only screen and (min-width: 768px) {
+                margin: auto;
+            }
 		}
 
 		.allow-features-checkboxes {
