@@ -165,7 +165,12 @@ public partial class GraphBuilder : IGraphBuilder
                     .Select(mp =>
                     {
                         LogProcessingItem(nameof(OsmMultiPolygon), mp.AreaId);
-                        if (IsRoutableArea(mp.Tags))
+                        if (IsLevelConnectingArea(mp.Tags))
+                            return (
+                                mp,
+                                connectingAreaProcessor.Process(mp, points, SourceType.Polygon)
+                            );
+                        else if (IsRoutableArea(mp.Tags))
                             return (
                                 mp,
                                 areaProcessor.Process(
@@ -213,7 +218,8 @@ public partial class GraphBuilder : IGraphBuilder
     private static bool IsLevelConnectingArea(IReadOnlyDictionary<string, string> tags) =>
         tags.GetValueOrDefault("indoor") is "area" or "room"
         && (
-            tags.GetValueOrDefault("stairs") is "yes"
+            tags.GetValueOrDefault("room") is "stairs" or "elevator"
+            || tags.GetValueOrDefault("stairs") is "yes"
             || tags.GetValueOrDefault("highway") is "elevator"
         );
 
