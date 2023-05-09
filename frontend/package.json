@@ -41,6 +41,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@zerodevx/svelte-toast": "^0.9.3",
 		"mapbox-gl-indoorequal": "^0.2.16",
 		"maplibre-gl": "^2.4.0",
 		"normalize.css": "^8.0.1"
