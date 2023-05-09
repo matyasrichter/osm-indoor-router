@@ -1,5 +1,6 @@
 <script>
 	import 'normalize.css';
+    import { SvelteToast } from '@zerodevx/svelte-toast'
 </script>
 
 <svelte:head>
@@ -7,6 +8,7 @@
 </svelte:head>
 <div class="wrapper">
 	<slot />
+    <SvelteToast />
 </div>
 
 <style>

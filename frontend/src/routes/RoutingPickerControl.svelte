@@ -21,7 +21,8 @@
 	import IndoorEqual from 'mapbox-gl-indoorequal';
 	import FaAngleDoubleUp from 'svelte-icons/fa/FaAngleDoubleUp.svelte';
 	import FaAngleDoubleDown from 'svelte-icons/fa/FaAngleDoubleDown.svelte';
-	import { prevent_default } from 'svelte/internal';
+	import { toast } from '@zerodevx/svelte-toast';
+	import { debug } from 'svelte/internal';
 
 	// this is necessary because maplibre is a CommonJs module
 	const { LngLatBounds } = maplibre;
@@ -156,7 +157,11 @@
 				graphVersion: config.graphVersion
 			})
 			.catch((error) => {
-				console.error(error);
+				if (error.response.status == 404) {
+					toastError('Could not find any points, please try a different floor.');
+				} else {
+					console.error(error);
+				}
 				return Promise.resolve(null);
 			});
 	}
@@ -178,8 +183,24 @@
 				route = data;
 				await onFirstRouteAdd(data);
 			})
-			.catch((error) => console.error(error));
+			.catch((error) => {
+				if (error.response.status == 404) {
+					toastError('Could not find a route between the selected points.');
+				} else {
+					console.error(error);
+				}
+			});
 	}
+
+	const toastError = (msg: string) => {
+		toast.push(msg, {
+			theme: {
+				'--toastColor': 'white',
+				'--toastBackground': '#b10000',
+				'--toastBarBackground': 'white'
+			}
+		});
+	};
 
 	const routeLayerName = 'route';
 	const routeSourceName = 'route';
@@ -458,7 +479,6 @@
 		border-radius: 4px;
 		float: left;
 		margin: 10px 0 0 10px;
-		font-family: 'Helvetica Neue', Arial, Helvetica, sans-serif;
 	}
 
 	.routing-buttons {
@@ -530,9 +550,9 @@
 			border-color: #005b96;
 			color: white;
 
-            @media only screen and (min-width: 768px) {
-                margin: auto;
-            }
+			@media only screen and (min-width: 768px) {
+				margin: auto;
+			}
 		}
 
 		.allow-features-checkboxes {

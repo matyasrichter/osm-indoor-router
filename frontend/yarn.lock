@@ -1103,6 +1103,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@zerodevx/svelte-toast@npm:^0.9.3":
+  version: 0.9.3
+  resolution: "@zerodevx/svelte-toast@npm:0.9.3"
+  peerDependencies:
+    svelte: ^3.57.0
+  checksum: dc27d9636a4ba51f3e57b2c11de841b323b535d7b3c8f2cdee9a24c4add0208f49839fa470e82b8ef6e829214732eddcce46e6ad516c29eaadf823b941d656a5
+  languageName: node
+  linkType: hard
+
 "abbrev@npm:^1.0.0":
   version: 1.1.1
   resolution: "abbrev@npm:1.1.1"
@@ -2325,6 +2334,7 @@ __metadata:
     "@tsconfig/svelte": ^4.0.1
     "@typescript-eslint/eslint-plugin": ^5.59.1
     "@typescript-eslint/parser": ^5.59.0
+    "@zerodevx/svelte-toast": ^0.9.3
     eslint: ^8.38.0
     eslint-config-prettier: ^8.8.0
     eslint-plugin-svelte3: ^4.0.0
