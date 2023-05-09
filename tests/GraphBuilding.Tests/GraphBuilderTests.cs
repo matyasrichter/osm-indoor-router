@@ -47,6 +47,10 @@ public class GraphBuilderTests
             .Select(x => (x.FromId, x.ToId))
             .Should()
             .BeEquivalentTo(new List<(long, long)>() { (0, 1), (1, 2) });
+
+        holder.Edges.Where(x => x.IsStairs).Should().HaveCount(0);
+        holder.Edges.Where(x => x.IsEscalator).Should().HaveCount(0);
+        holder.Edges.Where(x => x.IsElevator).Should().HaveCount(0);
     }
 
     [Fact]
@@ -208,6 +212,9 @@ public class GraphBuilderTests
                 (4173362015, 1),
                 new[] { (4173362012, 1M), (4926914178, 1M), (4173362010, 1M) }
             );
+        holder.Edges.Where(x => x.IsStairs).Should().HaveCount(6);
+        holder.Edges.Where(x => x.IsEscalator).Should().HaveCount(0);
+        holder.Edges.Where(x => x.IsElevator).Should().HaveCount(0);
     }
 
     /// <summary>
