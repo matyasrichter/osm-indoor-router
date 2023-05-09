@@ -20,6 +20,9 @@ export interface RouteGetRequest {
 	from: number;
 	to: number;
 	graphVersion: number;
+	disallowStairs?: boolean;
+	disallowElevators?: boolean;
+	disallowEscalators?: boolean;
 }
 
 /**
@@ -65,6 +68,18 @@ export class RoutingApi extends runtime.BaseAPI {
 
 		if (requestParameters.graphVersion !== undefined) {
 			queryParameters['graphVersion'] = requestParameters.graphVersion;
+		}
+
+		if (requestParameters.disallowStairs !== undefined) {
+			queryParameters['disallowStairs'] = requestParameters.disallowStairs;
+		}
+
+		if (requestParameters.disallowElevators !== undefined) {
+			queryParameters['disallowElevators'] = requestParameters.disallowElevators;
+		}
+
+		if (requestParameters.disallowEscalators !== undefined) {
+			queryParameters['disallowEscalators'] = requestParameters.disallowEscalators;
 		}
 
 		const headerParameters: runtime.HTTPHeaders = {};

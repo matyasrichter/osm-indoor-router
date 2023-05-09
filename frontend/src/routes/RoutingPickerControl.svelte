@@ -13,20 +13,21 @@
 		type RouteNode,
 		RoutingApi,
 		SearchApi,
-		type Route
+		type Route,
+		type RoutingConfig
 	} from '../routing-api-client';
 	import { onMount } from 'svelte';
-	import { Button } from '@svelteuidev/core';
 	import { env } from '$env/dynamic/public';
 	import IndoorEqual from 'mapbox-gl-indoorequal';
 	import FaAngleDoubleUp from 'svelte-icons/fa/FaAngleDoubleUp.svelte';
 	import FaAngleDoubleDown from 'svelte-icons/fa/FaAngleDoubleDown.svelte';
+	import { prevent_default } from 'svelte/internal';
 
 	// this is necessary because maplibre is a CommonJs module
 	const { LngLatBounds } = maplibre;
 
 	export let map: Map | undefined;
-	export let graphVersion: number;
+	export let config: RoutingConfig;
 	let indoorEqual: IndoorEqual;
 	let container: HTMLDivElement;
 	let control: RoutingPickerControl;
@@ -37,6 +38,9 @@
 
 	let startNode: RouteNode | null = null;
 	let targetNode: RouteNode | null = null;
+	let allowStairs: boolean = true;
+	let allowEscalators: boolean = true;
+	let allowElevators: boolean = true;
 
 	let route: Route | null = null;
 	let routeMarkers: maplibregl.Marker[] = [];
@@ -96,12 +100,12 @@
 	}
 
 	$: if (map != undefined && startNode != null) {
-		addRoutePoint([startNode.longitude, startNode.latitude], 'green', 'start');
+		addRoutePoint([startNode.longitude, startNode.latitude], '#008000', 'start');
 	} else {
 		removeRoutePoint('start');
 	}
 	$: if (map != undefined && targetNode != null) {
-		addRoutePoint([targetNode.longitude, targetNode.latitude], 'red', 'target');
+		addRoutePoint([targetNode.longitude, targetNode.latitude], '#b10000', 'target');
 	} else {
 		removeRoutePoint('target');
 	}
@@ -149,7 +153,7 @@
 				longitude: lngLat.lng,
 				latitude: lngLat.lat,
 				level: level,
-				graphVersion: graphVersion
+				graphVersion: config.graphVersion
 			})
 			.catch((error) => {
 				console.error(error);
@@ -162,7 +166,14 @@
 			return;
 		}
 		await routingApi
-			.routeGet({ from: startNode.id, to: targetNode.id, graphVersion: graphVersion })
+			.routeGet({
+				from: startNode.id,
+				to: targetNode.id,
+				graphVersion: config.graphVersion,
+				disallowStairs: !allowStairs,
+				disallowEscalators: !allowEscalators,
+				disallowElevators: !allowElevators
+			})
 			.then(async (data) => {
 				route = data;
 				await onFirstRouteAdd(data);
@@ -347,42 +358,73 @@
 
 <div bind:this={container} class="ctrl">
 	<div class="routing-buttons">
-		<div>
-			<span>Start</span>
-			<Button
-				color="green"
-				override={{
-					width: '100px'
-				}}
-				on:click={() => (pickingStart = !pickingStart)}
-				variant={pickingStart ? 'outline' : 'filled'}
-			>
-				{#if pickingStart}
-					Cancel
-				{:else}
-					Pick
-				{/if}
-			</Button>
+		<div class="node-pickers">
+			<div>
+				<span>Start</span>
+				<button
+					type="button"
+					class="start-button"
+					class:picking={pickingStart}
+					on:click|preventDefault={() => (pickingStart = !pickingStart)}
+				>
+					{#if pickingStart}
+						Cancel
+					{:else}
+						Pick
+					{/if}
+				</button>
+			</div>
+			<div>
+				<span>Target</span>
+				<button
+					type="button"
+					class="target-button"
+					class:picking={pickingTarget}
+					on:click|preventDefault={() => (pickingTarget = !pickingTarget)}
+				>
+					{#if pickingTarget}
+						Cancel
+					{:else}
+						Pick
+					{/if}
+				</button>
+			</div>
 		</div>
-		<div>
-			<span>Target</span>
-			<Button
-				color="red"
-				override={{
-					width: '100px'
-				}}
-				on:click={() => (pickingTarget = !pickingTarget)}
-				variant={pickingTarget ? 'outline' : 'filled'}
-			>
-				{#if pickingTarget}
-					Cancel
-				{:else}
-					Pick
-				{/if}
-			</Button>
+		<div class="allow-features-checkboxes">
+			{#if config.hasStairs}
+				<div>
+					<label for="allowStairs">Stairs</label><input
+						id="allowStairs"
+						type="checkbox"
+						bind:checked={allowStairs}
+					/>
+				</div>
+			{/if}
+			{#if config.hasElevators}
+				<div>
+					<label for="allowElevators">Elevators</label><input
+						id="allowElevators"
+						type="checkbox"
+						bind:checked={allowElevators}
+					/>
+				</div>
+			{/if}
+			{#if config.hasEscalators}
+				<div>
+					<label for="allowEscalators">Escalators</label><input
+						id="allowEscalators"
+						type="checkbox"
+						bind:checked={allowEscalators}
+					/>
+				</div>
+			{/if}
 		</div>
 		<div class="submit-button">
-			<Button disabled={!startNode || !targetNode} on:click={getRoute}>Find route</Button>
+			<button
+				type="submit"
+				disabled={!startNode || !targetNode}
+				on:click|preventDefault={getRoute}>Find route</button
+			>
 		</div>
 	</div>
 	{#if route}
@@ -416,34 +458,92 @@
 		border-radius: 4px;
 		float: left;
 		margin: 10px 0 0 10px;
+		font-family: 'Helvetica Neue', Arial, Helvetica, sans-serif;
 	}
 
 	.routing-buttons {
 		background: white;
 		padding: 1em;
+		display: flex;
+		flex-direction: row;
 
+		@media only screen and (min-width: 768px) {
+			flex-direction: column;
+		}
 		> div {
-			margin: 0.5em 0;
-			height: 3em;
 			display: flex;
-			justify-content: space-between;
+			flex-direction: column;
+			justify-content: space-evenly;
+		}
 
-			span:first-child {
-				font-size: 2em;
-				margin: auto 0.5em auto 0;
-			}
+		button {
+			cursor: pointer;
+			border-radius: 4px;
+			border-style: solid;
+			width: 4em;
+		}
 
-			&:first-child {
-				margin-top: 0;
-			}
-			&:last-child {
-				margin-bottom: 0;
+		> div.node-pickers {
+			margin: 0.5em;
+			> div {
+				display: flex;
+				justify-content: space-between;
+				font-size: 1.2rem;
+
+				&:not(:last-child) {
+					margin-bottom: 0.2em;
+				}
+				span:first-child {
+					margin: auto 0.5em auto 0;
+				}
+
+				button {
+					&.start-button {
+						background-color: #008000;
+						border-color: #008000;
+						color: white;
+
+						&.picking {
+							background-color: white;
+							color: #008000;
+						}
+					}
+					&.target-button {
+						background-color: #b10000;
+						border-color: #b10000;
+						color: white;
+
+						&.picking {
+							background-color: white;
+							color: #b10000;
+						}
+					}
+				}
 			}
 		}
-		.submit-button {
-			margin-top: 1em;
+
+		.submit-button button {
+			font-size: 1.5em;
+			width: 6em;
+			padding: 0.2em;
+			background-color: #005b96;
+			border-color: #005b96;
+			color: white;
+		}
+
+		.allow-features-checkboxes {
 			display: flex;
-			justify-content: center;
+			flex-direction: column;
+			margin: 0.5rem;
+
+			> div {
+				display: flex;
+				justify-content: space-between;
+
+				input {
+					margin-left: 0.2rem;
+				}
+			}
 		}
 	}
 	.route-info {
