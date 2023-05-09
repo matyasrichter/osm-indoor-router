@@ -1,28 +1,22 @@
 namespace GraphBuilding.ElementProcessors;
 
 using Parsers;
-using NetTopologySuite.Geometries;
 
-public abstract class BaseOsmProcessor
+internal static class ProcessorUtils
 {
-    protected static readonly GeometryFactory Gf = new(new(), 4326);
-    protected LevelParser LevelParser { get; }
-
-    protected BaseOsmProcessor(LevelParser levelParser) => LevelParser = levelParser;
-
-    protected (
+    public static (
         decimal OgLevel,
         decimal LevelDiff,
         IList<decimal> RepeatOnLevels
-    ) ExtractLevelInformation(IReadOnlyDictionary<string, string> tags)
+    ) ExtractLevelInformation(LevelParser levelParser, IReadOnlyDictionary<string, string> tags)
     {
         var levelTag = tags.GetValueOrDefault("level");
         var repeatOnTag = tags.GetValueOrDefault("repeat_on");
         var levels = (
-            levelTag is null ? Enumerable.Empty<decimal>() : LevelParser.Parse(levelTag)
+            levelTag is null ? Enumerable.Empty<decimal>() : levelParser.Parse(levelTag)
         ).ToList();
         var repeatOnLevels = (
-            repeatOnTag is null ? Enumerable.Empty<decimal>() : LevelParser.Parse(repeatOnTag)
+            repeatOnTag is null ? Enumerable.Empty<decimal>() : levelParser.Parse(repeatOnTag)
         ).ToList();
 
         var ogLevel =
@@ -37,20 +31,23 @@ public abstract class BaseOsmProcessor
         return (ogLevel, levelDiff, repeatOnLevels);
     }
 
-    protected decimal? ExtractNodeLevelInformation(IReadOnlyDictionary<string, string> tags)
+    public static decimal? ExtractNodeLevelInformation(
+        LevelParser levelParser,
+        IReadOnlyDictionary<string, string> tags
+    )
     {
         var levelTag = tags.GetValueOrDefault("level");
         var repeatOnTag = tags.GetValueOrDefault("repeat_on");
         // we need the lowest (original) level of the node
         // taking min handles cases where a node is incorrectly tagged with multiple levels
         return levelTag is not null
-            ? LevelParser.Parse(levelTag).Min()
+            ? levelParser.Parse(levelTag).Min()
             : repeatOnTag is not null
-                ? LevelParser.Parse(repeatOnTag).Min()
+                ? levelParser.Parse(repeatOnTag).Min()
                 : null;
     }
 
-    protected static IEnumerable<(decimal LowestLevel, ProcessingResult Result)> DuplicateResults(
+    public static IEnumerable<(decimal LowestLevel, ProcessingResult Result)> DuplicateResults(
         ProcessingResult ogResult,
         IList<decimal> repeatOnLevels,
         decimal ogLevel
@@ -71,7 +68,7 @@ public abstract class BaseOsmProcessor
             )
             .Prepend((ogLevel, ogResult));
 
-    protected static ProcessingResult JoinResults(IEnumerable<ProcessingResult> results)
+    public static ProcessingResult JoinResults(IEnumerable<ProcessingResult> results)
     {
         var nodes = new List<InMemoryNode>();
         var edges = new List<InMemoryEdge>();

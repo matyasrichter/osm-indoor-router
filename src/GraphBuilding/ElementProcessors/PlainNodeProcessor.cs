@@ -3,14 +3,18 @@ namespace GraphBuilding.ElementProcessors;
 using Parsers;
 using Ports;
 
-public class PlainNodeProcessor : BaseOsmProcessor
+public class PlainNodeProcessor
 {
-    public PlainNodeProcessor(LevelParser levelParser)
-        : base(levelParser) { }
+    private LevelParser LevelParser { get; }
+
+    public PlainNodeProcessor(LevelParser levelParser) => LevelParser = levelParser;
 
     public ProcessingResult Process(OsmPoint source)
     {
-        var (ogLevel, _, repeatOnLevels) = ExtractLevelInformation(source.Tags);
+        var (ogLevel, _, repeatOnLevels) = ProcessorUtils.ExtractLevelInformation(
+            LevelParser,
+            source.Tags
+        );
         return new(
             repeatOnLevels
                 .Prepend(ogLevel)
