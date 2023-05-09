@@ -41,7 +41,11 @@ public partial class MapProcessor
                 .ToDictionary(x => x.First, x => x.Second)
         );
         _ = await savingPort.SaveEdges(edgesToInsert, version);
-        await savingPort.RemoveNodesWithoutEdges();
+        const decimal removeSmallerThan = 0.1m;
+        var removedComponents = await savingPort.RemoveSmallComponents(removeSmallerThan, version);
+        LogRemovedEdgesFromSmallComponents(removeSmallerThan, removedComponents);
+        var removedNodes = await savingPort.RemoveNodesWithoutEdges(version);
+        LogRemovedNodesWithoutEdges(removedNodes);
         await savingPort.FinalizeVersion(version);
     }
 
@@ -50,4 +54,16 @@ public partial class MapProcessor
         Message = "Built graph with {EdgeCount} edges, {NodeCount} nodes"
     )]
     private partial void LogBuiltGraph(int edgeCount, int nodeCount);
+
+    [LoggerMessage(
+        Level = LogLevel.Information,
+        Message = "Pruned edges from components smaller than {Threshold} of all edges: {RemovedCount} removed"
+    )]
+    private partial void LogRemovedEdgesFromSmallComponents(decimal threshold, int removedCount);
+
+    [LoggerMessage(
+        Level = LogLevel.Information,
+        Message = "Pruned nodes without edges: {RemovedCount} removed"
+    )]
+    private partial void LogRemovedNodesWithoutEdges(int removedCount);
 }
