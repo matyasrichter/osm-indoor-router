@@ -4,14 +4,18 @@ using NetTopologySuite.Geometries;
 using Parsers;
 using Ports;
 
-public class EntranceNodeProcessor : BaseOsmProcessor
+public class EntranceNodeProcessor
 {
-    public EntranceNodeProcessor(LevelParser levelParser)
-        : base(levelParser) { }
+    private LevelParser LevelParser { get; }
+
+    public EntranceNodeProcessor(LevelParser levelParser) => LevelParser = levelParser;
 
     public ProcessingResult Process(OsmPoint source)
     {
-        var (ogLevel, _, repeatOnLevels) = ExtractLevelInformation(source.Tags);
+        var (ogLevel, _, repeatOnLevels) = ProcessorUtils.ExtractLevelInformation(
+            LevelParser,
+            source.Tags
+        );
 
         var nodes = repeatOnLevels
             .Prepend(ogLevel)

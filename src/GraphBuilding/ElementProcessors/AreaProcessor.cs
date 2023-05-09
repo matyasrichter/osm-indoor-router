@@ -6,10 +6,13 @@ using Ports;
 using Microsoft.FSharp.Collections;
 using NetTopologySuite.Geometries;
 
-public class AreaProcessor : BaseOsmProcessor
+public class AreaProcessor
 {
-    public AreaProcessor(LevelParser levelParser)
-        : base(levelParser) { }
+    private static readonly GeometryFactory Gf = new(new(), 4326);
+
+    private LevelParser LevelParser { get; }
+
+    public AreaProcessor(LevelParser levelParser) => LevelParser = levelParser;
 
     public ProcessingResult Process(
         OsmMultiPolygon source,
@@ -18,8 +21,11 @@ public class AreaProcessor : BaseOsmProcessor
         SourceType sourceType
     )
     {
-        var (ogLevel, _, repeatOnLevels) = ExtractLevelInformation(source.Tags);
-        var resultsWithLevels = DuplicateResults(
+        var (ogLevel, _, repeatOnLevels) = ProcessorUtils.ExtractLevelInformation(
+            LevelParser,
+            source.Tags
+        );
+        var resultsWithLevels = ProcessorUtils.DuplicateResults(
             ProcessSingleLevel(source, ogLevel, points, sourceType),
             repeatOnLevels,
             ogLevel
@@ -40,7 +46,7 @@ public class AreaProcessor : BaseOsmProcessor
                     sourceType
                 )
         );
-        return JoinResults(results);
+        return ProcessorUtils.JoinResults(results);
     }
 
     private static ProcessingResult ProcessSingleLevel(

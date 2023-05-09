@@ -4,18 +4,24 @@ using NetTopologySuite.Geometries;
 using Parsers;
 using Ports;
 
-public class ElevatorNodeProcessor : BaseOsmProcessor
+public class ElevatorNodeProcessor
 {
-    public ElevatorNodeProcessor(LevelParser levelParser)
-        : base(levelParser) { }
+    private LevelParser LevelParser { get; }
+
+    public ElevatorNodeProcessor(LevelParser levelParser) => LevelParser = levelParser;
 
     public ProcessingResult Process(OsmPoint source)
     {
-        var (ogLevel, _, repeatOnLevels) = ExtractLevelInformation(source.Tags);
+        var (ogLevel, _, repeatOnLevels) = ProcessorUtils.ExtractLevelInformation(
+            LevelParser,
+            source.Tags
+        );
         var ogResult = ProcessOgLevel(source);
         if (repeatOnLevels.Count > 0)
-            return JoinResults(
-                DuplicateResults(ogResult, repeatOnLevels, ogLevel).Select(x => x.Result)
+            return ProcessorUtils.JoinResults(
+                ProcessorUtils
+                    .DuplicateResults(ogResult, repeatOnLevels, ogLevel)
+                    .Select(x => x.Result)
             );
         return ogResult;
     }

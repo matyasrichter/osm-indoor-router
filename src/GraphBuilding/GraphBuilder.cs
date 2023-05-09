@@ -127,31 +127,27 @@ public partial class GraphBuilder : IGraphBuilder
     )
     {
         var areaProcessor = new AreaProcessor(levelParser);
+        var connectingAreaProcessor = new LevelConnectingAreaProcessor(levelParser);
         var wallProcessor = new WallProcessor(levelParser);
         return polygons.Values
             .AsParallel()
             .Select(polygon =>
             {
                 LogProcessingItem(nameof(OsmPolygon), polygon.AreaId);
-                if (IsRoutableArea(polygon.Tags))
+                if (IsLevelConnectingArea(polygon.Tags))
+                    return (
+                        polygon,
+                        connectingAreaProcessor.Process(
+                            PolygonToMultiPolygon(polygon),
+                            points,
+                            SourceType.Polygon
+                        )
+                    );
+                else if (IsRoutableArea(polygon.Tags))
                     return (
                         polygon,
                         areaProcessor.Process(
-                            // convert to a multipolygon with a single polygon
-                            new(
-                                polygon.AreaId,
-                                polygon.Tags,
-                                new(new[] { polygon.Geometry }),
-                                new[]
-                                {
-                                    new OsmLine(
-                                        polygon.AreaId,
-                                        polygon.Tags,
-                                        polygon.Nodes,
-                                        polygon.GeometryAsLinestring
-                                    )
-                                }
-                            ),
+                            PolygonToMultiPolygon(polygon),
                             holder.GetNodesInArea(polygon.Geometry.EnvelopeInternal),
                             points,
                             SourceType.Polygon
@@ -188,6 +184,23 @@ public partial class GraphBuilder : IGraphBuilder
             );
     }
 
+    private static OsmMultiPolygon PolygonToMultiPolygon(OsmPolygon polygon) =>
+        // convert to a multipolygon with a single polygon
+        new(
+            polygon.AreaId,
+            polygon.Tags,
+            new(new[] { polygon.Geometry }),
+            new[]
+            {
+                new OsmLine(
+                    polygon.AreaId,
+                    polygon.Tags,
+                    polygon.Nodes,
+                    polygon.GeometryAsLinestring
+                )
+            }
+        );
+
     private static bool IsWalledElement(IReadOnlyDictionary<string, string> tags) =>
         tags.GetValueOrDefault("walls") is not "no"
         && (
@@ -195,6 +208,13 @@ public partial class GraphBuilder : IGraphBuilder
             || tags.GetValueOrDefault("barrier") is "wall" or "fence"
             || tags.GetValueOrDefault("building") is not null and not "roof"
             || tags.GetValueOrDefault("public_transport") is "platform"
+        );
+
+    private static bool IsLevelConnectingArea(IReadOnlyDictionary<string, string> tags) =>
+        tags.GetValueOrDefault("indoor") is "area" or "room"
+        && (
+            tags.GetValueOrDefault("stairs") is "yes"
+            || tags.GetValueOrDefault("highway") is "elevator"
         );
 
     private static bool IsRoutableArea(IReadOnlyDictionary<string, string> tags) =>

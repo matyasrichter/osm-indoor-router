@@ -5,10 +5,12 @@ using NetTopologySuite.Geometries;
 using Parsers;
 using Ports;
 
-public class WallProcessor : BaseOsmProcessor
+public class WallProcessor
 {
-    public WallProcessor(LevelParser levelParser)
-        : base(levelParser) { }
+    private static readonly GeometryFactory Gf = new(new(), 4326);
+    private LevelParser LevelParser { get; }
+
+    public WallProcessor(LevelParser levelParser) => LevelParser = levelParser;
 
     public ProcessingResult Process(OsmLine source) =>
         Process(source.Tags, source.Nodes.Zip(source.Geometry.Coordinates));
@@ -24,11 +26,16 @@ public class WallProcessor : BaseOsmProcessor
         IEnumerable<(long, Coordinate)> source
     )
     {
-        var (ogLevel, _, repeatOnLevels) = ExtractLevelInformation(tags);
+        var (ogLevel, _, repeatOnLevels) = ProcessorUtils.ExtractLevelInformation(
+            LevelParser,
+            tags
+        );
         var ogLevelLine = ProcessSingleLevel(source, ogLevel);
         if (repeatOnLevels.Count > 0)
-            return JoinResults(
-                DuplicateResults(ogLevelLine, repeatOnLevels, ogLevel).Select(x => x.Result)
+            return ProcessorUtils.JoinResults(
+                ProcessorUtils
+                    .DuplicateResults(ogLevelLine, repeatOnLevels, ogLevel)
+                    .Select(x => x.Result)
             );
         return ogLevelLine;
     }

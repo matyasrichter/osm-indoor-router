@@ -1,20 +1,28 @@
 namespace GraphBuilding.ElementProcessors;
 
+using NetTopologySuite.Geometries;
 using Parsers;
 using Ports;
 
-public class HighwayWayProcessor : BaseOsmProcessor
+public class HighwayWayProcessor
 {
-    public HighwayWayProcessor(LevelParser levelParser)
-        : base(levelParser) { }
+    private static readonly GeometryFactory Gf = new(new(), 4326);
+    private LevelParser LevelParser { get; }
+
+    public HighwayWayProcessor(LevelParser levelParser) => LevelParser = levelParser;
 
     public ProcessingResult Process(OsmLine source, IReadOnlyDictionary<long, OsmPoint> points)
     {
-        var (ogLevel, levelDiff, repeatOnLevels) = ExtractLevelInformation(source.Tags);
+        var (ogLevel, levelDiff, repeatOnLevels) = ProcessorUtils.ExtractLevelInformation(
+            LevelParser,
+            source.Tags
+        );
         var ogLevelLine = ProcessSingleLevel(source, ogLevel, levelDiff, points);
         if (repeatOnLevels.Count > 0)
-            return JoinResults(
-                DuplicateResults(ogLevelLine, repeatOnLevels, ogLevel).Select(x => x.Result)
+            return ProcessorUtils.JoinResults(
+                ProcessorUtils
+                    .DuplicateResults(ogLevelLine, repeatOnLevels, ogLevel)
+                    .Select(x => x.Result)
             );
         return ogLevelLine;
     }
@@ -38,7 +46,7 @@ public class HighwayWayProcessor : BaseOsmProcessor
             if (maxLevelOffset != 0)
             {
                 var nodeLevel = osmNode.Second?.Tags is not null
-                    ? ExtractNodeLevelInformation(osmNode.Second.Tags)
+                    ? ProcessorUtils.ExtractNodeLevelInformation(LevelParser, osmNode.Second.Tags)
                     : null;
                 currLevel = nodeLevel ?? currLevel;
                 // level connections are nodes "between" levels,
