@@ -38,6 +38,24 @@ export interface RoutingConfig {
 	 * @memberof RoutingConfig
 	 */
 	bbox: RoutingConfigBbox;
+	/**
+	 *
+	 * @type {boolean}
+	 * @memberof RoutingConfig
+	 */
+	hasStairs: boolean;
+	/**
+	 *
+	 * @type {boolean}
+	 * @memberof RoutingConfig
+	 */
+	hasEscalators: boolean;
+	/**
+	 *
+	 * @type {boolean}
+	 * @memberof RoutingConfig
+	 */
+	hasElevators: boolean;
 }
 
 /**
@@ -47,6 +65,9 @@ export function instanceOfRoutingConfig(value: object): boolean {
 	let isInstance = true;
 	isInstance = isInstance && 'graphVersion' in value;
 	isInstance = isInstance && 'bbox' in value;
+	isInstance = isInstance && 'hasStairs' in value;
+	isInstance = isInstance && 'hasEscalators' in value;
+	isInstance = isInstance && 'hasElevators' in value;
 
 	return isInstance;
 }
@@ -61,7 +82,10 @@ export function RoutingConfigFromJSONTyped(json: any, ignoreDiscriminator: boole
 	}
 	return {
 		graphVersion: json['graphVersion'],
-		bbox: RoutingConfigBboxFromJSON(json['bbox'])
+		bbox: RoutingConfigBboxFromJSON(json['bbox']),
+		hasStairs: json['hasStairs'],
+		hasEscalators: json['hasEscalators'],
+		hasElevators: json['hasElevators']
 	};
 }
 
@@ -74,6 +98,9 @@ export function RoutingConfigToJSON(value?: RoutingConfig | null): any {
 	}
 	return {
 		graphVersion: value.graphVersion,
-		bbox: RoutingConfigBboxToJSON(value.bbox)
+		bbox: RoutingConfigBboxToJSON(value.bbox),
+		hasStairs: value.hasStairs,
+		hasEscalators: value.hasEscalators,
+		hasElevators: value.hasElevators
 	};
 }

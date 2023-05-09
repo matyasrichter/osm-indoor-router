@@ -26,5 +26,8 @@ public record InMemoryEdge(
     double Cost,
     double ReverseCost,
     Source? Source,
-    double Distance
+    double Distance,
+    bool IsElevator = false,
+    bool IsStairs = false,
+    bool IsEscalator = false
 );

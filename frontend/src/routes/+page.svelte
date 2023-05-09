@@ -41,7 +41,7 @@
 </script>
 
 <div id="map" bind:this={mapContainer} />
-<RoutingPickerControl {map} graphVersion={data.graphVersion} />
+<RoutingPickerControl {map} config={data} />
 
 <style>
 	#map {

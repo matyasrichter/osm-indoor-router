@@ -4,6 +4,7 @@ using Entities.PgRouting;
 using Entities.Processed;
 using Entities.Raw;
 using Microsoft.EntityFrameworkCore;
+using Routing.Ports;
 
 public class RoutingDbContext : DbContext
 {
@@ -19,6 +20,9 @@ public class RoutingDbContext : DbContext
     public DbSet<OsmPolygon> OsmPolygons => Set<OsmPolygon>();
     public DbSet<OsmMultiPolygon> OsmMultiPolygons => Set<OsmMultiPolygon>();
     public DbSet<OsmMultiPolygonM2M> OsmMultiPolygonsM2M => Set<OsmMultiPolygonM2M>();
+
+    // todo: remove in EF Core 8.0
+    public DbSet<GraphFlags> GraphFlags => Set<GraphFlags>();
 
     public RoutingDbContext(DbContextOptions options)
         : base(options) { }
@@ -51,5 +55,7 @@ public class RoutingDbContext : DbContext
                 l => l.HasOne<OsmLine>().WithMany().HasForeignKey(e => e.OsmLineId),
                 r => r.HasOne<OsmMultiPolygon>().WithMany().HasForeignKey(e => e.OsmMultiPolygonId)
             );
+        // todo: remove in EF Core 8.0
+        _ = modelBuilder.Entity<GraphFlags>().HasNoKey().ToTable(x => x.ExcludeFromMigrations());
     }
 }

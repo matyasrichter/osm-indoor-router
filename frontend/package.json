@@ -41,8 +41,6 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"@svelteuidev/composables": "^0.10.0",
-		"@svelteuidev/core": "^0.10.0",
 		"mapbox-gl-indoorequal": "^0.2.16",
 		"maplibre-gl": "^2.4.0",
 		"normalize.css": "^8.0.1"

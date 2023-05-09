@@ -355,22 +355,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@floating-ui/core@npm:^0.7.2":
-  version: 0.7.3
-  resolution: "@floating-ui/core@npm:0.7.3"
-  checksum: f48f9fb0d19dcbe7a68c38e8de7fabb11f0c0e6e0ef215ae60b5004900bacb1386e7b89cb377d91a90ff7d147ea1f06c2905136ecf34dea162d9696d8f448d5f
-  languageName: node
-  linkType: hard
-
-"@floating-ui/dom@npm:0.5.2":
-  version: 0.5.2
-  resolution: "@floating-ui/dom@npm:0.5.2"
-  dependencies:
-    "@floating-ui/core": ^0.7.2
-  checksum: ff0897abed2e97a8d134b4dd8fa5309553eda3c25dbc2dbe8f7564b3eeac93d21d9334ae7c1ba1f1e5442ed119d82d2ce6935cd4ff607da1c0c6a913c493f5fc
-  languageName: node
-  linkType: hard
-
 "@gar/promisify@npm:^1.1.3":
   version: 1.1.3
   resolution: "@gar/promisify@npm:1.1.3"
@@ -720,13 +704,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@stitches/core@npm:1.2.8":
-  version: 1.2.8
-  resolution: "@stitches/core@npm:1.2.8"
-  checksum: 3a76a697b1d71ffb212e8b166f923c8f66ef99de93689dd417571f90fbba5692abb9a92220acd102baf5298896f0fdfeaa721da2d61adee1247531a26f67a15f
-  languageName: node
-  linkType: hard
-
 "@sveltejs/adapter-auto@npm:^2.0.0":
   version: 2.0.0
   resolution: "@sveltejs/adapter-auto@npm:2.0.0"
@@ -792,26 +769,6 @@ __metadata:
     svelte: ^3.54.0
     vite: ^4.0.0
   checksum: 2584728109c6d52d310c7112554afb5b029da2b077809bf7fc5841f489198921609fb1957ff85d4aa176e89a6f32713447a60eb3db57249244f8536b4bf36872
-  languageName: node
-  linkType: hard
-
-"@svelteuidev/composables@npm:^0.10.0":
-  version: 0.10.0
-  resolution: "@svelteuidev/composables@npm:0.10.0"
-  checksum: 4dcb7d539f721c54f63440b037140c5c15141f6163b23dd464e0966a8fe7a11c9ed662827f3ba16bed96eb74ec489cff8d020709c199a71dc79bda188ce3bbb7
-  languageName: node
-  linkType: hard
-
-"@svelteuidev/core@npm:^0.10.0":
-  version: 0.10.0
-  resolution: "@svelteuidev/core@npm:0.10.0"
-  dependencies:
-    "@floating-ui/dom": 0.5.2
-    "@stitches/core": 1.2.8
-  peerDependencies:
-    "@svelteuidev/composables": 0.10.0
-    svelte: ">=3.55.0"
-  checksum: bfb1464407c60753ec1891958d8937dbc8b2b32e5d557c429d03ed6da51084e66c37348e5f3a2d17f79ca90a9f17329fcc3c2dde1d60a8fba975184ff6a655f4
   languageName: node
   linkType: hard
 
@@ -2365,8 +2322,6 @@ __metadata:
     "@sveltejs/adapter-auto": ^2.0.0
     "@sveltejs/adapter-node": ^1.2.3
     "@sveltejs/kit": ^1.15.7
-    "@svelteuidev/composables": ^0.10.0
-    "@svelteuidev/core": ^0.10.0
     "@tsconfig/svelte": ^4.0.1
     "@typescript-eslint/eslint-plugin": ^5.59.1
     "@typescript-eslint/parser": ^5.59.0

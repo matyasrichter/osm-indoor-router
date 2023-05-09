@@ -83,16 +83,17 @@ public partial class GraphBuilder : IGraphBuilder
                     point.Tags.GetValueOrDefault("elevator") is "yes"
                     || point.Tags.GetValueOrDefault("highway") is "elevator"
                 )
-                    return elevatorProcessor.Process(point);
+                    return (point, elevatorProcessor.Process(point));
                 else if (point.Tags.GetValueOrDefault("entrance") is not null)
-                    return entranceNodeProcessor.Process(point);
+                    return (point, entranceNodeProcessor.Process(point));
                 else if (
                     HasAnyOfTags(point.Tags, "door", "level", "amenity", "shop", "name", "ref")
                 )
-                    return plainNodeProcessor.Process(point);
-                return null;
+                    return (point, plainNodeProcessor.Process(point));
+                return (point, null);
             })
-            .Where(x => x is not null)!;
+            .Where(x => x.Item2 is not null)
+            .Select(x => GetEdgesWithFlags(x.Item2!, x.point.Tags));
     }
 
     private IEnumerable<ProcessingResult> ProcessLines(
@@ -108,12 +109,13 @@ public partial class GraphBuilder : IGraphBuilder
             {
                 LogProcessingItem(nameof(OsmLine), line.WayId);
                 if (line.Tags.ContainsKey("highway"))
-                    return hwProcessor.Process(line, points);
+                    return (line, hwProcessor.Process(line, points));
                 else if (IsWalledElement(line.Tags))
-                    return wallProcessor.Process(line);
-                return null;
+                    return (line, wallProcessor.Process(line));
+                return (line, null);
             })
-            .Where(x => x is not null)!;
+            .Where(x => x.Item2 is not null)
+            .Select(x => GetEdgesWithFlags(x.Item2!, x.line.Tags));
     }
 
     private IEnumerable<ProcessingResult> ProcessPolygons(
@@ -132,30 +134,35 @@ public partial class GraphBuilder : IGraphBuilder
             {
                 LogProcessingItem(nameof(OsmPolygon), polygon.AreaId);
                 if (IsRoutableArea(polygon.Tags))
-                    return areaProcessor.Process(
-                        // convert to a multipolygon with a single polygon
-                        new(
-                            polygon.AreaId,
-                            polygon.Tags,
-                            new(new[] { polygon.Geometry }),
-                            new[]
-                            {
-                                new OsmLine(
-                                    polygon.AreaId,
-                                    polygon.Tags,
-                                    polygon.Nodes,
-                                    polygon.GeometryAsLinestring
-                                )
-                            }
-                        ),
-                        holder.GetNodesInArea(polygon.Geometry.EnvelopeInternal),
-                        points,
-                        SourceType.Polygon
+                    return (
+                        polygon,
+                        areaProcessor.Process(
+                            // convert to a multipolygon with a single polygon
+                            new(
+                                polygon.AreaId,
+                                polygon.Tags,
+                                new(new[] { polygon.Geometry }),
+                                new[]
+                                {
+                                    new OsmLine(
+                                        polygon.AreaId,
+                                        polygon.Tags,
+                                        polygon.Nodes,
+                                        polygon.GeometryAsLinestring
+                                    )
+                                }
+                            ),
+                            holder.GetNodesInArea(polygon.Geometry.EnvelopeInternal),
+                            points,
+                            SourceType.Polygon
+                        )
                     );
                 else if (IsWalledElement(polygon.Tags))
-                    return wallProcessor.Process(polygon);
-                return null;
+                    return (polygon, wallProcessor.Process(polygon));
+                return (polygon, null);
             })
+            .Where(x => x.Item2 is not null)
+            .Select(x => GetEdgesWithFlags(x.Item2!, x.polygon.Tags))
             .Concat(
                 multiPolygons.Values
                     .AsParallel()
@@ -163,18 +170,22 @@ public partial class GraphBuilder : IGraphBuilder
                     {
                         LogProcessingItem(nameof(OsmMultiPolygon), mp.AreaId);
                         if (IsRoutableArea(mp.Tags))
-                            return areaProcessor.Process(
+                            return (
                                 mp,
-                                holder.GetNodesInArea(mp.Geometry.EnvelopeInternal),
-                                points,
-                                SourceType.Multipolygon
+                                areaProcessor.Process(
+                                    mp,
+                                    holder.GetNodesInArea(mp.Geometry.EnvelopeInternal),
+                                    points,
+                                    SourceType.Multipolygon
+                                )
                             );
                         else if (IsWalledElement(mp.Tags))
-                            return wallProcessor.Process(mp);
-                        return null;
+                            return (mp, wallProcessor.Process(mp));
+                        return (mp, null);
                     })
-            )
-            .Where(x => x is not null)!;
+                    .Where(x => x.Item2 is not null)
+                    .Select(x => GetEdgesWithFlags(x.Item2!, x.mp.Tags))
+            );
     }
 
     private static bool IsWalledElement(IReadOnlyDictionary<string, string> tags) =>
@@ -220,6 +231,35 @@ public partial class GraphBuilder : IGraphBuilder
         if (existingNode is { Id: var existingId })
             return existingId;
         return holder.AddNode(node);
+    }
+
+    private static ProcessingResult GetEdgesWithFlags(
+        ProcessingResult result,
+        IReadOnlyDictionary<string, string> tags
+    )
+    {
+        if (result.Edges.Count == 0)
+            return result;
+        var isElevator = tags.GetValueOrDefault("highway") is "elevator";
+        var isEscalatorOrStairs =
+            tags.GetValueOrDefault("stairs") is "yes"
+            || tags.GetValueOrDefault("highway") is "steps";
+        var isEscalator = isEscalatorOrStairs && tags.GetValueOrDefault("conveying") is "yes";
+        var isStairs = isEscalatorOrStairs && !isEscalator;
+        return result with
+        {
+            Edges = result.Edges
+                .Select(
+                    x =>
+                        x with
+                        {
+                            IsStairs = isStairs,
+                            IsEscalator = isEscalator,
+                            IsElevator = isElevator
+                        }
+                )
+                .ToList()
+        };
     }
 
     private static bool HasAnyOfTags(

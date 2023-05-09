@@ -32,7 +32,10 @@ public class ConfigControllerTests : ControllerTestBase
                     new(
                         new(Settings.Bbox.SouthWest.Longitude, Settings.Bbox.SouthWest.Latitude),
                         new(Settings.Bbox.NorthEast.Longitude, Settings.Bbox.NorthEast.Latitude)
-                    )
+                    ),
+                    false,
+                    false,
+                    false
                 )
             );
     }

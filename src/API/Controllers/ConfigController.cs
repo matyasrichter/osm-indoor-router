@@ -10,22 +10,28 @@ using Settings;
 public class ConfigController : Controller
 {
     private readonly AppSettings settings;
-    private readonly IGraphVersionProvider graphVersionProvider;
+    private readonly IGraphInformationProvider graphInformationProvider;
 
-    public ConfigController(IGraphVersionProvider graphVersionProvider, AppSettings settings)
+    public ConfigController(
+        IGraphInformationProvider graphInformationProvider,
+        AppSettings settings
+    )
     {
-        this.graphVersionProvider = graphVersionProvider;
+        this.graphInformationProvider = graphInformationProvider;
         this.settings = settings;
     }
 
     [HttpGet("")]
+    [ResponseCache(Duration = 60)]
     [ProducesResponseType(typeof(RoutingConfig), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<Results<Ok<RoutingConfig>, NotFound>> GetConfig()
     {
-        var version = await graphVersionProvider.GetCurrentGraphVersion();
+        var version = await graphInformationProvider.GetCurrentGraphVersion();
         if (version is null)
             return TypedResults.NotFound();
+
+        var flags = await graphInformationProvider.GetGraphFlags(version.Value);
 
         return TypedResults.Ok(
             new RoutingConfig(
@@ -33,7 +39,10 @@ public class ConfigController : Controller
                 new(
                     new(settings.Bbox.SouthWest.Longitude, settings.Bbox.SouthWest.Latitude),
                     new(settings.Bbox.NorthEast.Longitude, settings.Bbox.NorthEast.Latitude)
-                )
+                ),
+                flags.HasStairs,
+                flags.HasEscalators,
+                flags.HasElevators
             )
         );
     }

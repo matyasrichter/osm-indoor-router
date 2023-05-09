@@ -6,10 +6,11 @@ using GraphBuilding;
 using GraphBuilding.Ports;
 using Microsoft.EntityFrameworkCore;
 using NetTopologySuite.Geometries;
+using Npgsql;
 using Routing.Entities;
 using Routing.Ports;
 
-public class RoutingGraphRepository : IGraphSavingPort, IGraphVersionProvider, INodeFinder
+public class RoutingGraphRepository : IGraphSavingPort, IGraphInformationProvider, INodeFinder
 {
     private readonly RoutingDbContext db;
     private readonly ITimeMachine timeMachine;
@@ -46,7 +47,10 @@ public class RoutingGraphRepository : IGraphSavingPort, IGraphVersionProvider, I
                         ReverseCost = e.ReverseCost,
                         SourceId = e.Source?.Id,
                         SourceType = e.Source?.Type,
-                        Distance = e.Distance
+                        Distance = e.Distance,
+                        IsElevator = e.IsElevator,
+                        IsStairs = e.IsStairs,
+                        IsEscalator = e.IsEscalator
                     }
             )
             .ToList();
@@ -85,6 +89,17 @@ public class RoutingGraphRepository : IGraphSavingPort, IGraphVersionProvider, I
                 .Where(x => x.IsActive)
                 .FirstOrDefaultAsync()
         )?.Id;
+
+    public async Task<GraphFlags> GetGraphFlags(long version) =>
+        // todo: replace with db.Database.SqlQuery<GraphFlags> in EF Core 8.0
+        await db.GraphFlags
+            .FromSql(
+                $@"SELECT
+                    EXISTS(SELECT 1 FROM ""RoutingEdges"" WHERE ""Version"" = {version} AND ""IsStairs"" IS TRUE) AS ""HasStairs"",
+                    EXISTS(SELECT 1 FROM ""RoutingEdges"" WHERE ""Version"" = {version} AND ""IsEscalator"" IS TRUE) AS ""HasEscalators"",
+                    EXISTS(SELECT 1 FROM ""RoutingEdges"" WHERE ""Version"" = {version} AND ""IsElevator"" IS TRUE) AS ""HasElevators"""
+            )
+            .SingleAsync();
 
     public async Task<Node?> FindClosestNode(
         double latitude,
