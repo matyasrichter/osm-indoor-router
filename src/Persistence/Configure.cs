@@ -18,7 +18,7 @@ public static class Configure
                 options => options.UseNpgsql(configuration.GetConnectionString("postgres"))
             )
             .AddTransient<IGraphSavingPort, RoutingGraphRepository>()
-            .AddTransient<IGraphVersionProvider, RoutingGraphRepository>()
+            .AddTransient<IGraphInformationProvider, RoutingGraphRepository>()
             .AddTransient<IRoutingPort, PgRoutingRepository>()
             .AddTransient<IOsmPort, OsmRepository>()
             .AddTransient<INodeFinder, RoutingGraphRepository>();

@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using NetTopologySuite.Geometries;
 using Repositories;
 using Routing.Entities;
+using Routing.Ports;
 using TestUtils;
 
 [Collection("DB")]
@@ -337,6 +338,119 @@ public sealed class RoutingGraphRepositoryTests : DbTestClass
             new TestingTimeMachine()
         ).FindClosestNode(lat, lon, level, version);
         result.Should().Be(expected, because);
+    }
+
+    [Fact]
+    public async Task CanRetrieveLatestVersion()
+    {
+        var repo = new RoutingGraphRepository(
+            DbContext,
+            new TestingTimeMachine() { Now = new(2021, 1, 20, 11, 0, 0, DateTimeKind.Utc) }
+        );
+
+        var version1 = await repo.AddVersion();
+        var version2 = await repo.AddVersion();
+        var version3 = await repo.AddVersion();
+        await repo.FinalizeVersion(version2);
+
+        var result = await repo.GetCurrentGraphVersion();
+        result.Should().Be(version2);
+        version2.Should().NotBe(version1).And.NotBe(version3);
+    }
+
+    [Fact]
+    public async Task CanCheckFlagExistence()
+    {
+        var repo = new RoutingGraphRepository(
+            DbContext,
+            new TestingTimeMachine() { Now = new(2021, 1, 20, 11, 0, 0, DateTimeKind.Utc) }
+        );
+
+        var version = await repo.AddVersion();
+        var nodeIds = (
+            await repo.SaveNodes(
+                new InMemoryNode[]
+                {
+                    new(GF.CreatePoint(new Coordinate(0, 0)), 0, new Source(SourceType.Point, 2)),
+                    new(GF.CreatePoint(new Coordinate(0, 1)), 0, new Source(SourceType.Point, 3))
+                },
+                version
+            )
+        ).ToList();
+        await repo.SaveEdges(
+            new InMemoryEdge[]
+            {
+                new(
+                    nodeIds[0],
+                    nodeIds[1],
+                    LineString.Empty,
+                    1,
+                    1,
+                    new(SourceType.Line, 123),
+                    1,
+                    IsElevator: true
+                ),
+                new(
+                    nodeIds[0],
+                    nodeIds[1],
+                    LineString.Empty,
+                    1,
+                    1,
+                    new(SourceType.Line, 123),
+                    1,
+                    IsStairs: true
+                ),
+                new(
+                    nodeIds[0],
+                    nodeIds[1],
+                    LineString.Empty,
+                    1,
+                    1,
+                    new(SourceType.Line, 123),
+                    1,
+                    IsEscalator: true
+                ),
+            },
+            version
+        );
+        await repo.FinalizeVersion(version);
+
+        var result = await repo.GetGraphFlags(version);
+        result.Should().Be(new GraphFlags(true, true, true));
+    }
+
+    [Fact]
+    public async Task CanCheckFlagExistenceWhenNoEdgesMatch()
+    {
+        var repo = new RoutingGraphRepository(
+            DbContext,
+            new TestingTimeMachine() { Now = new(2021, 1, 20, 11, 0, 0, DateTimeKind.Utc) }
+        );
+
+        var version = await repo.AddVersion();
+        var nodeIds = (
+            await repo.SaveNodes(
+                new InMemoryNode[]
+                {
+                    new(GF.CreatePoint(new Coordinate(0, 0)), 0, new Source(SourceType.Point, 2)),
+                    new(GF.CreatePoint(new Coordinate(0, 1)), 0, new Source(SourceType.Point, 3))
+                },
+                version
+            )
+        ).ToList();
+        await repo.SaveEdges(
+            new InMemoryEdge[]
+            {
+                new(nodeIds[0], nodeIds[1], LineString.Empty, 1, 1, new(SourceType.Line, 123), 1),
+                new(nodeIds[0], nodeIds[1], LineString.Empty, 1, 1, new(SourceType.Line, 123), 1),
+                new(nodeIds[0], nodeIds[1], LineString.Empty, 1, 1, new(SourceType.Line, 123), 1),
+            },
+            version
+        );
+        await repo.FinalizeVersion(version);
+
+        var result = await repo.GetGraphFlags(version);
+        result.Should().Be(new GraphFlags(false, false, false));
     }
 
     public RoutingGraphRepositoryTests(DatabaseFixture dbFixture)
