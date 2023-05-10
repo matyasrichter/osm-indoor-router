@@ -34,7 +34,7 @@ public class LevelParserTests
     [Theory]
     [MemberData(nameof(ParsingData))]
     public void Parses(string input, IEnumerable<decimal> expected) =>
-        new LevelParser(new Mock<ILogger<LevelParser>>().Object)
+        new LevelParser(Mock.Of<ILogger<LevelParser>>())
             .Parse(input)
             .Should()
             .BeEquivalentTo(expected);
