@@ -73,7 +73,7 @@ public class RoutingGraphRepository : IGraphSavingPort, IGraphInformationProvide
     {
         var edgeCount = await db.Database
             .SqlQuery<long>(
-                $"select count(*) as \"Value\" from \"RoutingEdges\" where \"Version\" = {version}"
+                $"select count(*) as \"Value\" from \"RoutingNodes\" where \"Version\" = {version}"
             )
             .SingleAsync();
         var removeSmallerThan = edgeCount * threshold;
