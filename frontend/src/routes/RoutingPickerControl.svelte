@@ -22,7 +22,6 @@
 	import FaAngleDoubleUp from 'svelte-icons/fa/FaAngleDoubleUp.svelte';
 	import FaAngleDoubleDown from 'svelte-icons/fa/FaAngleDoubleDown.svelte';
 	import FaSearch from 'svelte-icons/fa/FaSearch.svelte';
-	import FaMapMarker from 'svelte-icons/fa/FaMapMarker.svelte';
 	import { toast } from '@zerodevx/svelte-toast';
 
 	// this is necessary because maplibre is a CommonJs module
@@ -488,7 +487,7 @@
 				</div>
 				<div class="mobile">
 					<strong>Floors:</strong>
-					{route.nodes.at(0)?.level} 🡒 {route.nodes.at(-1)?.level}
+					{route.nodes.at(0)?.level} 🠒 {route.nodes.at(-1)?.level}
 				</div>
 				<div>
 					<strong>Total distance:</strong>
