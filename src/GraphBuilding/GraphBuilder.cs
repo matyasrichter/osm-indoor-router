@@ -266,10 +266,14 @@ public partial class GraphBuilder : IGraphBuilder
     {
         if (result.Edges.Count == 0)
             return result;
-        var isElevator = tags.GetValueOrDefault("highway") is "elevator";
+        var isElevator =
+            tags.GetValueOrDefault("highway") is "elevator"
+            || tags.GetValueOrDefault("room") is "elevator";
         var isEscalatorOrStairs =
             tags.GetValueOrDefault("stairs") is "yes"
-            || tags.GetValueOrDefault("highway") is "steps";
+            || tags.GetValueOrDefault("highway") is "steps"
+            || tags.GetValueOrDefault("room") is "stairs"
+            || tags.GetValueOrDefault("area") is "stairs";
         var isEscalator = isEscalatorOrStairs && tags.GetValueOrDefault("conveying") is "yes";
         var isStairs = isEscalatorOrStairs && !isEscalator;
         return result with
