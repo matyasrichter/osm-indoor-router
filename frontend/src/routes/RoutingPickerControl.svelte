@@ -21,8 +21,9 @@
 	import IndoorEqual from 'mapbox-gl-indoorequal';
 	import FaAngleDoubleUp from 'svelte-icons/fa/FaAngleDoubleUp.svelte';
 	import FaAngleDoubleDown from 'svelte-icons/fa/FaAngleDoubleDown.svelte';
+	import FaSearch from 'svelte-icons/fa/FaSearch.svelte';
+	import FaMapMarker from 'svelte-icons/fa/FaMapMarker.svelte';
 	import { toast } from '@zerodevx/svelte-toast';
-	import { debug } from 'svelte/internal';
 
 	// this is necessary because maplibre is a CommonJs module
 	const { LngLatBounds } = maplibre;
@@ -399,7 +400,6 @@
 	<div class="routing-buttons">
 		<div class="node-pickers">
 			<div>
-				<span>Start</span>
 				<button
 					type="button"
 					class="start-button"
@@ -409,12 +409,11 @@
 					{#if pickingStart}
 						Cancel
 					{:else}
-						Pick
+						Start
 					{/if}
 				</button>
 			</div>
 			<div>
-				<span>Target</span>
 				<button
 					type="button"
 					class="target-button"
@@ -424,7 +423,7 @@
 					{#if pickingTarget}
 						Cancel
 					{:else}
-						Pick
+						Target
 					{/if}
 				</button>
 			</div>
@@ -460,23 +459,36 @@
 		</div>
 		<div class="submit-button">
 			<button
+				class="desktop"
 				type="submit"
 				disabled={!startNode || !targetNode}
 				on:click|preventDefault={getRoute}>Find route</button
 			>
+			<button
+				class="mobile"
+				type="submit"
+				disabled={!startNode || !targetNode}
+				on:click|preventDefault={getRoute}
+			>
+				<FaSearch />
+			</button>
 		</div>
 	</div>
 	{#if route}
 		<div class="route-info">
-			Found route:
+			<strong class="desktop">Found route:</strong>
 			<div>
-				<div>
+				<div class="desktop">
 					<strong>From:</strong> ({route.nodes.at(0)?.longitude}, {route.nodes.at(0)
 						?.longitude}), floor: {route.nodes.at(0)?.level}
 				</div>
-				<div>
+				<div class="desktop">
 					<strong>To:</strong> ({route.nodes.at(-1)?.longitude}, {route.nodes.at(-1)
 						?.longitude}), floor: {route.nodes.at(-1)?.level}
+				</div>
+				<div class="mobile">
+					<strong>Floors:</strong>
+					{route.nodes.at(0)?.level} 🡒 {route.nodes.at(-1)?.level}
 				</div>
 				<div>
 					<strong>Total distance:</strong>
@@ -522,7 +534,9 @@
 		}
 
 		> div.node-pickers {
-			margin: 0.5em;
+			@media only screen and (min-width: 768px) {
+				margin: 0.5em;
+			}
 			> div {
 				display: flex;
 				justify-content: space-between;
@@ -573,6 +587,14 @@
 			&:disabled {
 				cursor: not-allowed;
 			}
+			&.mobile {
+				width: 3em;
+				height: 3em;
+				padding: 0.5em;
+				margin: auto auto auto 0.5em;
+				-webkit-transform: scaleX(-1);
+				transform: scaleX(-1);
+			}
 
 			@media only screen and (min-width: 768px) {
 				margin: auto;
@@ -596,5 +618,17 @@
 	}
 	.route-info {
 		padding: 1em;
+		border-top:rgba(0, 0, 0, 0.1) 1px solid;
+	}
+	.desktop {
+		display: none;
+	}
+	@media only screen and (min-width: 768px) {
+		.desktop {
+			display: block;
+		}
+		.mobile {
+			display: none;
+		}
 	}
 </style>
