@@ -210,7 +210,7 @@ public partial class GraphBuilder : IGraphBuilder
         tags.GetValueOrDefault("walls") is not "no"
         && (
             tags.GetValueOrDefault("indoor") is "wall"
-            || tags.GetValueOrDefault("barrier") is "wall" or "fence"
+            || tags.GetValueOrDefault("barrier") is "wall" or "fence" or "guard_rail"
             || tags.GetValueOrDefault("building") is not null and not "roof"
             || tags.GetValueOrDefault("public_transport") is "platform"
         );
