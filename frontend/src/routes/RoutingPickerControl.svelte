@@ -546,9 +546,15 @@
 			font-size: 1.5em;
 			width: 6em;
 			padding: 0.2em;
-			background-color: #005b96;
-			border-color: #005b96;
-			color: white;
+
+			&:not(:disabled) {
+				background-color: #005b96;
+				border-color: #005b96;
+				color: white;
+			}
+			&:disabled {
+				cursor: not-allowed;
+			}
 
 			@media only screen and (min-width: 768px) {
 				margin: auto;
