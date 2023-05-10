@@ -205,8 +205,7 @@
 	const routeLayerName = 'route';
 	const routeSourceName = 'route';
 
-	const addOrReplaceRoute = (coordinates: Array<RouteNode>) => {
-		console.log('addOrReplaceRoute');
+	const addOrReplaceRoute = async (coordinates: Array<RouteNode>) => {
 		removeRoute();
 		const segments: { level: number; nextLevel: number | null; nodes: RouteNode[] }[] = [];
 		let currentSegment: RouteNode[] = [];
@@ -225,6 +224,25 @@
 				nextLevel: null,
 				nodes: currentSegment
 			});
+		}
+		const toRemove = [];
+		// find indices of single-node segments
+		for (let i = 0; i < segments.length - 1; i++) {
+			if (segments[i].nodes.length <= 2) {
+				toRemove.push(i);
+			}
+		}
+		if (toRemove.length > 0) {
+			// merge single-node segments into the next segment
+			for (const i of toRemove) {
+				segments[i + 1].nodes.unshift(...segments[i].nodes.slice(0, -1));
+			}
+			// remove single-node segments
+			toRemove.reverse().forEach((i) => segments.splice(i, 1));
+			// update nextLevel for all segments
+			for (let i = 0; i < segments.length - 1; i++) {
+				segments[i].nextLevel = segments[i + 1].level;
+			}
 		}
 
 		map?.addSource(routeSourceName, {
