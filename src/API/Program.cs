@@ -17,8 +17,6 @@ if (app.Environment.IsDevelopment())
 if (app.Environment.IsProduction())
     _ = app.UseHsts();
 
-app.UseHttpsRedirection();
-
 app.UseAuthorization();
 
 app.MapControllers();
