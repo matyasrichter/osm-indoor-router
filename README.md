@@ -27,3 +27,42 @@ Some tests require a database. We're using [Testcontainers](https://www.testcont
 To only run non-testcontainers tests, use `dotnet test --filter "Category!=DB"`.
 
 
+## Running locally (production-like)
+Prerequisities: Docker and Docker Compose
+
+Create copies of the example environment configs:
+```
+cp .env.db.example .env.db
+cp .env.import.example .env.import
+cp ./frontend/.env.example ./frontend/.env
+cp appsettings.example.json appsettings.Production.json
+```
+
+Generate your MapTiler and IndoorEqual API keys and add them to `./frontend/.env`:
+MapTiler link: https://cloud.maptiler.com/maps/
+IndoorEqual link: https://indoorequal.com/users/register
+
+Start the database:
+```
+docker compose -f docker-compose.local.yml up -d db
+```
+
+Start the import:
+```
+docker compose -f docker-compose.local.yml up import-init
+```
+
+Start the seconds phase of import, graph building
+```
+docker compose -f docker-compose.local.yml up updater
+```
+
+Start the API and the frontend:
+```
+docker compose -f docker-compose.local.yml up -d frontend api
+```
+
+Before production deployment:
+- Set up CORS (the local setup uses a wildcard)
+- Set up map update scheduling (see `docker-compose.production.yml`)
+

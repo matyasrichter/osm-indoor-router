@@ -1,0 +1,51 @@
+---
+version: "3.8"
+services:
+  db:
+    build:
+      dockerfile: dockerfiles/postgis.Dockerfile
+    env_file:
+      - .env.db
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  frontend:
+    build: ./frontend
+    # this is because we dont have a domain locally and both the container and the browser need the same api url
+    network_mode: host
+    env_file:
+      - ./frontend/.env
+  api:
+    build:
+      dockerfile: ./src/API/Dockerfile
+    ports:
+      - "127.0.0.1:5276:80"
+    environment:
+      DOTNET_ENVIRONMENT: Production
+    volumes:
+      - "./appsettings.Production.json:/App/appsettings.Production.json"
+  updater:
+    build:
+      dockerfile: ./src/GraphUpdater/Dockerfile
+    environment:
+      DOTNET_ENVIRONMENT: Production
+    volumes:
+      - "./appsettings.Production.json:/App/appsettings.Production.json"
+  # run this manually once
+  import-init:
+    build:
+      dockerfile: ./dockerfiles/osm2pgsql.Dockerfile
+    command: ./import/initial.sh
+    env_file:
+      - .env.import
+    volumes:
+      - "./import-data:/app/data"
+
+volumes:
+  db_data:
+    driver: local
+

@@ -13,3 +13,9 @@ artifacts/
 tests/**/TestResults/
 CoverageReports/
 import-data
+.appsettings.Production.json
+.env
+.env.fe
+.env.import
+.env.db
+appsettings.Production.json
